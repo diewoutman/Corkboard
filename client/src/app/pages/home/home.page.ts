@@ -42,6 +42,12 @@ export class HomePage implements OnInit {
       route: '/contacts',
       icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
     },
+    {
+      title: 'Family',
+      description: 'Manage family members and their logins.',
+      route: '/family',
+      icon: 'M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6 0a4 4 0 10-4-4',
+    },
   ];
 
   constructor(

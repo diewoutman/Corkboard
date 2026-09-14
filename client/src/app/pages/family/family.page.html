@@ -1,0 +1,138 @@
+<div class="flex items-center justify-between gap-2">
+  <h1 class="text-2xl font-semibold text-gray-900">Family</h1>
+</div>
+
+<p *ngIf="errorMessage" class="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage }}</p>
+
+<div *ngIf="loading" class="mt-8 text-center text-sm text-gray-500">Loading…</div>
+
+<div *ngIf="!loading" class="mt-4 space-y-3">
+  <div *ngFor="let member of members" class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+    <div class="flex items-start justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="h-3 w-3 shrink-0 rounded-full" [style.background]="member.color"></span>
+        <p class="font-medium text-gray-900">{{ member.displayName }}</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button type="button" (click)="openEditMemberForm(member)" class="text-xs font-medium text-blue-600 hover:text-blue-500">Edit</button>
+        <button type="button" (click)="deleteMember(member)" class="text-gray-400 hover:text-red-600" aria-label="Delete">✕</button>
+      </div>
+    </div>
+
+    <p *ngIf="member.dateOfBirth" class="mt-1 text-xs text-gray-500">🎂 {{ member.dateOfBirth | date: 'longDate' }}</p>
+
+    <p *ngIf="member.linkedUserEmail" class="mt-1.5 text-xs text-gray-600">
+      Has a login: {{ member.linkedUserEmail }}
+      <span class="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-700">{{ member.linkedUserRole }}</span>
+    </p>
+
+    <ng-container *ngIf="!member.linkedUserEmail">
+      <p *ngIf="!isOwner()" class="mt-1.5 text-xs text-gray-400">No login yet — only the Owner can create one.</p>
+
+      <button
+        *ngIf="isOwner() && accountFormForId !== member.id"
+        type="button"
+        (click)="openAccountForm(member)"
+        class="mt-1.5 text-xs font-medium text-blue-600 hover:text-blue-500"
+      >
+        + Create login
+      </button>
+
+      <form *ngIf="accountFormForId === member.id" (ngSubmit)="submitAccountForm()" #accountFormRef="ngForm" class="mt-2 space-y-2 rounded-md border border-gray-100 p-3">
+        <div>
+          <label for="accountEmail" class="block text-xs font-medium text-gray-700">Email</label>
+          <input
+            id="accountEmail"
+            name="accountEmail"
+            type="email"
+            [(ngModel)]="accountForm.email"
+            required
+            class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label for="accountPassword" class="block text-xs font-medium text-gray-700">Password</label>
+          <input
+            id="accountPassword"
+            name="accountPassword"
+            type="text"
+            [(ngModel)]="accountForm.password"
+            required
+            minlength="6"
+            class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+          <p class="mt-0.5 text-[11px] text-gray-400">Share this with them yourself — they can change it after logging in.</p>
+        </div>
+        <div>
+          <label for="accountRole" class="block text-xs font-medium text-gray-700">Role</label>
+          <select
+            id="accountRole"
+            name="accountRole"
+            [(ngModel)]="accountForm.role"
+            class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="Adult">Adult</option>
+            <option value="Member">Member</option>
+          </select>
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button type="submit" [disabled]="accountFormRef.invalid" class="flex-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50">
+            Create login
+          </button>
+          <button type="button" (click)="cancelAccountForm()" class="rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </ng-container>
+  </div>
+
+  <div *ngIf="members.length === 0" class="rounded-lg border border-dashed border-gray-300 px-4 py-8 text-center text-sm text-gray-500">
+    No family members yet.
+  </div>
+</div>
+
+<div *ngIf="showMemberForm" class="mt-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+  <form (ngSubmit)="submitMemberForm()" #form="ngForm" class="space-y-3">
+    <div>
+      <label for="displayName" class="block text-sm font-medium text-gray-700">Name</label>
+      <input
+        id="displayName"
+        name="displayName"
+        [(ngModel)]="memberForm.displayName"
+        required
+        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      />
+    </div>
+    <div>
+      <label for="color" class="block text-sm font-medium text-gray-700">Color</label>
+      <input type="color" id="color" name="color" [(ngModel)]="memberForm.color" class="mt-1 h-10 w-16 rounded-md border border-gray-300" />
+    </div>
+    <div>
+      <label for="dateOfBirth" class="block text-sm font-medium text-gray-700">Birthday <span class="text-gray-400">(optional)</span></label>
+      <input
+        id="dateOfBirth"
+        type="date"
+        name="dateOfBirth"
+        [(ngModel)]="memberForm.dateOfBirth"
+        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      />
+    </div>
+    <div class="flex gap-2 pt-1">
+      <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50">
+        {{ editingMemberId ? 'Save changes' : 'Add family member' }}
+      </button>
+      <button type="button" (click)="cancelMemberForm()" class="rounded-md px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
+        Cancel
+      </button>
+    </div>
+  </form>
+</div>
+
+<button
+  *ngIf="!showMemberForm"
+  type="button"
+  (click)="openNewMemberForm()"
+  class="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-2xl text-white shadow-lg hover:bg-blue-500 sm:bottom-6"
+  aria-label="Add family member"
+>+</button>

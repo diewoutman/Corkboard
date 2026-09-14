@@ -49,6 +49,15 @@ export interface CreateFamilyMemberRequest {
 
 export type UpdateFamilyMemberRequest = CreateFamilyMemberRequest;
 
+export type FamilyRole = 'Owner' | 'Adult' | 'Member';
+
+/** Owner-only — the sanctioned way to add a login once a Family exists (self-registration is closed then). */
+export interface CreateFamilyMemberAccountRequest {
+  email: string;
+  password: string;
+  role: FamilyRole;
+}
+
 export interface FamilyMemberResponse {
   id: string;
   displayName: string;
@@ -56,6 +65,8 @@ export interface FamilyMemberResponse {
   avatarUrl: string | null;
   linkedUserId: string | null;
   dateOfBirth: string | null;
+  linkedUserEmail: string | null;
+  linkedUserRole: FamilyRole | null;
 }
 
 export type NodeType = 'Note' | 'Task' | 'Appointment' | 'Contact';

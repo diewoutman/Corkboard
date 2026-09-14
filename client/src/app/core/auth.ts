@@ -15,6 +15,7 @@ export class Auth {
   readonly current = this.state.asReadonly();
   readonly isAuthenticated = computed(() => this.state() !== null);
   readonly hasFamily = computed(() => this.state()?.familyId != null);
+  readonly isOwner = computed(() => this.state()?.role === 'Owner');
 
   register(request: RegisterRequest) {
     return this.http

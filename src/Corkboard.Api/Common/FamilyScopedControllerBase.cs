@@ -16,6 +16,8 @@ public abstract class FamilyScopedControllerBase : ControllerBase
 
     protected Guid CurrentUserId => User.GetUserId();
 
+    protected bool CurrentUserIsOwner => User.GetFamilyRole() == nameof(Domain.Entities.FamilyRole.Owner);
+
     protected ObjectResult NoFamilyProblem() => Problem(
         title: "No family set up yet",
         detail: "Call POST /api/families first, then use the token it returns.",

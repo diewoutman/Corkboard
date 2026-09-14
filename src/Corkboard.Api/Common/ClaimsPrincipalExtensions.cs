@@ -18,4 +18,8 @@ public static class ClaimsPrincipalExtensions
         var value = principal.FindFirstValue(CorkboardClaimTypes.FamilyId);
         return value is null ? null : Guid.Parse(value);
     }
+
+    /// <summary>Null when the caller hasn't set up (or joined) a Family yet.</summary>
+    public static string? GetFamilyRole(this ClaimsPrincipal principal) =>
+        principal.FindFirstValue(CorkboardClaimTypes.FamilyRole);
 }

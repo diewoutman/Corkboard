@@ -51,7 +51,22 @@ Family (co-parents with two households, grandparents helping manage things).
 | CreatedAt | |
 
 `UserFamily` (join table): `UserId`, `FamilyId`, `Role` (Owner / Adult / Member) —
-governs who can manage family settings vs. just use the board.
+governs who can manage family settings vs. just use the board. `Owner` is also this
+app's "system administrator": rather than a separate global admin concept, the
+Owner is the only one who can create logins for other family members (see
+"Registration and invites" below) — deliberately not a bigger abstraction, since
+this app is scoped to one Family per installation (§1).
+
+**Registration and invites.** `POST /api/auth/register` is only open for the very
+first user, before any Family exists — the first-run wizard (§8). Once a Family
+has been set up, self-registration is closed (403): a stranger hitting a
+configured instance's `/register` would otherwise be able to spin up an unrelated
+second Family in the same database. From then on, adding a family member's login
+is the Owner's job, from the Family page: `POST /api/family-members/{id}/account`
+creates the Identity account and the `UserFamily` row (Role Adult or Member —
+never Owner, there's exactly one, set at family creation) in the same call, and
+links it to that `FamilyMember`. The Owner picks the password themselves and
+shares it with whoever it's for; there's no invite-link/token flow.
 
 **FamilyMember**
 The assignable person. This is who a Node gets assigned *to*, and who shows up on the
@@ -393,7 +408,8 @@ client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no
                           # task-list (one list's Tasks, /tasks/:id), notes,
                           # calendar (multi-calendar/schedule month grid),
                           # schedule-editor (weekly grid, /calendar/schedules/:id),
-                          # contacts (address book + Household management)
+                          # contacts (address book + Household management),
+                          # family (manage FamilyMembers; Owner-only: create logins)
 ```
 
 **API surface implemented so far** (all family-scoped ones require a JWT with a
@@ -402,9 +418,10 @@ client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no
 | Endpoint | Purpose |
 |---|---|
 | `GET /api/setup/status` | Anonymous — whether this instance has any Family yet, drives the client's first-run wizard framing |
-| `POST /api/auth/register`, `/login` | Identity account creation/login → JWT |
+| `POST /api/auth/register`, `/login` | Identity account creation/login → JWT. Registration is only open before any Family exists (403 after — see "Registration and invites" in §2.1) |
 | `POST /api/families`, `GET /api/families/mine` | One-time family setup (creates Family + Owner FamilyMember, returns a fresh token) |
-| `GET/POST /api/family-members`, `GET/PUT/DELETE /api/family-members/{id}` | FamilyMember CRUD |
+| `GET/POST /api/family-members`, `GET/PUT/DELETE /api/family-members/{id}` | FamilyMember CRUD — responses include `LinkedUserEmail`/`LinkedUserRole` when a member has a login |
+| `POST /api/family-members/{id}/account` | Owner-only — creates a login for a FamilyMember that doesn't have one yet and links it, in one call |
 | `GET/POST /api/nodes`, `PUT/DELETE /api/nodes/{id}` | Node CRUD across all four types (incl. Contact), with `?type=`/`?assignedTo=`/`?collectionId=`/`?from=`/`?until=` filters on the list endpoint |
 | `GET/POST /api/collections`, `PUT/DELETE /api/collections/{id}` | Collection CRUD (Task lists, Calendars, Schedules, Households), with `?type=`/`?parentCollectionId=` filters — list responses include `NodeCount`/`IncompleteCount` |
 | `POST /api/collections/{id}/feed-token` | (Re)generates a Calendar's iCal feed URL |
@@ -415,12 +432,16 @@ client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no
 
 **First-run setup wizard**: the client doesn't have a separate `/setup` route —
 instead `/login` checks `GET /api/setup/status` on load, and when no Family exists
-yet anywhere on the instance it frames itself as "Step 1 of 3" and defaults to
-register mode. Registering routes to `/family-setup` ("Step 2 of 3", creates the
-Family + the caller's own FamilyMember as Owner), which routes to `/add-members`
-("Step 3 of 3", add the rest of the family before landing on `/home`). Ordinary
-subsequent logins skip all of this — `isFirstRun` on `LoginPage` only turns on when
-the instance-wide check comes back `false`.
+yet anywhere on the instance it frames itself as "Step 1 of 3" in register mode —
+the *only* time `LoginPage` ever submits a register call; once `isFirstRun` is
+false there's no toggle to get back to it (registration is closed server-side
+anyway, see §2.1). Registering routes to `/family-setup` ("Step 2 of 3", creates
+the Family + the caller's own FamilyMember as Owner), which routes to
+`/add-members` ("Step 3 of 3", add the rest of the family before landing on
+`/home`) — both one-shot, onboarding-only pages. Ordinary subsequent logins skip
+all of this. Adding *more* family members later, after onboarding, is the `/family`
+page's job — list/edit/remove FamilyMembers, and (Owner-only) create a login for
+one that doesn't have one yet.
 
 **To run the whole stack locally: `./scripts/dev.sh`** (needs Docker, the .NET 10
 SDK, and Node/npm on `PATH`). It starts Postgres, waits for it to actually be ready
