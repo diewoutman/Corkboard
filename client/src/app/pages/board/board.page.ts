@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { Auth } from '../../core/auth';
 import { FamilyMembers } from '../../core/family-members';
@@ -25,6 +25,7 @@ export class BoardPage implements OnInit {
     private readonly nodesApi: Nodes,
     private readonly membersApi: FamilyMembers,
     private readonly auth: Auth,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -43,10 +44,12 @@ export class BoardPage implements OnInit {
         this.members = members;
         this.nodes = this.sortNodes(nodes);
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.errorMessage = 'Could not load the board. Pull to refresh to try again.';
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }
@@ -62,15 +65,27 @@ export class BoardPage implements OnInit {
   toggleTask(node: NodeResponse) {
     if (node.type !== 'Task') return;
     this.nodesApi.update(node.id, this.toUpdateRequest(node, { isCompleted: !node.isCompleted })).subscribe({
-      next: (updated) => this.replaceNode(updated),
-      error: () => (this.errorMessage = 'Could not update the task.'),
+      next: (updated) => {
+        this.replaceNode(updated);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.errorMessage = 'Could not update the task.';
+        this.cdr.markForCheck();
+      },
     });
   }
 
   deleteNode(node: NodeResponse) {
     this.nodesApi.delete(node.id).subscribe({
-      next: () => (this.nodes = this.nodes.filter((n) => n.id !== node.id)),
-      error: () => (this.errorMessage = 'Could not delete that.'),
+      next: () => {
+        this.nodes = this.nodes.filter((n) => n.id !== node.id);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.errorMessage = 'Could not delete that.';
+        this.cdr.markForCheck();
+      },
     });
   }
 
@@ -95,8 +110,12 @@ export class BoardPage implements OnInit {
           this.nodes = this.sortNodes([...this.nodes, created]);
           this.newNode = this.emptyNewNode();
           this.showNewNodeForm = false;
+          this.cdr.markForCheck();
         },
-        error: () => (this.errorMessage = 'Could not create that.'),
+        error: () => {
+          this.errorMessage = 'Could not create that.';
+          this.cdr.markForCheck();
+        },
       });
   }
 

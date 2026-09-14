@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Corkboard.Api.Auth;
 using Corkboard.Infrastructure.Identity;
 using Corkboard.Infrastructure.Persistence;
@@ -15,7 +16,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+// The Angular client sends/expects enums as their string names (e.g. "Note"),
+// not the default numeric encoding.
+builder.Services.AddControllers()
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 

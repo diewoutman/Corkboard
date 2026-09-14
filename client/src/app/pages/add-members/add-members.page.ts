@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FamilyMembers } from '../../core/family-members';
 import { FamilyMemberResponse } from '../../core/models';
@@ -20,6 +20,7 @@ export class AddMembersPage implements OnInit {
   constructor(
     private readonly familyMembers: FamilyMembers,
     private readonly router: Router,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -27,10 +28,12 @@ export class AddMembersPage implements OnInit {
       next: (members) => {
         this.members = members;
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.errorMessage = 'Could not load your family members.';
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }
@@ -54,18 +57,26 @@ export class AddMembersPage implements OnInit {
           this.members = [...this.members, member];
           this.displayName = '';
           this.submitting = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.errorMessage = 'Could not add that family member.';
           this.submitting = false;
+          this.cdr.markForCheck();
         },
       });
   }
 
   removeMember(member: FamilyMemberResponse) {
     this.familyMembers.delete(member.id).subscribe({
-      next: () => (this.members = this.members.filter((m) => m.id !== member.id)),
-      error: () => (this.errorMessage = 'Could not remove that family member.'),
+      next: () => {
+        this.members = this.members.filter((m) => m.id !== member.id);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.errorMessage = 'Could not remove that family member.';
+        this.cdr.markForCheck();
+      },
     });
   }
 

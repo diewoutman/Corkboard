@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { Auth } from '../../core/auth';
 import { Families } from '../../core/families';
@@ -21,6 +21,7 @@ export class FamilySetupPage {
     private readonly families: Families,
     private readonly auth: Auth,
     private readonly router: Router,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   submit() {
@@ -46,6 +47,7 @@ export class FamilySetupPage {
           this.submitting = false;
           this.errorMessage =
             err?.error?.title ?? err?.error?.detail ?? 'Something went wrong. Please try again.';
+          this.cdr.markForCheck();
         },
       });
   }

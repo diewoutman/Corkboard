@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Auth } from '../../core/auth';
 import { Setup } from '../../core/setup';
@@ -22,6 +22,7 @@ export class LoginPage implements OnInit {
     private readonly auth: Auth,
     private readonly setup: Setup,
     private readonly router: Router,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -31,6 +32,7 @@ export class LoginPage implements OnInit {
           this.isFirstRun = true;
           this.mode = 'register';
         }
+        this.cdr.markForCheck();
       },
       // If the API is unreachable, fall back to an ordinary login screen rather
       // than crash — submit() will surface a clearer connection error anyway.
@@ -63,6 +65,7 @@ export class LoginPage implements OnInit {
         this.submitting = false;
         this.errorMessage =
           err?.error?.title ?? err?.error?.detail ?? 'Something went wrong. Please try again.';
+        this.cdr.markForCheck();
       },
     });
   }
