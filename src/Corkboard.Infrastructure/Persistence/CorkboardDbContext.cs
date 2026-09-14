@@ -93,6 +93,8 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
                 .WithMany(c => c.ChildCollections)
                 .HasForeignKey(c => c.ParentCollectionId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(c => c.FeedToken).IsUnique().HasFilter("\"FeedToken\" IS NOT NULL");
         });
 
         builder.Entity<AppointmentException>(entity =>

@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Corkboard.Api.Common;
 using Corkboard.Contracts.Collections;
 using Corkboard.Infrastructure.Persistence;
@@ -28,19 +29,12 @@ public class CollectionsController(CorkboardDbContext db) : FamilyScopedControll
             query = query.Where(c => c.Type == domainType);
         }
 
-        // Explicitly distinguish "only top-level" (parentCollectionId omitted) from
-        // "children of this parent" (parentCollectionId given) — both are common
-        // callers (the Lists overview vs. drilling into a parent).
         query = parentCollectionId is { } parentId
             ? query.Where(c => c.ParentCollectionId == parentId)
             : query.Where(c => c.ParentCollectionId == null);
 
-        var collections = await query
-            .OrderBy(c => c.Name)
-            .Select(ToResponseExpression)
-            .ToListAsync(cancellationToken);
-
-        return Ok(collections);
+        var projections = await query.OrderBy(c => c.Name).Select(ToProjectionExpression).ToListAsync(cancellationToken);
+        return Ok(projections.Select(ToResponse).ToList());
     }
 
     [HttpGet("{id:guid}")]
@@ -48,12 +42,12 @@ public class CollectionsController(CorkboardDbContext db) : FamilyScopedControll
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var collection = await db.Collections
+        var projection = await db.Collections
             .Where(c => c.FamilyId == familyId && c.Id == id)
-            .Select(ToResponseExpression)
+            .Select(ToProjectionExpression)
             .FirstOrDefaultAsync(cancellationToken);
 
-        return collection is null ? NotFound() : Ok(collection);
+        return projection is null ? NotFound() : Ok(ToResponse(projection));
     }
 
     [HttpPost]
@@ -77,6 +71,7 @@ public class CollectionsController(CorkboardDbContext db) : FamilyScopedControll
             FamilyId = familyId,
             Name = request.Name,
             Type = (DomainCollectionType)request.Type,
+            Color = request.Color,
             ParentCollectionId = request.ParentCollectionId,
             CreatedAt = now,
             UpdatedAt = now,
@@ -87,8 +82,9 @@ public class CollectionsController(CorkboardDbContext db) : FamilyScopedControll
         await db.SaveChangesAsync(cancellationToken);
 
         var response = new CollectionResponse(
-            collection.Id, collection.Name, request.Type, collection.ParentCollectionId,
-            collection.CreatedAt, NodeCount: 0, IncompleteCount: request.Type == CollectionType.TaskList ? 0 : null);
+            collection.Id, collection.Name, request.Type, collection.Color, collection.ParentCollectionId,
+            collection.CreatedAt, NodeCount: 0, IncompleteCount: request.Type == CollectionType.TaskList ? 0 : null,
+            FeedUrl: null);
 
         return CreatedAtAction(nameof(Get), new { id = collection.Id }, response);
     }
@@ -102,15 +98,33 @@ public class CollectionsController(CorkboardDbContext db) : FamilyScopedControll
         if (collection is null) return NotFound();
 
         collection.Name = request.Name;
+        collection.Color = request.Color;
         collection.UpdatedAt = DateTimeOffset.UtcNow;
         await db.SaveChangesAsync(cancellationToken);
 
-        var response = await db.Collections
-            .Where(c => c.Id == id)
-            .Select(ToResponseExpression)
-            .FirstAsync(cancellationToken);
+        var projection = await db.Collections.Where(c => c.Id == id).Select(ToProjectionExpression).FirstAsync(cancellationToken);
+        return Ok(ToResponse(projection));
+    }
 
-        return Ok(response);
+    /// <summary>
+    /// (Re)generates the Collection's iCal feed token and returns its full
+    /// subscribe URL — calendar apps can't do an interactive login, so the feed
+    /// endpoint authenticates via this opaque token instead of a JWT. Calling
+    /// this again invalidates any previously shared URL.
+    /// </summary>
+    [HttpPost("{id:guid}/feed-token")]
+    public async Task<ActionResult<CollectionResponse>> RotateFeedToken(Guid id, CancellationToken cancellationToken)
+    {
+        if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
+
+        var collection = await db.Collections.FirstOrDefaultAsync(c => c.FamilyId == familyId && c.Id == id, cancellationToken);
+        if (collection is null) return NotFound();
+
+        collection.FeedToken = GenerateFeedToken();
+        await db.SaveChangesAsync(cancellationToken);
+
+        var projection = await db.Collections.Where(c => c.Id == id).Select(ToProjectionExpression).FirstAsync(cancellationToken);
+        return Ok(ToResponse(projection));
     }
 
     /// <summary>Deleting a Collection deletes the Nodes in it; blocked while it still has child Collections.</summary>
@@ -136,15 +150,23 @@ public class CollectionsController(CorkboardDbContext db) : FamilyScopedControll
         return NoContent();
     }
 
-    private static readonly System.Linq.Expressions.Expression<Func<Domain.Entities.Collection, CollectionResponse>> ToResponseExpression =
-        c => new CollectionResponse(
-            c.Id,
-            c.Name,
-            (CollectionType)c.Type,
-            c.ParentCollectionId,
-            c.CreatedAt,
+    private static string GenerateFeedToken() => Convert.ToHexString(RandomNumberGenerator.GetBytes(24)).ToLowerInvariant();
+
+    private CollectionResponse ToResponse(CollectionProjection p) => new(
+        p.Id, p.Name, (CollectionType)p.Type, p.Color, p.ParentCollectionId, p.CreatedAt,
+        p.NodeCount, p.IncompleteCount,
+        p.FeedToken is null ? null : $"{Request.Scheme}://{Request.Host}/api/calendar-feed/{p.Id}/{p.FeedToken}.ics");
+
+    private record CollectionProjection(
+        Guid Id, string Name, DomainCollectionType Type, string Color, Guid? ParentCollectionId,
+        DateTimeOffset CreatedAt, int NodeCount, int? IncompleteCount, string? FeedToken);
+
+    private static readonly System.Linq.Expressions.Expression<Func<Domain.Entities.Collection, CollectionProjection>> ToProjectionExpression =
+        c => new CollectionProjection(
+            c.Id, c.Name, c.Type, c.Color, c.ParentCollectionId, c.CreatedAt,
             c.Nodes.Count,
             c.Type == DomainCollectionType.TaskList
                 ? c.Nodes.OfType<Domain.Entities.TaskNode>().Count(n => !n.IsCompleted)
-                : (int?)null);
+                : (int?)null,
+            c.FeedToken);
 }

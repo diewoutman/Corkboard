@@ -1,8 +1,10 @@
 using System.Text;
 using System.Text.Json.Serialization;
 using Corkboard.Api.Auth;
+using Corkboard.Infrastructure.Ics;
 using Corkboard.Infrastructure.Identity;
 using Corkboard.Infrastructure.Persistence;
+using Corkboard.Infrastructure.Recurrence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -78,6 +80,10 @@ builder.Services.AddCors(options =>
 
 builder.Services.Configure<JwtOptions>(jwtSection);
 builder.Services.AddScoped<ITokenService, TokenService>();
+
+builder.Services.AddSingleton<RecurrenceExpansionService>();
+builder.Services.AddSingleton<IcsExportService>();
+builder.Services.AddSingleton<IcsImportService>();
 
 // TickerQ persists its jobs via EF Core into CorkboardDbContext (same Postgres
 // database, no separate worker infra) — see CorkboardDbContext's class doc.

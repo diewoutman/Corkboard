@@ -40,4 +40,9 @@ export class Collections {
   delete(id: string) {
     return this.http.delete<void>(`${environment.apiUrl}/collections/${id}`);
   }
+
+  /** (Re)generates the calendar's iCal subscribe URL. */
+  rotateFeedToken(id: string) {
+    return this.http.post<CollectionResponse>(`${environment.apiUrl}/collections/${id}/feed-token`, {});
+  }
 }

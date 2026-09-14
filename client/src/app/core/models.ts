@@ -109,25 +109,56 @@ export interface NodeResponse {
 }
 
 // "Collection" is a backend-only concept — the client only ever talks about its
-// user-facing framing (e.g. a "Task list"). See CONCEPT.md on Collection/CollectionType.
-export type CollectionType = 'TaskList';
+// user-facing framing (a "Task list" or a "Calendar"). See CONCEPT.md on
+// Collection/CollectionType.
+export type CollectionType = 'TaskList' | 'Calendar';
 
 export interface CreateCollectionRequest {
   name: string;
   type: CollectionType;
+  color: string;
   parentCollectionId: string | null;
 }
 
 export interface UpdateCollectionRequest {
   name: string;
+  color: string;
 }
 
 export interface CollectionResponse {
   id: string;
   name: string;
   type: CollectionType;
+  color: string;
   parentCollectionId: string | null;
   createdAt: string;
   nodeCount: number;
   incompleteCount: number | null;
+  feedUrl: string | null;
+}
+
+export interface OccurrenceResponse {
+  appointmentId: string;
+  collectionId: string;
+  originalDate: string;
+  from: string;
+  until: string | null;
+  title: string;
+  location: string | null;
+  allDay: boolean;
+  isException: boolean;
+  isRecurring: boolean;
+  assignedFamilyMemberIds: string[];
+}
+
+export interface SetOccurrenceExceptionRequest {
+  isSkipped: boolean;
+  overrideTitle: string | null;
+  overrideLocation: string | null;
+  overrideFrom: string | null;
+  overrideUntil: string | null;
+}
+
+export interface ImportIcsResult {
+  importedCount: number;
 }

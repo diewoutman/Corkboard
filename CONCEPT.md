@@ -127,29 +127,33 @@ Type-specific fields to start with:
 `Collection` is Node's sibling backend-only abstraction: a container that holds one
 or more Nodes, and can itself nest under a parent Collection (a plain self-referencing
 tree — `ParentCollectionId`, `ChildCollections`). Like Node, the word "Collection"
-never reaches the user; each `CollectionType` gets its own user-facing framing. The
-first (and so far only) one is **`TaskList`** — "a Task list is a Collection of Task
-Nodes" — which is what the client's Lists → list-detail flow is built on
-(`/tasks` lists a family's `TaskList` Collections, `/tasks/{id}` shows the Tasks
-inside one).
+never reaches the user; each `CollectionType` gets its own user-facing framing:
+
+- **`TaskList`** — "a Task list is a Collection of Task Nodes". `/tasks` lists a
+  family's `TaskList` Collections, `/tasks/{id}` shows the Tasks inside one.
+- **`Calendar`** — "a Calendar is a Collection of Appointment Nodes". `/calendar`
+  renders a month grid overlaying every `Calendar` Collection's Appointments (each
+  toggleable, color-coded); creating an event picks which Calendar it belongs to.
 
 | Field | Notes |
 |---|---|
 | Id, FamilyId | same pattern as everything else |
 | Name | |
-| Type | `CollectionType` — `TaskList` today |
+| Type | `CollectionType` — `TaskList` or `Calendar` |
+| Color | hex string, same idea as `FamilyMember.Color` — lets the Calendar grid color-code events by which Calendar they're in |
+| FeedToken | nullable opaque string; set the first time a Calendar's iCal subscribe URL is requested (see §3.3) |
 | ParentCollectionId | nullable self-reference; `Restrict` on delete (a Collection with children can't be deleted until they're moved or removed — avoids silently losing a subtree) |
 | CreatedAt, UpdatedAt, CreatedByUserId | |
 
-A Node gets an optional `CollectionId` (nullable — most Notes/Appointments won't
-use it yet). Deleting a Collection cascades to delete the Nodes in it, matching
-"delete this list" expectations. Membership is one Collection per Node, not a
-many-to-many join — simpler, and matches how list-based apps actually behave (a
-task lives in one list at a time).
+A Node gets an optional `CollectionId` (nullable — most Notes won't use it).
+Deleting a Collection cascades to delete the Nodes in it, matching "delete this
+list/calendar" expectations. Membership is one Collection per Node, not a
+many-to-many join — simpler, and matches how list/calendar apps actually behave (an
+event lives on one calendar at a time).
 
-Not yet built: nested Task lists (sub-lists) in the UI — the domain model supports
-it (`ParentCollectionId`) but `/tasks` only ever creates/lists top-level Collections
-today.
+Not yet built: nested Task lists or Calendars (sub-collections) in the UI — the
+domain model supports it (`ParentCollectionId`) but neither `/tasks` nor
+`/calendar` create/list anything but top-level Collections today.
 
 ## 3. Backend
 
@@ -187,28 +191,59 @@ TickerQ (in-process, EF-Core-backed scheduler) is the natural fit for:
   a stored row (see below).
 - **Digests** — e.g. a daily/weekly "what's coming up" push or email per Family.
 
-**Recurrence: computed on read, not precomputed.** A recurring `Appointment` stores
-only its `RecurrenceRule` on the base Node; no separate occurrence rows exist. When
-the API is asked for Nodes in a date range (calendar view, "what's today"), it
-expands any `RecurrenceRule`-bearing Appointments into concrete occurrences in that
-range on the fly. This avoids a background job that has to keep extending a
-precomputed window and avoids ever "running out" of future occurrences.
+**Recurrence: computed on read, not precomputed — implemented.** A recurring
+`Appointment` stores only its `RecurrenceRule` on the base Node, as a real RFC 5545
+RRULE value string (e.g. `"FREQ=WEEKLY"` or `"FREQ=WEEKLY;BYDAY=MO,WE,FR"`) — no
+separate occurrence rows exist. `RecurrenceExpansionService` (Infrastructure,
+built on the `Ical.Net` library rather than hand-rolled RRULE math) expands a given
+Appointment into concrete occurrences for a date range on request;
+`GET /api/calendar/occurrences?from=&until=&calendarId=` is what the client's
+month grid actually calls. This avoids a background job that has to keep extending
+a precomputed window and avoids ever "running out" of future occurrences.
 
-Two things this pushes onto the API/domain layer that a precomputed-rows approach
-would get for free, worth remembering when implementing:
-- **Single-occurrence edits/exceptions** ("move just this Tuesday's appointment," "skip
-  next week") need explicit modeling — typically an `AppointmentException` table
-  keyed by `(NodeId, OriginalOccurrenceDate)` carrying either a replacement
-  time/fields or a "skipped" flag, consulted during expansion.
-- **Assignment/reminders are naturally computed just-in-time**: since there's no
-  occurrence row, "assign this occurrence to a FamilyMember" also needs the exception
-  table above rather than a plain join to a Node row, and TickerQ reminder jobs for a
-  recurring series get scheduled for "the next occurrence" and re-scheduled after
-  firing, rather than one job per future occurrence.
+`AppointmentException` (keyed by `(AppointmentId, OriginalOccurrenceDate)`) is now
+wired up end-to-end: `PUT /api/calendar/appointments/{id}/occurrences/{date}` skips
+or overrides one occurrence, consulted during expansion. The client only exercises
+the skip path so far (deleting a single occurrence from the day-detail view);
+overriding one occurrence's own fields (time/title/location) without touching the
+whole series has a working endpoint but no UI yet.
+
+Known simplification: which calendar day an occurrence "belongs to" (for matching
+against `OriginalOccurrenceDate`) is derived from its UTC start, not the family's
+local time zone — an occurrence within a few hours of midnight UTC could land on
+the "wrong" day for a family far from UTC. Fine for now; revisit if it causes real
+confusion.
 
 Because TickerQ persists jobs via EF Core against the same Postgres database, no
 extra moving parts (no Redis/Hangfire dashboard/separate worker infra) are needed for
-a single-instance, family-scale deployment.
+a single-instance, family-scale deployment. TickerQ itself isn't used for
+recurrence — see above — only reminders/digests remain on the "not yet built" list.
+
+**iCal (RFC 5545) interop — implemented, one-way each direction.** Both directions
+go through `Ical.Net`, not hand-rolled `.ics` text:
+- **Export**: `POST /api/collections/{id}/feed-token` (re)generates an opaque
+  `FeedToken` on a Calendar Collection and returns its full subscribe URL;
+  `GET /api/calendar-feed/{collectionId}/{token}.ics` (anonymous — calendar apps
+  can't do an interactive JWT login, so the token in the URL *is* the auth) serves
+  a standard `VCALENDAR` document any calendar app can subscribe to. One `VEVENT`
+  per Appointment (with its RRULE and EXDATEs for skipped occurrences included
+  directly, letting the subscribing app do its own expansion) plus one extra
+  `VEVENT` per override exception (same UID, a `RECURRENCE-ID` — the standard way
+  to represent "this one occurrence was moved/renamed"). `EXDATE`/`RECURRENCE-ID`
+  values are built to match the master event's original time-of-day exactly, since
+  RFC 5545 requires that for a calendar app to match them against its own RRULE
+  expansion.
+- **Import**: `POST /api/calendar/collections/{id}/import` (multipart `.ics`
+  upload) parses the file and creates an Appointment per "master" `VEVENT`
+  (recurring or one-off), copying its RRULE across unchanged. Per-occurrence
+  override `VEVENT`s in the *source* file (their own `RECURRENCE-ID` set) are
+  skipped rather than mapped to `AppointmentException` rows — a reasonable v1
+  limitation given how rarely real-world exports actually contain them.
+- **Not built**: CalDAV (true two-way sync, where editing an event in Apple/Google
+  Calendar updates Corkboard). That's a much bigger undertaking — implementing a
+  CalDAV server — than anything else in this app so far, and probably isn't worth
+  it for a personal family app; one-way export already covers "family member sees
+  Corkboard events in their own phone calendar," which is the realistic use case.
 
 ### 3.4 Auth
 
@@ -302,9 +337,11 @@ tests/
   Corkboard.Domain.Tests/  # empty so far
   Corkboard.Api.Tests/     # empty so far
 client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no Ionic, see §4
-  src/app/core/           # Auth, Families, FamilyMembers, Nodes, Collections, Setup services + auth interceptor/guards
+  src/app/core/           # Auth, Families, FamilyMembers, Nodes, Collections, CalendarApi,
+                          # Setup services + auth interceptor/guards
   src/app/pages/          # login, family-setup, add-members, tasks (Lists overview),
-                          # task-list (one list's Tasks, /tasks/:id), notes, calendar
+                          # task-list (one list's Tasks, /tasks/:id), notes,
+                          # calendar (multi-calendar month grid)
 ```
 
 **API surface implemented so far** (all family-scoped ones require a JWT with a
@@ -317,7 +354,12 @@ client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no
 | `POST /api/families`, `GET /api/families/mine` | One-time family setup (creates Family + Owner FamilyMember, returns a fresh token) |
 | `GET/POST /api/family-members`, `GET/PUT/DELETE /api/family-members/{id}` | FamilyMember CRUD |
 | `GET/POST /api/nodes`, `PUT/DELETE /api/nodes/{id}` | Node CRUD across all three types, with `?type=`/`?assignedTo=`/`?collectionId=`/`?from=`/`?until=` filters on the list endpoint |
-| `GET/POST /api/collections`, `PUT/DELETE /api/collections/{id}` | Collection CRUD (e.g. Task lists), with `?type=`/`?parentCollectionId=` filters — list responses include `NodeCount`/`IncompleteCount` |
+| `GET/POST /api/collections`, `PUT/DELETE /api/collections/{id}` | Collection CRUD (Task lists, Calendars), with `?type=`/`?parentCollectionId=` filters — list responses include `NodeCount`/`IncompleteCount` |
+| `POST /api/collections/{id}/feed-token` | (Re)generates a Calendar's iCal feed URL |
+| `GET /api/calendar-feed/{collectionId}/{token}.ics` | Anonymous — the actual iCal subscribe feed |
+| `GET /api/calendar/occurrences` | Expanded Appointment occurrences for a date range (`?from=&until=&calendarId=`) — what the month grid renders |
+| `PUT`/`DELETE /api/calendar/appointments/{id}/occurrences/{date}` | Override or skip one occurrence of a recurring Appointment |
+| `POST /api/calendar/collections/{id}/import` | Multipart `.ics` upload → creates Appointments in that Calendar |
 
 **First-run setup wizard**: the client doesn't have a separate `/setup` route —
 instead `/login` checks `GET /api/setup/status` on load, and when no Family exists

@@ -49,7 +49,7 @@ export class TasksPage implements OnInit {
 
     this.submitting = true;
     this.collectionsApi
-      .create({ name: this.newListName, type: 'TaskList', parentCollectionId: null })
+      .create({ name: this.newListName, type: 'TaskList', color: '#4c6ef5', parentCollectionId: null })
       .subscribe({
         next: (created) => {
           this.lists = [...this.lists, created].sort((a, b) => a.name.localeCompare(b.name));
