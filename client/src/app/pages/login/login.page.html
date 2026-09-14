@@ -1,55 +1,58 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>Corkboard</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true" class="ion-padding">
+<div class="mx-auto max-w-sm">
   <ng-container *ngIf="isFirstRun">
-    <ion-text color="medium"><p>Step 1 of 3 — Set up Corkboard</p></ion-text>
-    <h2>Welcome! Let's create your account</h2>
-    <p>Nobody's set up this Corkboard yet. Create your account first — you'll set up your family next.</p>
+    <p class="text-sm font-medium text-gray-500">Step 1 of 3 — Set up Corkboard</p>
+    <h1 class="mt-1 text-2xl font-semibold text-gray-900">Welcome! Let's create your account</h1>
+    <p class="mt-2 text-sm text-gray-600">Nobody's set up this Corkboard yet. Create your account first — you'll set up your family next.</p>
   </ng-container>
 
-  <h2 *ngIf="!isFirstRun">{{ mode === 'login' ? 'Log in' : 'Create an account' }}</h2>
+  <h1 *ngIf="!isFirstRun" class="text-2xl font-semibold text-gray-900">
+    {{ mode === 'login' ? 'Log in' : 'Create an account' }}
+  </h1>
 
-  <form (ngSubmit)="submit()" #form="ngForm">
-    <ion-list>
-      <ion-item>
-        <ion-input
-          label="Email"
-          labelPlacement="stacked"
-          type="email"
-          name="email"
-          [(ngModel)]="email"
-          required
-          autocomplete="email"
-        ></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-input
-          label="Password"
-          labelPlacement="stacked"
-          type="password"
-          name="password"
-          [(ngModel)]="password"
-          required
-          minlength="6"
-          [autocomplete]="mode === 'login' ? 'current-password' : 'new-password'"
-        ></ion-input>
-      </ion-item>
-    </ion-list>
+  <form (ngSubmit)="submit()" #form="ngForm" class="mt-6 space-y-4">
+    <div>
+      <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+      <input
+        id="email"
+        type="email"
+        name="email"
+        [(ngModel)]="email"
+        required
+        autocomplete="email"
+        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      />
+    </div>
+    <div>
+      <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+      <input
+        id="password"
+        type="password"
+        name="password"
+        [(ngModel)]="password"
+        required
+        minlength="6"
+        [autocomplete]="mode === 'login' ? 'current-password' : 'new-password'"
+        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      />
+    </div>
 
-    <ion-text color="danger" *ngIf="errorMessage">
-      <p>{{ errorMessage }}</p>
-    </ion-text>
+    <p *ngIf="errorMessage" class="text-sm text-red-600">{{ errorMessage }}</p>
 
-    <ion-button expand="block" type="submit" [disabled]="form.invalid || submitting" class="ion-margin-top">
+    <button
+      type="submit"
+      [disabled]="form.invalid || submitting"
+      class="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+    >
       {{ mode === 'login' ? 'Log in' : (isFirstRun ? 'Create account and continue' : 'Register') }}
-    </ion-button>
+    </button>
 
-    <ion-button expand="block" fill="clear" type="button" *ngIf="!isFirstRun" (click)="toggleMode()">
+    <button
+      *ngIf="!isFirstRun"
+      type="button"
+      (click)="toggleMode()"
+      class="w-full text-center text-sm font-medium text-blue-600 hover:text-blue-500"
+    >
       {{ mode === 'login' ? "Don't have an account? Register" : 'Already have an account? Log in' }}
-    </ion-button>
+    </button>
   </form>
-</ion-content>
+</div>

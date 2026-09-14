@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Auth } from './core/auth';
 
 @Component({
   selector: 'app-root',
@@ -7,5 +8,10 @@ import { Component } from '@angular/core';
   standalone: false,
 })
 export class AppComponent {
-  constructor() {}
+  constructor(readonly auth: Auth) {}
+
+  logout() {
+    this.auth.logout();
+    window.location.href = '/login';
+  }
 }

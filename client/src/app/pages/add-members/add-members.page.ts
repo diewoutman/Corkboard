@@ -81,6 +81,6 @@ export class AddMembersPage implements OnInit {
   }
 
   finish() {
-    this.router.navigateByUrl('/board');
+    this.router.navigateByUrl('/tasks');
   }
 }

@@ -5,7 +5,7 @@ import { authGuard, familyGuard } from './core/auth-guard';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'board',
+    redirectTo: 'tasks',
     pathMatch: 'full',
   },
   {
@@ -18,14 +18,24 @@ const routes: Routes = [
     loadChildren: () => import('./pages/family-setup/family-setup.module').then((m) => m.FamilySetupPageModule),
   },
   {
-    path: 'board',
-    canActivate: [familyGuard],
-    loadChildren: () => import('./pages/board/board.module').then((m) => m.BoardPageModule),
-  },
-  {
     path: 'add-members',
     canActivate: [authGuard],
     loadChildren: () => import('./pages/add-members/add-members.module').then((m) => m.AddMembersPageModule),
+  },
+  {
+    path: 'tasks',
+    canActivate: [familyGuard],
+    loadChildren: () => import('./pages/tasks/tasks.module').then((m) => m.TasksPageModule),
+  },
+  {
+    path: 'notes',
+    canActivate: [familyGuard],
+    loadChildren: () => import('./pages/notes/notes.module').then((m) => m.NotesPageModule),
+  },
+  {
+    path: 'calendar',
+    canActivate: [familyGuard],
+    loadChildren: () => import('./pages/calendar/calendar.module').then((m) => m.CalendarPageModule),
   },
 ];
 

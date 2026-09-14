@@ -192,14 +192,20 @@ targets one family for now.
 
 ## 4. Frontend
 
-- **Angular**, calling the API exclusively (no server-side rendering coupling).
-- **Ionic** under consideration for PWA/installable-app packaging — gives a native-ish
-  mobile experience (and eventually iOS/Android app-store builds via Capacitor) from
-  one Angular codebase, at the cost of Ionic's component/styling conventions layered
-  on top of Angular. Worth prototyping the board/calendar views with Ionic components
-  early since that's the piece most likely to feel wrong if forced into.
-- Core views map directly to the domain: a **Board** (Nodes, filterable by type/
-  assignee), a **Calendar** (Nodes with a `From`/`Until`), and per-FamilyMember views.
+- **Angular + Tailwind CSS**, calling the API exclusively (no server-side rendering
+  coupling). Tried Ionic first for its ready-made PWA/native-app story, but its
+  Stencil-based web components turned out fragile in this exact Angular 22 setup
+  (a long debugging session's worth of lazy-loading/dependency-cache/change-detection
+  interactions — see git history around the "step away from Ionic" decision) and,
+  separately, made it hard to keep the UI from feeling like a generic app shell
+  rather than something built for this one family. Dropped Ionic and Capacitor
+  entirely; PWA installability still comes from Angular's own `@angular/pwa`
+  (service worker + manifest), independent of any UI component library.
+- **The `Node` abstraction is backend-only** — the client never surfaces the word
+  "Node". Each Node type gets its own dedicated page with its own language: Tasks
+  talks about tasks (due dates, priority, "mark done"), Notes talks about notes,
+  Calendar talks about events/appointments. All three still just call
+  `GET/POST /api/nodes` with a `type` filter under the hood (see `core/nodes.ts`).
 
 ## 5. MVP scope
 
@@ -252,8 +258,8 @@ pre-answer them now.
 
 ## 8. Getting started (current scaffold)
 
-Layout matches §3.2, plus the Angular/Ionic client at repo root (its own
-convention, alongside `src`/`tests` rather than under them):
+Layout matches §3.2, plus the Angular client at repo root (its own convention,
+alongside `src`/`tests` rather than under them):
 
 ```
 Corkboard.sln
@@ -266,9 +272,9 @@ src/
 tests/
   Corkboard.Domain.Tests/  # empty so far
   Corkboard.Api.Tests/     # empty so far
-client/                  # Angular 22 + Ionic 9, Capacitor-ready, PWA (service worker) configured
+client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no Ionic, see §4
   src/app/core/           # Auth, Families, FamilyMembers, Nodes, Setup services + auth interceptor/guards
-  src/app/pages/          # login, family-setup, add-members, board
+  src/app/pages/          # login, family-setup, add-members, tasks, notes, calendar
 ```
 
 **API surface implemented so far** (all family-scoped ones require a JWT with a
@@ -287,14 +293,14 @@ instead `/login` checks `GET /api/setup/status` on load, and when no Family exis
 yet anywhere on the instance it frames itself as "Step 1 of 3" and defaults to
 register mode. Registering routes to `/family-setup` ("Step 2 of 3", creates the
 Family + the caller's own FamilyMember as Owner), which routes to `/add-members`
-("Step 3 of 3", add the rest of the family before landing on `/board`). Ordinary
+("Step 3 of 3", add the rest of the family before landing on `/tasks`). Ordinary
 subsequent logins skip all of this — `isFirstRun` on `LoginPage` only turns on when
 the instance-wide check comes back `false`.
 
 **To run the whole stack locally: `./scripts/dev.sh`** (needs Docker, the .NET 10
 SDK, and Node/npm on `PATH`). It starts Postgres, waits for it to actually be ready
 (`docker compose up --wait`, via the healthcheck in `docker-compose.yml`), applies
-pending EF Core migrations, then runs the API and the Ionic dev server together
+pending EF Core migrations, then runs the API and the Angular dev server together
 (via `concurrently`, prefixed/colored output) — Ctrl+C stops both. First run also
 installs `dotnet-ef` (if missing) and `client/node_modules`. Postgres itself keeps
 running afterwards (`docker compose down` to stop it).
@@ -309,16 +315,16 @@ What that script does, spelled out (useful if something in it needs debugging):
    `http://localhost:5147` (plain HTTP, deliberately — see below). A real
    `Jwt:SigningKey` is already set via `dotnet user-secrets` (not committed —
    see `Corkboard.Api.csproj`'s `UserSecretsId`); nothing to configure there.
-4. `npm --prefix client start` — Ionic dev server (`ionic serve` also works). Points
-   at `http://localhost:5147/api` via `environment.ts`.
+4. `npm --prefix client start` — Angular dev server. Points at
+   `http://localhost:5147/api` via `environment.ts`.
 
 Local dev deliberately uses plain HTTP, not the ASP.NET Core dev HTTPS cert
 (`https://localhost:7127`, the other profile in `launchSettings.json`): that cert's
 trust story is painful cross-platform (especially Linux, no automatic trust store
 hookup), and there's no need for it locally per the "no urgency around HTTPS" call in
 §6. Two things this makes necessary, both already wired up: a CORS policy (`Program.cs`,
-`Cors:AllowedOrigins` in `appsettings.Development.json` — defaults to the Angular/Ionic
-dev server ports 4200 and 8100) since client and API are now different origins even
+`Cors:AllowedOrigins` in `appsettings.Development.json` — defaults to the Angular
+dev server's port, 4200) since client and API are now different origins even
 in dev, and being explicit about `--launch-profile http` rather than relying on
 `dotnet run`'s default profile selection (which happens to pick "http" here since it's
 listed first in `launchSettings.json`, but that's not something to depend on silently).

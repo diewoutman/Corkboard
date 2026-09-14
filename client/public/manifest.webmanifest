@@ -1,7 +1,9 @@
 {
-  "name": "app",
-  "short_name": "app",
+  "name": "Corkboard",
+  "short_name": "Corkboard",
   "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
   "scope": "./",
   "start_url": "./",
   "icons": [
