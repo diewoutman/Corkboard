@@ -100,7 +100,7 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
         var now = DateTimeOffset.UtcNow;
         Node node = request.Type switch
         {
-            ContractNodeType.Note => new Note { Title = request.Title },
+            ContractNodeType.Note => new Note { Title = request.Title, IsImportant = request.IsImportant ?? false },
             ContractNodeType.Task => new TaskNode { Title = request.Title, Priority = request.Priority },
             ContractNodeType.Appointment => new Appointment
             {
@@ -173,6 +173,9 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
 
         switch (node)
         {
+            case Note note:
+                note.IsImportant = request.IsImportant ?? note.IsImportant;
+                break;
             case TaskNode task:
                 if (request.IsCompleted is { } isCompleted)
                 {
@@ -285,6 +288,7 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
             TaskNode task => new NodeResponse(
                 task.Id, ContractNodeType.Task, task.Title, task.Description, task.From, task.Until,
                 task.CreatedAt, task.UpdatedAt, task.CreatedByUserId, assignedIds, task.CollectionId,
+                IsImportant: null,
                 task.IsCompleted, task.CompletedAt, task.Priority,
                 Location: null, AllDay: null, RecurrenceRule: null,
                 FirstName: null, LastName: null, DateOfBirth: null,
@@ -293,6 +297,7 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
             Appointment appointment => new NodeResponse(
                 appointment.Id, ContractNodeType.Appointment, appointment.Title, appointment.Description, appointment.From, appointment.Until,
                 appointment.CreatedAt, appointment.UpdatedAt, appointment.CreatedByUserId, assignedIds, appointment.CollectionId,
+                IsImportant: null,
                 IsCompleted: null, CompletedAt: null, Priority: null,
                 appointment.Location, appointment.AllDay, appointment.RecurrenceRule,
                 FirstName: null, LastName: null, DateOfBirth: null,
@@ -301,20 +306,23 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
             Contact contact => new NodeResponse(
                 contact.Id, ContractNodeType.Contact, contact.Title, contact.Description, contact.From, contact.Until,
                 contact.CreatedAt, contact.UpdatedAt, contact.CreatedByUserId, assignedIds, contact.CollectionId,
+                IsImportant: null,
                 IsCompleted: null, CompletedAt: null, Priority: null,
                 Location: null, AllDay: null, RecurrenceRule: null,
                 contact.FirstName, contact.LastName, contact.DateOfBirth,
                 contact.Street, contact.City, contact.PostalCode, contact.Country,
                 contact.PhoneNumbers.Select(p => new ContactPhoneNumberDto(p.Number, p.Label)).ToList(),
                 contact.Emails.Select(e => new ContactEmailDto(e.Email, e.Label)).ToList()),
-            _ => new NodeResponse(
-                node.Id, ContractNodeType.Note, node.Title, node.Description, node.From, node.Until,
-                node.CreatedAt, node.UpdatedAt, node.CreatedByUserId, assignedIds, node.CollectionId,
+            Note note => new NodeResponse(
+                note.Id, ContractNodeType.Note, note.Title, note.Description, note.From, note.Until,
+                note.CreatedAt, note.UpdatedAt, note.CreatedByUserId, assignedIds, note.CollectionId,
+                note.IsImportant,
                 IsCompleted: null, CompletedAt: null, Priority: null,
                 Location: null, AllDay: null, RecurrenceRule: null,
                 FirstName: null, LastName: null, DateOfBirth: null,
                 Street: null, City: null, PostalCode: null, Country: null,
                 PhoneNumbers: [], Emails: []),
+            _ => throw new ArgumentOutOfRangeException(nameof(node)),
         };
     }
 }

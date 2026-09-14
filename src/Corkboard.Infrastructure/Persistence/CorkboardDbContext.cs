@@ -33,6 +33,8 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
     public DbSet<Collection> Collections => Set<Collection>();
     public DbSet<CollectionAddress> CollectionAddresses => Set<CollectionAddress>();
 
+    public DbSet<DashboardWidget> DashboardWidgets => Set<DashboardWidget>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -134,6 +136,16 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
                 .WithMany(c => c.Emails)
                 .HasForeignKey(e => e.ContactId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<DashboardWidget>(entity =>
+        {
+            entity.HasOne(w => w.Family)
+                .WithMany()
+                .HasForeignKey(w => w.FamilyId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(w => new { w.UserId, w.FamilyId, w.SortOrder });
+            entity.Property(w => w.Config).HasColumnType("jsonb");
         });
 
         builder.Entity<NodeAssignment>(entity =>

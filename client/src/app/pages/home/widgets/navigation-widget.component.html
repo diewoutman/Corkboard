@@ -1,0 +1,16 @@
+<div class="grid grid-cols-2 gap-3">
+  <a
+    *ngFor="let tile of tiles"
+    [routerLink]="tile.route"
+    class="flex flex-col gap-2 rounded-lg border border-gray-200 bg-white p-3 transition hover:border-blue-300 hover:shadow-sm"
+  >
+    <span class="flex h-8 w-8 items-center justify-center rounded-md bg-blue-50 text-blue-600">
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="tile.icon" />
+      </svg>
+    </span>
+    <div>
+      <p class="text-sm font-medium text-gray-900">{{ tile.title }}</p>
+    </div>
+  </a>
+</div>

@@ -89,6 +89,8 @@ export interface CreateNodeRequest {
   until: string | null;
   assignedFamilyMemberIds: string[];
   collectionId: string | null;
+  // Note-only
+  isImportant: boolean | null;
   priority: number | null;
   location: string | null;
   allDay: boolean | null;
@@ -112,6 +114,8 @@ export interface UpdateNodeRequest {
   until: string | null;
   assignedFamilyMemberIds: string[];
   collectionId: string | null;
+  // Note-only
+  isImportant: boolean | null;
   isCompleted: boolean | null;
   priority: number | null;
   location: string | null;
@@ -141,6 +145,8 @@ export interface NodeResponse {
   createdByUserId: string;
   assignedFamilyMemberIds: string[];
   collectionId: string | null;
+  // Note-only
+  isImportant: boolean | null;
   isCompleted: boolean | null;
   completedAt: string | null;
   priority: number | null;
@@ -229,4 +235,41 @@ export interface SetOccurrenceExceptionRequest {
 
 export interface ImportIcsResult {
   importedCount: number;
+}
+
+// Dashboard widgets are per-User, not per-Family — each logged-in User gets
+// their own layout. One flat shape covering every widget type's settings,
+// same convention as CreateNodeRequest — see CONCEPT.md.
+export type DashboardWidgetType = 'Navigation' | 'Notes' | 'Tasks';
+
+export interface CreateDashboardWidgetRequest {
+  type: DashboardWidgetType;
+  // Navigation-only
+  tileOrder: string[] | null;
+  // Notes-only
+  importantOnly: boolean | null;
+  // Tasks-only
+  collectionId: string | null;
+  assignedToMeOnly: boolean | null;
+}
+
+export interface UpdateDashboardWidgetRequest {
+  tileOrder: string[] | null;
+  importantOnly: boolean | null;
+  collectionId: string | null;
+  assignedToMeOnly: boolean | null;
+}
+
+export interface ReorderDashboardWidgetsRequest {
+  orderedWidgetIds: string[];
+}
+
+export interface DashboardWidgetResponse {
+  id: string;
+  type: DashboardWidgetType;
+  sortOrder: number;
+  tileOrder: string[] | null;
+  importantOnly: boolean | null;
+  collectionId: string | null;
+  assignedToMeOnly: boolean | null;
 }

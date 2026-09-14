@@ -1,4 +1,7 @@
 namespace Corkboard.Domain.Entities;
 
-/// <summary>A freeform Node with nothing beyond the base fields.</summary>
-public class Note : Node;
+public class Note : Node
+{
+    /// <summary>Lets the dashboard's Notes widget filter down to just what matters right now.</summary>
+    public bool IsImportant { get; set; }
+}

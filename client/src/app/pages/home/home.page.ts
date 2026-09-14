@@ -1,11 +1,19 @@
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { forkJoin } from 'rxjs';
+import { Collections } from '../../core/collections';
+import { Dashboard } from '../../core/dashboard';
 import { Families } from '../../core/families';
+import { extractErrorMessage } from '../../core/http-error';
+import { CollectionResponse, DashboardWidgetResponse, DashboardWidgetType } from '../../core/models';
+import { TILE_DEFS } from './tile-defs';
 
-interface HomeTile {
-  title: string;
-  description: string;
-  route: string;
-  icon: string;
+interface WidgetFormState {
+  type: DashboardWidgetType;
+  tileOrder: string[];
+  importantOnly: boolean;
+  taskMode: 'list' | 'assignedToMe';
+  collectionId: string;
 }
 
 @Component({
@@ -17,41 +25,19 @@ interface HomeTile {
 export class HomePage implements OnInit {
   familyName: string | null = null;
 
-  readonly tiles: HomeTile[] = [
-    {
-      title: 'Tasks',
-      description: 'Lists and to-dos for the whole family.',
-      route: '/tasks',
-      icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
-    },
-    {
-      title: 'Notes',
-      description: 'Quick notes and reminders worth keeping.',
-      route: '/notes',
-      icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-    },
-    {
-      title: 'Calendar',
-      description: 'Events, calendars and weekly schedules.',
-      route: '/calendar',
-      icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
-    },
-    {
-      title: 'Contacts',
-      description: 'Phone numbers, emails and addresses, by household.',
-      route: '/contacts',
-      icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-    },
-    {
-      title: 'Family',
-      description: 'Manage family members and their logins.',
-      route: '/family',
-      icon: 'M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6 0a4 4 0 10-4-4',
-    },
-  ];
+  widgets: DashboardWidgetResponse[] = [];
+  taskLists: CollectionResponse[] = [];
+  loading = true;
+  errorMessage: string | null = null;
+
+  showWidgetForm = false;
+  editingWidgetId: string | null = null;
+  widgetForm = this.emptyWidgetForm();
 
   constructor(
     private readonly familiesApi: Families,
+    private readonly dashboardApi: Dashboard,
+    private readonly collectionsApi: Collections,
     private readonly cdr: ChangeDetectorRef,
   ) {}
 
@@ -63,5 +49,133 @@ export class HomePage implements OnInit {
       },
       error: () => {},
     });
+
+    this.reload();
+  }
+
+  reload() {
+    this.loading = true;
+    this.errorMessage = null;
+    forkJoin({
+      widgets: this.dashboardApi.list(),
+      taskLists: this.collectionsApi.list({ type: 'TaskList' }),
+    }).subscribe({
+      next: ({ widgets, taskLists }) => {
+        this.widgets = [...widgets].sort((a, b) => a.sortOrder - b.sortOrder);
+        this.taskLists = taskLists;
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.errorMessage = 'Could not load your dashboard. Pull to refresh to try again.';
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  tileTitle(key: string): string {
+    return TILE_DEFS.find((t) => t.key === key)?.title ?? key;
+  }
+
+  widgetTitle(widget: DashboardWidgetResponse): string {
+    switch (widget.type) {
+      case 'Navigation':
+        return 'Navigation';
+      case 'Notes':
+        return widget.importantOnly ? 'Important notes' : 'Notes';
+      case 'Tasks':
+        return widget.collectionId ? this.taskLists.find((l) => l.id === widget.collectionId)?.name ?? 'Tasks' : 'My tasks';
+    }
+  }
+
+  drop(event: CdkDragDrop<DashboardWidgetResponse[]>) {
+    moveItemInArray(this.widgets, event.previousIndex, event.currentIndex);
+    this.dashboardApi.reorder({ orderedWidgetIds: this.widgets.map((w) => w.id) }).subscribe({
+      error: () => {
+        this.errorMessage = 'Could not save the new widget order.';
+        this.reload();
+      },
+    });
+  }
+
+  dropTile(event: CdkDragDrop<string[]>) {
+    moveItemInArray(this.widgetForm.tileOrder, event.previousIndex, event.currentIndex);
+  }
+
+  openAddWidgetForm() {
+    this.editingWidgetId = null;
+    this.widgetForm = this.emptyWidgetForm();
+    this.showWidgetForm = true;
+  }
+
+  openEditWidgetForm(widget: DashboardWidgetResponse) {
+    this.editingWidgetId = widget.id;
+    this.widgetForm = {
+      type: widget.type,
+      tileOrder: widget.tileOrder && widget.tileOrder.length > 0 ? widget.tileOrder : TILE_DEFS.map((t) => t.key),
+      importantOnly: widget.importantOnly ?? false,
+      taskMode: widget.collectionId ? 'list' : 'assignedToMe',
+      collectionId: widget.collectionId ?? '',
+    };
+    this.showWidgetForm = true;
+  }
+
+  cancelWidgetForm() {
+    this.showWidgetForm = false;
+    this.editingWidgetId = null;
+  }
+
+  submitWidgetForm() {
+    const isTasksList = this.widgetForm.type === 'Tasks' && this.widgetForm.taskMode === 'list';
+
+    const config = {
+      tileOrder: this.widgetForm.type === 'Navigation' ? this.widgetForm.tileOrder : null,
+      importantOnly: this.widgetForm.type === 'Notes' ? this.widgetForm.importantOnly : null,
+      collectionId: isTasksList ? this.widgetForm.collectionId || null : null,
+      assignedToMeOnly: this.widgetForm.type === 'Tasks' ? !isTasksList : null,
+    };
+
+    const request$ = this.editingWidgetId
+      ? this.dashboardApi.update(this.editingWidgetId, config)
+      : this.dashboardApi.create({ type: this.widgetForm.type, ...config });
+
+    request$.subscribe({
+      next: (saved) => {
+        this.widgets = this.editingWidgetId
+          ? this.widgets.map((w) => (w.id === saved.id ? saved : w))
+          : [...this.widgets, saved];
+        this.showWidgetForm = false;
+        this.editingWidgetId = null;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.errorMessage = extractErrorMessage(err, 'Could not save that widget.');
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  removeWidget(widget: DashboardWidgetResponse) {
+    this.dashboardApi.delete(widget.id).subscribe({
+      next: () => {
+        this.widgets = this.widgets.filter((w) => w.id !== widget.id);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.errorMessage = 'Could not remove that widget.';
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  private emptyWidgetForm(): WidgetFormState {
+    return {
+      type: 'Notes',
+      tileOrder: TILE_DEFS.map((t) => t.key),
+      importantOnly: false,
+      taskMode: 'assignedToMe',
+      collectionId: '',
+    };
   }
 }

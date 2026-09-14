@@ -9,8 +9,18 @@
     *ngFor="let note of notes"
     class="relative rounded-lg border border-gray-200 bg-yellow-50 p-4 shadow-sm"
   >
-    <button type="button" (click)="deleteNote(note)" class="absolute right-3 top-3 text-gray-400 hover:text-red-600" aria-label="Delete">✕</button>
-    <p class="pr-6 font-medium text-gray-900">{{ note.title }}</p>
+    <div class="absolute right-3 top-3 flex items-center gap-2">
+      <button
+        type="button"
+        (click)="toggleImportant(note)"
+        [class.text-amber-500]="note.isImportant"
+        [class.text-gray-300]="!note.isImportant"
+        class="hover:text-amber-500"
+        [attr.aria-label]="note.isImportant ? 'Unmark as important' : 'Mark as important'"
+      >★</button>
+      <button type="button" (click)="deleteNote(note)" class="text-gray-400 hover:text-red-600" aria-label="Delete">✕</button>
+    </div>
+    <p class="pr-14 font-medium text-gray-900">{{ note.title }}</p>
     <p *ngIf="note.description" class="mt-1 whitespace-pre-line text-sm text-gray-700">{{ note.description }}</p>
     <div class="mt-2 flex flex-wrap gap-2">
       <span
@@ -62,6 +72,11 @@
         </label>
       </div>
     </div>
+
+    <label class="flex items-center gap-2 text-sm text-gray-600">
+      <input type="checkbox" name="isImportant" [(ngModel)]="newNote.isImportant" class="rounded border-gray-300" />
+      Mark as important
+    </label>
 
     <div class="flex gap-2 pt-1">
       <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50">

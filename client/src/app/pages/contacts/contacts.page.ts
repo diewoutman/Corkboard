@@ -3,7 +3,7 @@ import { forkJoin } from 'rxjs';
 import { Collections } from '../../core/collections';
 import { extractErrorMessage } from '../../core/http-error';
 import { CollectionResponse, NodeResponse } from '../../core/models';
-import { Nodes } from '../../core/nodes';
+import { NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
 
 @Component({
   selector: 'app-contacts',
@@ -224,6 +224,7 @@ export class ContactsPage implements OnInit {
       country: this.contactForm.country || null,
       phoneNumbers,
       emails,
+      ...NULL_NOTE_FIELDS,
     };
 
     const title = this.contactForm.lastName ? `${this.contactForm.firstName} ${this.contactForm.lastName}` : this.contactForm.firstName;

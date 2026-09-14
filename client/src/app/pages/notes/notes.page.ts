@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { FamilyMembers } from '../../core/family-members';
 import { extractErrorMessage } from '../../core/http-error';
-import { FamilyMemberResponse, NodeResponse } from '../../core/models';
+import { FamilyMemberResponse, NodeResponse, UpdateNodeRequest } from '../../core/models';
 import { NULL_CONTACT_FIELDS, Nodes } from '../../core/nodes';
 
 @Component({
@@ -66,6 +66,19 @@ export class NotesPage implements OnInit {
       : [...ids, memberId];
   }
 
+  toggleImportant(note: NodeResponse) {
+    this.nodesApi.update(note.id, this.toUpdateRequest(note, { isImportant: !note.isImportant })).subscribe({
+      next: (updated) => {
+        this.notes = this.sortNotes(this.notes.map((n) => (n.id === updated.id ? updated : n)));
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.errorMessage = 'Could not update that note.';
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
   deleteNote(note: NodeResponse) {
     this.nodesApi.delete(note.id).subscribe({
       next: () => {
@@ -91,6 +104,7 @@ export class NotesPage implements OnInit {
         until: null,
         assignedFamilyMemberIds: this.newNote.assignedFamilyMemberIds,
         collectionId: null,
+        isImportant: this.newNote.isImportant,
         priority: null,
         location: null,
         allDay: null,
@@ -111,8 +125,38 @@ export class NotesPage implements OnInit {
       });
   }
 
+  private toUpdateRequest(note: NodeResponse, overrides: Partial<UpdateNodeRequest>): UpdateNodeRequest {
+    return {
+      title: note.title,
+      description: note.description,
+      from: note.from,
+      until: note.until,
+      assignedFamilyMemberIds: note.assignedFamilyMemberIds,
+      collectionId: note.collectionId,
+      isImportant: note.isImportant,
+      isCompleted: null,
+      priority: null,
+      location: null,
+      allDay: null,
+      recurrenceRule: null,
+      firstName: null,
+      lastName: null,
+      dateOfBirth: null,
+      street: null,
+      city: null,
+      postalCode: null,
+      country: null,
+      phoneNumbers: null,
+      emails: null,
+      ...overrides,
+    };
+  }
+
   private sortNotes(notes: NodeResponse[]): NodeResponse[] {
-    return [...notes].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return [...notes].sort((a, b) => {
+      if (!!a.isImportant !== !!b.isImportant) return a.isImportant ? -1 : 1;
+      return b.createdAt.localeCompare(a.createdAt);
+    });
   }
 
   private emptyNewNote() {
@@ -120,6 +164,7 @@ export class NotesPage implements OnInit {
       title: '',
       description: '',
       assignedFamilyMemberIds: [] as string[],
+      isImportant: false,
     };
   }
 }

@@ -18,6 +18,8 @@ public record CreateNodeRequest(
     IReadOnlyList<Guid> AssignedFamilyMemberIds,
     /// <summary>e.g. the Task list this Task should land in, or the Household this Contact belongs to. Null for an ungrouped Node.</summary>
     Guid? CollectionId,
+    // Note-only
+    bool? IsImportant,
     // Task-only
     int? Priority,
     // Appointment-only
@@ -43,6 +45,8 @@ public record UpdateNodeRequest(
     DateTimeOffset? Until,
     IReadOnlyList<Guid> AssignedFamilyMemberIds,
     Guid? CollectionId,
+    // Note-only
+    bool? IsImportant,
     // Task-only
     bool? IsCompleted,
     int? Priority,
@@ -73,6 +77,8 @@ public record NodeResponse(
     Guid CreatedByUserId,
     IReadOnlyList<Guid> AssignedFamilyMemberIds,
     Guid? CollectionId,
+    // Note-only
+    bool? IsImportant,
     // Task-only
     bool? IsCompleted,
     DateTimeOffset? CompletedAt,

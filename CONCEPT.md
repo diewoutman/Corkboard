@@ -131,7 +131,8 @@ matters more here than schema flexibility. Revisit JSONB if/when node types grow
 past a handful or become user-definable.
 
 Type-specific fields to start with:
-- **Note**: nothing beyond the base fields.
+- **Note**: `IsImportant` (bool) — lets the dashboard's Notes widget (§2.4) filter
+  down to just what matters right now. The only field Note has beyond the base ones.
 - **Task**: `IsCompleted`, `CompletedAt`, `Priority` (optional).
 - **Appointment**: `Location` (optional), `AllDay` (bool), `RecurrenceRule`
   (nullable — see §3.3 on TickerQ). The `RecurrenceRule` describes the pattern only
@@ -205,6 +206,52 @@ event lives on one calendar at a time).
 Not yet built: nested Task lists or Calendars (sub-collections) in the UI — the
 domain model supports it (`ParentCollectionId`) but neither `/tasks` nor
 `/calendar` create/list anything but top-level Collections today.
+
+### 2.4 DashboardWidget — the customizable Home page
+
+`/home` is a grid of widgets the User arranges themselves, rather than a fixed
+page. `DashboardWidget` is deliberately **per-User, not per-FamilyMember** — a
+FamilyMember isn't necessarily login-capable (§2.1), and a dashboard layout is a
+personal login-time preference, not family-shared data. It's also scoped to a
+Family (`FamilyId`, alongside `UserId`) so a widget's settings that reference
+family data (e.g. a Task widget's `CollectionId`) stay meaningful if a User is
+ever in more than one Family.
+
+| Field | Notes |
+|---|---|
+| Id, UserId, FamilyId | |
+| Type | `DashboardWidgetType` — `Navigation`, `Notes`, or `Tasks` |
+| SortOrder | the User's drag-and-drop order — an int, not a 2D position; layout itself is always a responsive CSS grid, never freeform placement |
+| Config | nullable `jsonb` column holding per-type settings (see below) |
+
+**Why `Config` is JSONB and not columns, unlike Node's TPH fields (§2.2):** the
+shapes are genuinely heterogeneous rather than a handful of scalars — Navigation's
+is an ordered array of tile keys, Notes' and Tasks' are scalars — and, critically,
+nothing ever needs to query *into* a widget's config relationally (unlike e.g.
+"all incomplete Tasks", which is exactly why Node stayed TPH). `DashboardController`
+still exposes/accepts one flat typed shape either way (`DashboardWidgetResponse`
+etc., same convention as `NodeResponse`) — the JSON only exists between that
+controller and the DB; nothing else in the codebase touches raw JSON.
+
+**Widget types:**
+- **Navigation** — the tile grid to the other pages. `TileOrder`: an ordered list
+  of tile keys (`tasks`/`notes`/`calendar`/`contacts`/`family`); null/omitted means
+  default order. A key missing from a saved order still renders, appended at the
+  end (`tilesInOrder()`), so adding a new page later doesn't hide it from existing
+  widgets.
+- **Notes** — `ImportantOnly` (bool): show only Notes with `IsImportant` set (§2.2)
+  or everything.
+- **Tasks** — either `CollectionId` (a specific Task list) or `AssignedToMeOnly`
+  (bool: every incomplete Task assigned to the FamilyMember linked to the caller's
+  User — resolved client-side via `FamilyMembers.list().find(m => m.linkedUserId
+  === current user)`, no new backend lookup needed). Mutually exclusive in the UI's
+  form (a radio choice), though the API doesn't enforce that.
+
+A User can add any number of widgets, including several of the same type (e.g.
+two Task widgets pointed at different lists) — nothing about the model is
+one-per-type. First visit seeds one Navigation widget (what every earlier version
+of this page always showed) so `/home` never starts blank; after that it's
+entirely user-driven, including removing that seeded widget.
 
 ## 3. Backend
 
@@ -323,10 +370,28 @@ targets one family for now.
   addresses. All four still just call `GET/POST /api/nodes` with a `type` filter
   under the hood (see `core/nodes.ts`).
 - **`/home` is the application's entry point** — `/` redirects there, and it's
-  where login/registration and the setup wizard land once a family exists. It's a
-  plain tile grid (Tasks/Notes/Calendar/Contacts), each tile just a `routerLink` to
-  that page — no data fetching beyond a `Families.mine()` call for the greeting.
-  Kept deliberately dumb: it's a launcher, not a dashboard.
+  where login/registration and the setup wizard land once a family exists. It's
+  now a customizable widget dashboard (`DashboardWidget`, §2.4) rather than a
+  fixed page: `HomePage` loads the caller's widgets and renders one of three small
+  components per row (`NavigationWidgetComponent`/`NotesWidgetComponent`/
+  `TasksWidgetComponent`, under `pages/home/widgets/`), each just taking its
+  widget's already-flat config as `@Input()`s — no widget component talks to
+  `DashboardWidgetResponse`'s JSON-backed shape directly, or even needs to know
+  it's JSON-backed at all.
+  - **Drag-and-drop** via `@angular/cdk` (`DragDropModule`) — added specifically
+    for this, no prior use of CDK in the app. One `cdkDropList` for widget order
+    on the page itself, and a second, independent one inside the Navigation
+    widget's config form for tile order — same interaction pattern in both places
+    deliberately, since the user only ever controls *order*; actual placement is
+    always a responsive CSS grid (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`),
+    never freeform x/y. Reordering posts the caller's whole new order in one call
+    (`PUT /api/dashboard/reorder`) rather than N individual position updates.
+  - **Add/configure widget** is one shared modal form (`showWidgetForm` +
+    `editingWidgetId`, same create-vs-edit-via-one-form pattern as
+    `ContactsPage`) whose fields switch on the selected `DashboardWidgetType`.
+  - Multiple widgets of the same type are fully supported (e.g. two Task widgets
+    pointed at different lists) — `DashboardWidget` was never modeled as
+    one-per-type.
 - **Editing an existing Node/Collection** — every earlier page (Tasks, Notes,
   Calendar) only ever supported create + delete; Contacts is the first page with
   real edit forms, for both Contacts and Households. Rather than a separate
@@ -401,10 +466,12 @@ tests/
   Corkboard.Domain.Tests/  # empty so far
   Corkboard.Api.Tests/     # empty so far
 client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no Ionic, see §4
+                          # + @angular/cdk (DragDropModule), added for the Home dashboard
   src/app/core/           # Auth, Families, FamilyMembers, Nodes, Collections, CalendarApi,
-                          # Setup services + auth interceptor/guards
+                          # Dashboard, Setup services + auth interceptor/guards
   src/app/pages/          # login, family-setup, add-members, home (entry point,
-                          # / redirects here), tasks (Lists overview),
+                          # / redirects here — customizable widget dashboard, see
+                          # home/widgets/ and §2.4), tasks (Lists overview),
                           # task-list (one list's Tasks, /tasks/:id), notes,
                           # calendar (multi-calendar/schedule month grid),
                           # schedule-editor (weekly grid, /calendar/schedules/:id),
@@ -429,6 +496,8 @@ client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no
 | `GET /api/calendar/occurrences` | Expanded Appointment occurrences for a date range (`?from=&until=&calendarId=`) — what the month grid renders |
 | `PUT`/`DELETE /api/calendar/appointments/{id}/occurrences/{date}` | Override or skip one occurrence of a recurring Appointment |
 | `POST /api/calendar/collections/{id}/import` | Multipart `.ics` upload → creates Appointments in that Calendar |
+| `GET/POST /api/dashboard`, `PUT/DELETE /api/dashboard/{id}` | DashboardWidget CRUD, scoped to the caller (User × Family), not the whole Family — `GET` seeds one Navigation widget on a caller's very first request |
+| `PUT /api/dashboard/reorder` | Full replacement of the caller's widget order in one call — `SortOrder` becomes each id's index in the given list |
 
 **First-run setup wizard**: the client doesn't have a separate `/setup` route —
 instead `/login` checks `GET /api/setup/status` on load, and when no Family exists

@@ -24,6 +24,11 @@ export const NULL_CONTACT_FIELDS = {
   emails: null,
 } as const;
 
+/** Spread into a Create/UpdateNodeRequest for any non-Note node type. */
+export const NULL_NOTE_FIELDS = {
+  isImportant: null,
+} as const;
+
 @Service()
 export class Nodes {
   private readonly http = inject(HttpClient);

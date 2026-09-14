@@ -17,7 +17,7 @@ import { Collections, NULL_HOUSEHOLD_FIELDS } from '../../core/collections';
 import { extractErrorMessage } from '../../core/http-error';
 import { FamilyMembers } from '../../core/family-members';
 import { CollectionResponse, FamilyMemberResponse, OccurrenceResponse } from '../../core/models';
-import { NULL_CONTACT_FIELDS, Nodes } from '../../core/nodes';
+import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
 
 interface DayCell {
   date: Date;
@@ -305,6 +305,7 @@ export class CalendarPage implements OnInit {
         allDay: this.newEvent.allDay,
         recurrenceRule: this.toRecurrenceRule(this.newEvent.repeat),
         ...NULL_CONTACT_FIELDS,
+        ...NULL_NOTE_FIELDS,
       })
       .subscribe({
         next: () => {

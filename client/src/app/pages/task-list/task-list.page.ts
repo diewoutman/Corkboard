@@ -5,7 +5,7 @@ import { Collections } from '../../core/collections';
 import { FamilyMembers } from '../../core/family-members';
 import { extractErrorMessage } from '../../core/http-error';
 import { CollectionResponse, FamilyMemberResponse, NodeResponse, UpdateNodeRequest } from '../../core/models';
-import { NULL_CONTACT_FIELDS, Nodes } from '../../core/nodes';
+import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
 
 @Component({
   selector: 'app-task-list',
@@ -123,6 +123,7 @@ export class TaskListPage implements OnInit {
         allDay: null,
         recurrenceRule: null,
         ...NULL_CONTACT_FIELDS,
+        ...NULL_NOTE_FIELDS,
       })
       .subscribe({
         next: (created) => {
@@ -146,6 +147,7 @@ export class TaskListPage implements OnInit {
       until: task.until,
       assignedFamilyMemberIds: task.assignedFamilyMemberIds,
       collectionId: task.collectionId,
+      isImportant: task.isImportant,
       isCompleted: task.isCompleted,
       priority: task.priority,
       location: task.location,
