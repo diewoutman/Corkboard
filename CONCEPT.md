@@ -281,17 +281,25 @@ client/                  # Angular 22 + Ionic 9, Capacitor-ready, PWA (service w
 | `GET/POST /api/family-members`, `GET/PUT/DELETE /api/family-members/{id}` | FamilyMember CRUD |
 | `GET/POST /api/nodes`, `PUT/DELETE /api/nodes/{id}` | Node CRUD across all three types, with `?type=`/`?assignedTo=`/`?from=`/`?until=` filters on the list endpoint |
 
-To run locally:
-1. `docker compose up -d` — starts Postgres on `localhost:5432` (user/db/password
-   all `corkboard`, matching `Corkboard.Api/appsettings.json`'s dev connection
-   string — change both together if you change one).
+**To run the whole stack locally: `./scripts/dev.sh`** (needs Docker, the .NET 10
+SDK, and Node/npm on `PATH`). It starts Postgres, waits for it to actually be ready
+(`docker compose up --wait`, via the healthcheck in `docker-compose.yml`), applies
+pending EF Core migrations, then runs the API and the Ionic dev server together
+(via `concurrently`, prefixed/colored output) — Ctrl+C stops both. First run also
+installs `dotnet-ef` (if missing) and `client/node_modules`. Postgres itself keeps
+running afterwards (`docker compose down` to stop it).
+
+What that script does, spelled out (useful if something in it needs debugging):
+1. `docker compose up -d --wait postgres` — Postgres on `localhost:5432` (user/db/
+   password all `corkboard`, matching `Corkboard.Api/appsettings.json`'s dev
+   connection string — change both together if you change one).
 2. `dotnet ef database update --project src/Corkboard.Infrastructure --startup-project src/Corkboard.Api`
    — applies the `InitialCreate` migration (Identity + domain + TickerQ tables).
 3. `dotnet run --project src/Corkboard.Api` — API on `https://localhost:7127`. A
    real `Jwt:SigningKey` is already set via `dotnet user-secrets` (not committed —
    see `Corkboard.Api.csproj`'s `UserSecretsId`); nothing to configure there.
-4. `cd client && npm start` — Ionic dev server (`ionic serve` also works). Points at
-   `https://localhost:7127/api` via `environment.ts`.
+4. `npm --prefix client start` — Ionic dev server (`ionic serve` also works). Points
+   at `https://localhost:7127/api` via `environment.ts`.
 
 Not yet done: no automated tests, no reminder jobs wired to TickerQ yet (the
 scheduler itself is running, just unused — see §3.3), no recurrence expansion on
