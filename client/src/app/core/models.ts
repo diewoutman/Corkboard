@@ -58,7 +58,17 @@ export interface FamilyMemberResponse {
   dateOfBirth: string | null;
 }
 
-export type NodeType = 'Note' | 'Task' | 'Appointment';
+export type NodeType = 'Note' | 'Task' | 'Appointment' | 'Contact';
+
+export interface ContactPhoneNumber {
+  number: string;
+  label: string | null;
+}
+
+export interface ContactEmail {
+  email: string;
+  label: string | null;
+}
 
 export interface CreateNodeRequest {
   type: NodeType;
@@ -72,6 +82,16 @@ export interface CreateNodeRequest {
   location: string | null;
   allDay: boolean | null;
   recurrenceRule: string | null;
+  // Contact-only
+  firstName: string | null;
+  lastName: string | null;
+  dateOfBirth: string | null;
+  street: string | null;
+  city: string | null;
+  postalCode: string | null;
+  country: string | null;
+  phoneNumbers: ContactPhoneNumber[] | null;
+  emails: ContactEmail[] | null;
 }
 
 export interface UpdateNodeRequest {
@@ -86,6 +106,16 @@ export interface UpdateNodeRequest {
   location: string | null;
   allDay: boolean | null;
   recurrenceRule: string | null;
+  // Contact-only
+  firstName: string | null;
+  lastName: string | null;
+  dateOfBirth: string | null;
+  street: string | null;
+  city: string | null;
+  postalCode: string | null;
+  country: string | null;
+  phoneNumbers: ContactPhoneNumber[] | null;
+  emails: ContactEmail[] | null;
 }
 
 export interface NodeResponse {
@@ -106,24 +136,45 @@ export interface NodeResponse {
   location: string | null;
   allDay: boolean | null;
   recurrenceRule: string | null;
+  // Contact-only
+  firstName: string | null;
+  lastName: string | null;
+  dateOfBirth: string | null;
+  street: string | null;
+  city: string | null;
+  postalCode: string | null;
+  country: string | null;
+  phoneNumbers: ContactPhoneNumber[];
+  emails: ContactEmail[];
 }
 
 // "Collection" is a backend-only concept — the client only ever talks about its
-// user-facing framing (a "Task list", a "Calendar", or a "Schedule" — the last
-// two are the same shape, a Schedule is just filled in via the weekly editor
-// instead of one-off dated events). See CONCEPT.md on Collection/CollectionType.
-export type CollectionType = 'TaskList' | 'Calendar' | 'Schedule';
+// user-facing framing (a "Task list", a "Calendar", a "Schedule" — the last two
+// are the same shape, a Schedule is just filled in via the weekly editor instead
+// of one-off dated events — or a "Household", which groups Contacts so they can
+// share one address). See CONCEPT.md on Collection/CollectionType.
+export type CollectionType = 'TaskList' | 'Calendar' | 'Schedule' | 'Household';
 
 export interface CreateCollectionRequest {
   name: string;
   type: CollectionType;
   color: string;
   parentCollectionId: string | null;
+  // Household-only
+  street: string | null;
+  city: string | null;
+  postalCode: string | null;
+  country: string | null;
 }
 
 export interface UpdateCollectionRequest {
   name: string;
   color: string;
+  // Household-only
+  street: string | null;
+  city: string | null;
+  postalCode: string | null;
+  country: string | null;
 }
 
 export interface CollectionResponse {
@@ -136,6 +187,11 @@ export interface CollectionResponse {
   nodeCount: number;
   incompleteCount: number | null;
   feedUrl: string | null;
+  // Household-only
+  street: string | null;
+  city: string | null;
+  postalCode: string | null;
+  country: string | null;
 }
 
 export interface OccurrenceResponse {

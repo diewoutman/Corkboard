@@ -13,11 +13,11 @@ import {
   subMonths,
 } from 'date-fns';
 import { CalendarApi } from '../../core/calendar';
-import { Collections } from '../../core/collections';
+import { Collections, NULL_HOUSEHOLD_FIELDS } from '../../core/collections';
 import { extractErrorMessage } from '../../core/http-error';
 import { FamilyMembers } from '../../core/family-members';
 import { CollectionResponse, FamilyMemberResponse, OccurrenceResponse } from '../../core/models';
-import { Nodes } from '../../core/nodes';
+import { NULL_CONTACT_FIELDS, Nodes } from '../../core/nodes';
 
 interface DayCell {
   date: Date;
@@ -214,7 +214,13 @@ export class CalendarPage implements OnInit {
     if (!this.newCalendarName) return;
 
     this.collectionsApi
-      .create({ name: this.newCalendarName, type: this.newCalendarType, color: this.newCalendarColor, parentCollectionId: null })
+      .create({
+        name: this.newCalendarName,
+        type: this.newCalendarType,
+        color: this.newCalendarColor,
+        parentCollectionId: null,
+        ...NULL_HOUSEHOLD_FIELDS,
+      })
       .subscribe({
         next: (created) => {
           this.calendars = [...this.calendars, created].sort((a, b) => a.name.localeCompare(b.name));
@@ -298,6 +304,7 @@ export class CalendarPage implements OnInit {
         location: this.newEvent.location || null,
         allDay: this.newEvent.allDay,
         recurrenceRule: this.toRecurrenceRule(this.newEvent.repeat),
+        ...NULL_CONTACT_FIELDS,
       })
       .subscribe({
         next: () => {

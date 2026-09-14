@@ -8,10 +8,14 @@ namespace Corkboard.Domain.Entities;
 /// just filled in through a dedicated weekly (day-of-week × time) editor instead
 /// of one-off dated events, and rendered as just another togglable layer in the
 /// calendar grid (see CalendarPage) rather than a separate view.
+/// Household is a Collection of Contact Nodes — groups related Contacts (e.g. a
+/// child and their parents) so they can share one address instead of each
+/// Contact repeating it; see Collection.Street/City/PostalCode/Country.
 /// </summary>
 public enum CollectionType
 {
     TaskList,
     Calendar,
     Schedule,
+    Household,
 }

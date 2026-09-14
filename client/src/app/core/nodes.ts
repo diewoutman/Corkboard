@@ -11,6 +11,19 @@ export interface NodeListFilter {
   until?: string;
 }
 
+/** Spread into a Create/UpdateNodeRequest for any non-Contact node type. */
+export const NULL_CONTACT_FIELDS = {
+  firstName: null,
+  lastName: null,
+  dateOfBirth: null,
+  street: null,
+  city: null,
+  postalCode: null,
+  country: null,
+  phoneNumbers: null,
+  emails: null,
+} as const;
+
 @Service()
 export class Nodes {
   private readonly http = inject(HttpClient);

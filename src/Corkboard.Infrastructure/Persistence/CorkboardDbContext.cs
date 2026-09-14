@@ -24,6 +24,9 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
     public DbSet<TaskNode> TaskNodes => Set<TaskNode>();
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<AppointmentException> AppointmentExceptions => Set<AppointmentException>();
+    public DbSet<Contact> Contacts => Set<Contact>();
+    public DbSet<ContactPhoneNumber> ContactPhoneNumbers => Set<ContactPhoneNumber>();
+    public DbSet<ContactEmail> ContactEmails => Set<ContactEmail>();
 
     public DbSet<NodeAssignment> NodeAssignments => Set<NodeAssignment>();
 
@@ -76,7 +79,8 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
             entity.HasDiscriminator<string>("NodeType")
                 .HasValue<Note>("Note")
                 .HasValue<TaskNode>("Task")
-                .HasValue<Appointment>("Appointment");
+                .HasValue<Appointment>("Appointment")
+                .HasValue<Contact>("Contact");
         });
 
         builder.Entity<Collection>(entity =>
@@ -104,6 +108,22 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
                 .HasForeignKey(e => e.AppointmentId)
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => new { e.AppointmentId, e.OriginalOccurrenceDate }).IsUnique();
+        });
+
+        builder.Entity<ContactPhoneNumber>(entity =>
+        {
+            entity.HasOne(p => p.Contact)
+                .WithMany(c => c.PhoneNumbers)
+                .HasForeignKey(p => p.ContactId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<ContactEmail>(entity =>
+        {
+            entity.HasOne(e => e.Contact)
+                .WithMany(c => c.Emails)
+                .HasForeignKey(e => e.ContactId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<NodeAssignment>(entity =>

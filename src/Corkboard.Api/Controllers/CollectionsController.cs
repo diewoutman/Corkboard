@@ -73,6 +73,10 @@ public class CollectionsController(CorkboardDbContext db) : FamilyScopedControll
             Type = (DomainCollectionType)request.Type,
             Color = request.Color,
             ParentCollectionId = request.ParentCollectionId,
+            Street = request.Street,
+            City = request.City,
+            PostalCode = request.PostalCode,
+            Country = request.Country,
             CreatedAt = now,
             UpdatedAt = now,
             CreatedByUserId = CurrentUserId,
@@ -84,7 +88,7 @@ public class CollectionsController(CorkboardDbContext db) : FamilyScopedControll
         var response = new CollectionResponse(
             collection.Id, collection.Name, request.Type, collection.Color, collection.ParentCollectionId,
             collection.CreatedAt, NodeCount: 0, IncompleteCount: request.Type == CollectionType.TaskList ? 0 : null,
-            FeedUrl: null);
+            FeedUrl: null, collection.Street, collection.City, collection.PostalCode, collection.Country);
 
         return CreatedAtAction(nameof(Get), new { id = collection.Id }, response);
     }
@@ -99,6 +103,10 @@ public class CollectionsController(CorkboardDbContext db) : FamilyScopedControll
 
         collection.Name = request.Name;
         collection.Color = request.Color;
+        collection.Street = request.Street;
+        collection.City = request.City;
+        collection.PostalCode = request.PostalCode;
+        collection.Country = request.Country;
         collection.UpdatedAt = DateTimeOffset.UtcNow;
         await db.SaveChangesAsync(cancellationToken);
 
@@ -155,11 +163,13 @@ public class CollectionsController(CorkboardDbContext db) : FamilyScopedControll
     private CollectionResponse ToResponse(CollectionProjection p) => new(
         p.Id, p.Name, (CollectionType)p.Type, p.Color, p.ParentCollectionId, p.CreatedAt,
         p.NodeCount, p.IncompleteCount,
-        p.FeedToken is null ? null : $"{Request.Scheme}://{Request.Host}/api/calendar-feed/{p.Id}/{p.FeedToken}.ics");
+        p.FeedToken is null ? null : $"{Request.Scheme}://{Request.Host}/api/calendar-feed/{p.Id}/{p.FeedToken}.ics",
+        p.Street, p.City, p.PostalCode, p.Country);
 
     private record CollectionProjection(
         Guid Id, string Name, DomainCollectionType Type, string Color, Guid? ParentCollectionId,
-        DateTimeOffset CreatedAt, int NodeCount, int? IncompleteCount, string? FeedToken);
+        DateTimeOffset CreatedAt, int NodeCount, int? IncompleteCount, string? FeedToken,
+        string? Street, string? City, string? PostalCode, string? Country);
 
     private static readonly System.Linq.Expressions.Expression<Func<Domain.Entities.Collection, CollectionProjection>> ToProjectionExpression =
         c => new CollectionProjection(
@@ -168,5 +178,6 @@ public class CollectionsController(CorkboardDbContext db) : FamilyScopedControll
             c.Type == DomainCollectionType.TaskList
                 ? c.Nodes.OfType<Domain.Entities.TaskNode>().Count(n => !n.IsCompleted)
                 : (int?)null,
-            c.FeedToken);
+            c.FeedToken,
+            c.Street, c.City, c.PostalCode, c.Country);
 }

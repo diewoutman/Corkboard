@@ -1,7 +1,11 @@
 namespace Corkboard.Contracts.Nodes;
 
+public record ContactPhoneNumberDto(string Number, string? Label);
+
+public record ContactEmailDto(string Email, string? Label);
+
 /// <summary>
-/// One shape for all three node types — fields that don't apply to the given
+/// One shape for all four node types — fields that don't apply to the given
 /// Type (e.g. Location on a Note) are ignored server-side rather than rejected,
 /// keeping the client's create/edit form simple to reuse across types.
 /// </summary>
@@ -12,14 +16,24 @@ public record CreateNodeRequest(
     DateTimeOffset? From,
     DateTimeOffset? Until,
     IReadOnlyList<Guid> AssignedFamilyMemberIds,
-    /// <summary>e.g. the Task list this Task should land in. Null for an ungrouped Node.</summary>
+    /// <summary>e.g. the Task list this Task should land in, or the Household this Contact belongs to. Null for an ungrouped Node.</summary>
     Guid? CollectionId,
     // Task-only
     int? Priority,
     // Appointment-only
     string? Location,
     bool? AllDay,
-    string? RecurrenceRule);
+    string? RecurrenceRule,
+    // Contact-only — FirstName/LastName required, at least one phone number required
+    string? FirstName,
+    string? LastName,
+    DateOnly? DateOfBirth,
+    string? Street,
+    string? City,
+    string? PostalCode,
+    string? Country,
+    IReadOnlyList<ContactPhoneNumberDto>? PhoneNumbers,
+    IReadOnlyList<ContactEmailDto>? Emails);
 
 /// <summary>Type is immutable after creation — not included here.</summary>
 public record UpdateNodeRequest(
@@ -35,7 +49,17 @@ public record UpdateNodeRequest(
     // Appointment-only
     string? Location,
     bool? AllDay,
-    string? RecurrenceRule);
+    string? RecurrenceRule,
+    // Contact-only
+    string? FirstName,
+    string? LastName,
+    DateOnly? DateOfBirth,
+    string? Street,
+    string? City,
+    string? PostalCode,
+    string? Country,
+    IReadOnlyList<ContactPhoneNumberDto>? PhoneNumbers,
+    IReadOnlyList<ContactEmailDto>? Emails);
 
 public record NodeResponse(
     Guid Id,
@@ -56,4 +80,14 @@ public record NodeResponse(
     // Appointment-only
     string? Location,
     bool? AllDay,
-    string? RecurrenceRule);
+    string? RecurrenceRule,
+    // Contact-only
+    string? FirstName,
+    string? LastName,
+    DateOnly? DateOfBirth,
+    string? Street,
+    string? City,
+    string? PostalCode,
+    string? Country,
+    IReadOnlyList<ContactPhoneNumberDto> PhoneNumbers,
+    IReadOnlyList<ContactEmailDto> Emails);

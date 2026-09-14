@@ -5,4 +5,5 @@ public enum CollectionType
     TaskList,
     Calendar,
     Schedule,
+    Household,
 }

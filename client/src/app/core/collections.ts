@@ -13,6 +13,14 @@ export interface CollectionListFilter {
   parentCollectionId?: string;
 }
 
+/** Spread into a Create/UpdateCollectionRequest for any non-Household collection. */
+export const NULL_HOUSEHOLD_FIELDS = {
+  street: null,
+  city: null,
+  postalCode: null,
+  country: null,
+} as const;
+
 @Service()
 export class Collections {
   private readonly http = inject(HttpClient);

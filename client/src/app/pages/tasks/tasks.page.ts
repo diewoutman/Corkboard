@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { Collections } from '../../core/collections';
+import { Collections, NULL_HOUSEHOLD_FIELDS } from '../../core/collections';
 import { extractErrorMessage } from '../../core/http-error';
 import { CollectionResponse } from '../../core/models';
 
@@ -49,7 +49,7 @@ export class TasksPage implements OnInit {
 
     this.submitting = true;
     this.collectionsApi
-      .create({ name: this.newListName, type: 'TaskList', color: '#4c6ef5', parentCollectionId: null })
+      .create({ name: this.newListName, type: 'TaskList', color: '#4c6ef5', parentCollectionId: null, ...NULL_HOUSEHOLD_FIELDS })
       .subscribe({
         next: (created) => {
           this.lists = [...this.lists, created].sort((a, b) => a.name.localeCompare(b.name));

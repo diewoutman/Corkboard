@@ -6,7 +6,7 @@ import { Collections } from '../../core/collections';
 import { FamilyMembers } from '../../core/family-members';
 import { extractErrorMessage } from '../../core/http-error';
 import { CollectionResponse, FamilyMemberResponse, NodeResponse } from '../../core/models';
-import { Nodes } from '../../core/nodes';
+import { NULL_CONTACT_FIELDS, Nodes } from '../../core/nodes';
 
 const WEEKDAYS: { label: string; byDay: string }[] = [
   { label: 'Monday', byDay: 'MO' },
@@ -131,6 +131,7 @@ export class ScheduleEditorPage implements OnInit {
         location: this.newEntry.location || null,
         allDay: false,
         recurrenceRule: this.toRecurrenceRule(),
+        ...NULL_CONTACT_FIELDS,
       })
       .subscribe({
         next: (created) => {

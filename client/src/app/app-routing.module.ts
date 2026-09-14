@@ -43,6 +43,11 @@ const routes: Routes = [
     loadChildren: () => import('./pages/notes/notes.module').then((m) => m.NotesPageModule),
   },
   {
+    path: 'contacts',
+    canActivate: [familyGuard],
+    loadChildren: () => import('./pages/contacts/contacts.module').then((m) => m.ContactsPageModule),
+  },
+  {
     path: 'calendar',
     canActivate: [familyGuard],
     loadChildren: () => import('./pages/calendar/calendar.module').then((m) => m.CalendarPageModule),

@@ -3,7 +3,7 @@ import { forkJoin } from 'rxjs';
 import { FamilyMembers } from '../../core/family-members';
 import { extractErrorMessage } from '../../core/http-error';
 import { FamilyMemberResponse, NodeResponse } from '../../core/models';
-import { Nodes } from '../../core/nodes';
+import { NULL_CONTACT_FIELDS, Nodes } from '../../core/nodes';
 
 @Component({
   selector: 'app-notes',
@@ -95,6 +95,7 @@ export class NotesPage implements OnInit {
         location: null,
         allDay: null,
         recurrenceRule: null,
+        ...NULL_CONTACT_FIELDS,
       })
       .subscribe({
         next: (created) => {

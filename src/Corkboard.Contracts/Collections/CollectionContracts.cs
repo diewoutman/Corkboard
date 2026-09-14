@@ -4,9 +4,21 @@ public record CreateCollectionRequest(
     string Name,
     CollectionType Type,
     string Color,
-    Guid? ParentCollectionId);
+    Guid? ParentCollectionId,
+    // Household-only — shared address its member Contacts fall back to
+    string? Street,
+    string? City,
+    string? PostalCode,
+    string? Country);
 
-public record UpdateCollectionRequest(string Name, string Color);
+public record UpdateCollectionRequest(
+    string Name,
+    string Color,
+    // Household-only
+    string? Street,
+    string? City,
+    string? PostalCode,
+    string? Country);
 
 public record CollectionResponse(
     Guid Id,
@@ -23,4 +35,9 @@ public record CollectionResponse(
     /// </summary>
     int? IncompleteCount,
     /// <summary>Set only once a feed URL has been requested — see POST .../feed-token.</summary>
-    string? FeedUrl);
+    string? FeedUrl,
+    // Household-only
+    string? Street,
+    string? City,
+    string? PostalCode,
+    string? Country);

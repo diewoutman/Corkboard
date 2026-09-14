@@ -29,13 +29,18 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var query = db.Nodes.Include(n => n.Assignments).Where(n => n.FamilyId == familyId);
+        var query = db.Nodes
+            .Include(n => n.Assignments)
+            .Include(n => ((Contact)n).PhoneNumbers)
+            .Include(n => ((Contact)n).Emails)
+            .Where(n => n.FamilyId == familyId);
 
         query = type switch
         {
             ContractNodeType.Note => query.Where(n => n is Note),
             ContractNodeType.Task => query.Where(n => n is TaskNode),
             ContractNodeType.Appointment => query.Where(n => n is Appointment),
+            ContractNodeType.Contact => query.Where(n => n is Contact),
             _ => query,
         };
 
@@ -68,7 +73,10 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var node = await db.Nodes.Include(n => n.Assignments)
+        var node = await db.Nodes
+            .Include(n => n.Assignments)
+            .Include(n => ((Contact)n).PhoneNumbers)
+            .Include(n => ((Contact)n).Emails)
             .FirstOrDefaultAsync(n => n.FamilyId == familyId && n.Id == id, cancellationToken);
 
         return node is null ? NotFound() : Ok(ToResponse(node));
@@ -84,6 +92,11 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
 
         if (!await IsValidCollectionId(familyId, request.CollectionId, cancellationToken)) return InvalidCollectionProblem();
 
+        if (request.Type == ContractNodeType.Contact && !IsValidContact(request.FirstName, request.LastName, request.PhoneNumbers))
+        {
+            return InvalidContactProblem();
+        }
+
         var now = DateTimeOffset.UtcNow;
         Node node = request.Type switch
         {
@@ -95,6 +108,19 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
                 Location = request.Location,
                 AllDay = request.AllDay ?? false,
                 RecurrenceRule = request.RecurrenceRule,
+            },
+            ContractNodeType.Contact => new Contact
+            {
+                Title = $"{request.FirstName} {request.LastName}".Trim(),
+                FirstName = request.FirstName!.Trim(),
+                LastName = request.LastName!.Trim(),
+                DateOfBirth = request.DateOfBirth,
+                Street = request.Street,
+                City = request.City,
+                PostalCode = request.PostalCode,
+                Country = request.Country,
+                PhoneNumbers = request.PhoneNumbers!.Select(p => new ContactPhoneNumber { Id = Guid.NewGuid(), Number = p.Number, Label = p.Label }).ToList(),
+                Emails = (request.Emails ?? []).Select(e => new ContactEmail { Id = Guid.NewGuid(), Email = e.Email, Label = e.Label }).ToList(),
             },
             _ => throw new ArgumentOutOfRangeException(nameof(request)),
         };
@@ -121,7 +147,10 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var node = await db.Nodes.Include(n => n.Assignments)
+        var node = await db.Nodes
+            .Include(n => n.Assignments)
+            .Include(n => ((Contact)n).PhoneNumbers)
+            .Include(n => ((Contact)n).Emails)
             .FirstOrDefaultAsync(n => n.FamilyId == familyId && n.Id == id, cancellationToken);
         if (node is null) return NotFound();
 
@@ -129,6 +158,11 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
         if (assignedIds is null) return InvalidAssigneesProblem();
 
         if (!await IsValidCollectionId(familyId, request.CollectionId, cancellationToken)) return InvalidCollectionProblem();
+
+        if (node is Contact && !IsValidContact(request.FirstName, request.LastName, request.PhoneNumbers))
+        {
+            return InvalidContactProblem();
+        }
 
         node.Title = request.Title;
         node.Description = request.Description;
@@ -151,6 +185,28 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
                 appointment.Location = request.Location;
                 appointment.AllDay = request.AllDay ?? appointment.AllDay;
                 appointment.RecurrenceRule = request.RecurrenceRule;
+                break;
+            case Contact contact:
+                contact.FirstName = request.FirstName!.Trim();
+                contact.LastName = request.LastName!.Trim();
+                contact.Title = $"{contact.FirstName} {contact.LastName}".Trim();
+                contact.DateOfBirth = request.DateOfBirth;
+                contact.Street = request.Street;
+                contact.City = request.City;
+                contact.PostalCode = request.PostalCode;
+                contact.Country = request.Country;
+
+                contact.PhoneNumbers.Clear();
+                foreach (var phone in request.PhoneNumbers!)
+                {
+                    contact.PhoneNumbers.Add(new ContactPhoneNumber { Id = Guid.NewGuid(), ContactId = contact.Id, Number = phone.Number, Label = phone.Label });
+                }
+
+                contact.Emails.Clear();
+                foreach (var email in request.Emails ?? [])
+                {
+                    contact.Emails.Add(new ContactEmail { Id = Guid.NewGuid(), ContactId = contact.Id, Email = email.Email, Label = email.Label });
+                }
                 break;
         }
 
@@ -207,6 +263,17 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
         detail: "CollectionId doesn't belong to this Family.",
         statusCode: StatusCodes.Status400BadRequest);
 
+    private ObjectResult InvalidContactProblem() => Problem(
+        title: "Invalid contact",
+        detail: "A Contact requires FirstName, LastName, and at least one phone number.",
+        statusCode: StatusCodes.Status400BadRequest);
+
+    private static bool IsValidContact(string? firstName, string? lastName, IReadOnlyList<ContactPhoneNumberDto>? phoneNumbers) =>
+        !string.IsNullOrWhiteSpace(firstName)
+        && !string.IsNullOrWhiteSpace(lastName)
+        && phoneNumbers is { Count: > 0 }
+        && phoneNumbers.All(p => !string.IsNullOrWhiteSpace(p.Number));
+
     private static NodeResponse ToResponse(Node node)
     {
         var assignedIds = node.Assignments.Select(a => a.FamilyMemberId).ToList();
@@ -217,17 +284,35 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
                 task.Id, ContractNodeType.Task, task.Title, task.Description, task.From, task.Until,
                 task.CreatedAt, task.UpdatedAt, task.CreatedByUserId, assignedIds, task.CollectionId,
                 task.IsCompleted, task.CompletedAt, task.Priority,
-                Location: null, AllDay: null, RecurrenceRule: null),
+                Location: null, AllDay: null, RecurrenceRule: null,
+                FirstName: null, LastName: null, DateOfBirth: null,
+                Street: null, City: null, PostalCode: null, Country: null,
+                PhoneNumbers: [], Emails: []),
             Appointment appointment => new NodeResponse(
                 appointment.Id, ContractNodeType.Appointment, appointment.Title, appointment.Description, appointment.From, appointment.Until,
                 appointment.CreatedAt, appointment.UpdatedAt, appointment.CreatedByUserId, assignedIds, appointment.CollectionId,
                 IsCompleted: null, CompletedAt: null, Priority: null,
-                appointment.Location, appointment.AllDay, appointment.RecurrenceRule),
+                appointment.Location, appointment.AllDay, appointment.RecurrenceRule,
+                FirstName: null, LastName: null, DateOfBirth: null,
+                Street: null, City: null, PostalCode: null, Country: null,
+                PhoneNumbers: [], Emails: []),
+            Contact contact => new NodeResponse(
+                contact.Id, ContractNodeType.Contact, contact.Title, contact.Description, contact.From, contact.Until,
+                contact.CreatedAt, contact.UpdatedAt, contact.CreatedByUserId, assignedIds, contact.CollectionId,
+                IsCompleted: null, CompletedAt: null, Priority: null,
+                Location: null, AllDay: null, RecurrenceRule: null,
+                contact.FirstName, contact.LastName, contact.DateOfBirth,
+                contact.Street, contact.City, contact.PostalCode, contact.Country,
+                contact.PhoneNumbers.Select(p => new ContactPhoneNumberDto(p.Number, p.Label)).ToList(),
+                contact.Emails.Select(e => new ContactEmailDto(e.Email, e.Label)).ToList()),
             _ => new NodeResponse(
                 node.Id, ContractNodeType.Note, node.Title, node.Description, node.From, node.Until,
                 node.CreatedAt, node.UpdatedAt, node.CreatedByUserId, assignedIds, node.CollectionId,
                 IsCompleted: null, CompletedAt: null, Priority: null,
-                Location: null, AllDay: null, RecurrenceRule: null),
+                Location: null, AllDay: null, RecurrenceRule: null,
+                FirstName: null, LastName: null, DateOfBirth: null,
+                Street: null, City: null, PostalCode: null, Country: null,
+                PhoneNumbers: [], Emails: []),
         };
     }
 }

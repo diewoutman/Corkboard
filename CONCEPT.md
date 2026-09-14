@@ -121,6 +121,13 @@ Type-specific fields to start with:
 - **Appointment**: `Location` (optional), `AllDay` (bool), `RecurrenceRule`
   (nullable — see §3.3 on TickerQ). The `RecurrenceRule` describes the pattern only
   (e.g. an RRULE-style string); no occurrence rows are stored — see §3.3.
+- **Contact**: an address book entry. `FirstName`/`LastName` required; `DateOfBirth`
+  optional; `Street`/`City`/`PostalCode`/`Country` optional (own address — falls back
+  to its Household's address when unset, see §2.3); `PhoneNumbers`/`Emails` are
+  separate one-to-many tables (`ContactPhoneNumber`/`ContactEmail`, each `{value,
+  Label}`) since a Contact can have several of each — at least one PhoneNumber is
+  required, enforced by `NodesController`, not the DB. `Title` mirrors "FirstName
+  LastName", recomputed server-side on every create/update rather than client-set.
 
 ### 2.3 Collection — grouping Nodes
 
@@ -150,14 +157,25 @@ never reaches the user; each `CollectionType` gets its own user-facing framing:
   on"). Schedule Collections are excluded from the "add event" form's calendar
   picker (`eventableCalendars`) — schedule entries are only authored via the weekly
   editor — but their occurrences render in the month grid exactly like a Calendar's.
+- **`Household`** — "a Household is a Collection of Contact Nodes". Groups related
+  Contacts (e.g. a child and their parents) under one shared address, entirely by
+  reusing existing machinery: no new entity or relationship, just a Household-typed
+  Collection carrying the shared `Street`/`City`/`PostalCode`/`Country`, and Contacts
+  join it the same way a Task joins a TaskList — `Node.CollectionId`. A Contact's own
+  address (see §2.2) wins when set; otherwise the client falls back to its
+  Household's address (`ContactsPage.effectiveAddress`). Household membership is
+  optional — a Contact like the family doctor has no Household at all. Deliberately
+  named "Household" rather than "Family" to avoid colliding with this app's own
+  `Family` (the tenant/instance-owning entity, §2.1) — a completely different concept.
 
 | Field | Notes |
 |---|---|
 | Id, FamilyId | same pattern as everything else |
 | Name | |
-| Type | `CollectionType` — `TaskList`, `Calendar`, or `Schedule` |
+| Type | `CollectionType` — `TaskList`, `Calendar`, `Schedule`, or `Household` |
 | Color | hex string, same idea as `FamilyMember.Color` — lets the Calendar grid color-code events by which Calendar they're in |
 | FeedToken | nullable opaque string; set the first time a Calendar's iCal subscribe URL is requested (see §3.3) |
+| Street, City, PostalCode, Country | nullable; only meaningful for a Household — its member Contacts' shared address |
 | ParentCollectionId | nullable self-reference; `Restrict` on delete (a Collection with children can't be deleted until they're moved or removed — avoids silently losing a subtree) |
 | CreatedAt, UpdatedAt, CreatedByUserId | |
 
@@ -284,13 +302,14 @@ targets one family for now.
 - **The `Node` abstraction is backend-only** — the client never surfaces the word
   "Node". Each Node type gets its own dedicated page with its own language: Tasks
   talks about tasks (due dates, priority, "mark done"), Notes talks about notes,
-  Calendar talks about events/appointments. All three still just call
-  `GET/POST /api/nodes` with a `type` filter under the hood (see `core/nodes.ts`).
+  Calendar talks about events/appointments, Contacts talks about phone numbers and
+  addresses. All four still just call `GET/POST /api/nodes` with a `type` filter
+  under the hood (see `core/nodes.ts`).
 - **`/home` is the application's entry point** — `/` redirects there, and it's
   where login/registration and the setup wizard land once a family exists. It's a
-  plain tile grid (Tasks/Notes/Calendar), each tile just a `routerLink` to that
-  page — no data fetching beyond a `Families.mine()` call for the greeting. Kept
-  deliberately dumb: it's a launcher, not a dashboard.
+  plain tile grid (Tasks/Notes/Calendar/Contacts), each tile just a `routerLink` to
+  that page — no data fetching beyond a `Families.mine()` call for the greeting.
+  Kept deliberately dumb: it's a launcher, not a dashboard.
 
 ## 5. MVP scope
 
@@ -364,7 +383,8 @@ client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no
                           # / redirects here), tasks (Lists overview),
                           # task-list (one list's Tasks, /tasks/:id), notes,
                           # calendar (multi-calendar/schedule month grid),
-                          # schedule-editor (weekly grid, /calendar/schedules/:id)
+                          # schedule-editor (weekly grid, /calendar/schedules/:id),
+                          # contacts (address book + Household management)
 ```
 
 **API surface implemented so far** (all family-scoped ones require a JWT with a
@@ -376,8 +396,8 @@ client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no
 | `POST /api/auth/register`, `/login` | Identity account creation/login → JWT |
 | `POST /api/families`, `GET /api/families/mine` | One-time family setup (creates Family + Owner FamilyMember, returns a fresh token) |
 | `GET/POST /api/family-members`, `GET/PUT/DELETE /api/family-members/{id}` | FamilyMember CRUD |
-| `GET/POST /api/nodes`, `PUT/DELETE /api/nodes/{id}` | Node CRUD across all three types, with `?type=`/`?assignedTo=`/`?collectionId=`/`?from=`/`?until=` filters on the list endpoint |
-| `GET/POST /api/collections`, `PUT/DELETE /api/collections/{id}` | Collection CRUD (Task lists, Calendars, Schedules), with `?type=`/`?parentCollectionId=` filters — list responses include `NodeCount`/`IncompleteCount` |
+| `GET/POST /api/nodes`, `PUT/DELETE /api/nodes/{id}` | Node CRUD across all four types (incl. Contact), with `?type=`/`?assignedTo=`/`?collectionId=`/`?from=`/`?until=` filters on the list endpoint |
+| `GET/POST /api/collections`, `PUT/DELETE /api/collections/{id}` | Collection CRUD (Task lists, Calendars, Schedules, Households), with `?type=`/`?parentCollectionId=` filters — list responses include `NodeCount`/`IncompleteCount` |
 | `POST /api/collections/{id}/feed-token` | (Re)generates a Calendar's iCal feed URL |
 | `GET /api/calendar-feed/{collectionId}/{token}.ics` | Anonymous — the actual iCal subscribe feed |
 | `GET /api/calendar/occurrences` | Expanded Appointment occurrences for a date range (`?from=&until=&calendarId=`) — what the month grid renders |
