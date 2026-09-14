@@ -6,6 +6,7 @@ import { CreateNodeRequest, NodeResponse, NodeType, UpdateNodeRequest } from './
 export interface NodeListFilter {
   type?: NodeType;
   assignedTo?: string;
+  collectionId?: string;
   from?: string;
   until?: string;
 }

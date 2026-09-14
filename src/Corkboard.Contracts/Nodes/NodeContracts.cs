@@ -12,6 +12,8 @@ public record CreateNodeRequest(
     DateTimeOffset? From,
     DateTimeOffset? Until,
     IReadOnlyList<Guid> AssignedFamilyMemberIds,
+    /// <summary>e.g. the Task list this Task should land in. Null for an ungrouped Node.</summary>
+    Guid? CollectionId,
     // Task-only
     int? Priority,
     // Appointment-only
@@ -26,6 +28,7 @@ public record UpdateNodeRequest(
     DateTimeOffset? From,
     DateTimeOffset? Until,
     IReadOnlyList<Guid> AssignedFamilyMemberIds,
+    Guid? CollectionId,
     // Task-only
     bool? IsCompleted,
     int? Priority,
@@ -45,6 +48,7 @@ public record NodeResponse(
     DateTimeOffset UpdatedAt,
     Guid CreatedByUserId,
     IReadOnlyList<Guid> AssignedFamilyMemberIds,
+    Guid? CollectionId,
     // Task-only
     bool? IsCompleted,
     DateTimeOffset? CompletedAt,

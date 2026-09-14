@@ -90,6 +90,7 @@ export class CalendarPage implements OnInit {
         from: new Date(this.newEvent.start).toISOString(),
         until: this.newEvent.end ? new Date(this.newEvent.end).toISOString() : null,
         assignedFamilyMemberIds: this.newEvent.assignedFamilyMemberIds,
+        collectionId: null,
         priority: null,
         location: this.newEvent.location || null,
         allDay: this.newEvent.allDay,

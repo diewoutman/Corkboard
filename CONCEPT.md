@@ -122,6 +122,35 @@ Type-specific fields to start with:
   (nullable — see §3.3 on TickerQ). The `RecurrenceRule` describes the pattern only
   (e.g. an RRULE-style string); no occurrence rows are stored — see §3.3.
 
+### 2.3 Collection — grouping Nodes
+
+`Collection` is Node's sibling backend-only abstraction: a container that holds one
+or more Nodes, and can itself nest under a parent Collection (a plain self-referencing
+tree — `ParentCollectionId`, `ChildCollections`). Like Node, the word "Collection"
+never reaches the user; each `CollectionType` gets its own user-facing framing. The
+first (and so far only) one is **`TaskList`** — "a Task list is a Collection of Task
+Nodes" — which is what the client's Lists → list-detail flow is built on
+(`/tasks` lists a family's `TaskList` Collections, `/tasks/{id}` shows the Tasks
+inside one).
+
+| Field | Notes |
+|---|---|
+| Id, FamilyId | same pattern as everything else |
+| Name | |
+| Type | `CollectionType` — `TaskList` today |
+| ParentCollectionId | nullable self-reference; `Restrict` on delete (a Collection with children can't be deleted until they're moved or removed — avoids silently losing a subtree) |
+| CreatedAt, UpdatedAt, CreatedByUserId | |
+
+A Node gets an optional `CollectionId` (nullable — most Notes/Appointments won't
+use it yet). Deleting a Collection cascades to delete the Nodes in it, matching
+"delete this list" expectations. Membership is one Collection per Node, not a
+many-to-many join — simpler, and matches how list-based apps actually behave (a
+task lives in one list at a time).
+
+Not yet built: nested Task lists (sub-lists) in the UI — the domain model supports
+it (`ParentCollectionId`) but `/tasks` only ever creates/lists top-level Collections
+today.
+
 ## 3. Backend
 
 ### 3.1 Stack
@@ -273,8 +302,9 @@ tests/
   Corkboard.Domain.Tests/  # empty so far
   Corkboard.Api.Tests/     # empty so far
 client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no Ionic, see §4
-  src/app/core/           # Auth, Families, FamilyMembers, Nodes, Setup services + auth interceptor/guards
-  src/app/pages/          # login, family-setup, add-members, tasks, notes, calendar
+  src/app/core/           # Auth, Families, FamilyMembers, Nodes, Collections, Setup services + auth interceptor/guards
+  src/app/pages/          # login, family-setup, add-members, tasks (Lists overview),
+                          # task-list (one list's Tasks, /tasks/:id), notes, calendar
 ```
 
 **API surface implemented so far** (all family-scoped ones require a JWT with a
@@ -286,7 +316,8 @@ client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no
 | `POST /api/auth/register`, `/login` | Identity account creation/login → JWT |
 | `POST /api/families`, `GET /api/families/mine` | One-time family setup (creates Family + Owner FamilyMember, returns a fresh token) |
 | `GET/POST /api/family-members`, `GET/PUT/DELETE /api/family-members/{id}` | FamilyMember CRUD |
-| `GET/POST /api/nodes`, `PUT/DELETE /api/nodes/{id}` | Node CRUD across all three types, with `?type=`/`?assignedTo=`/`?from=`/`?until=` filters on the list endpoint |
+| `GET/POST /api/nodes`, `PUT/DELETE /api/nodes/{id}` | Node CRUD across all three types, with `?type=`/`?assignedTo=`/`?collectionId=`/`?from=`/`?until=` filters on the list endpoint |
+| `GET/POST /api/collections`, `PUT/DELETE /api/collections/{id}` | Collection CRUD (e.g. Task lists), with `?type=`/`?parentCollectionId=` filters — list responses include `NodeCount`/`IncompleteCount` |
 
 **First-run setup wizard**: the client doesn't have a separate `/setup` route —
 instead `/login` checks `GET /api/setup/status` on load, and when no Family exists

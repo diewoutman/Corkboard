@@ -90,6 +90,7 @@ export class NotesPage implements OnInit {
         from: null,
         until: null,
         assignedFamilyMemberIds: this.newNote.assignedFamilyMemberIds,
+        collectionId: null,
         priority: null,
         location: null,
         allDay: null,

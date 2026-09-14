@@ -67,6 +67,7 @@ export interface CreateNodeRequest {
   from: string | null;
   until: string | null;
   assignedFamilyMemberIds: string[];
+  collectionId: string | null;
   priority: number | null;
   location: string | null;
   allDay: boolean | null;
@@ -79,6 +80,7 @@ export interface UpdateNodeRequest {
   from: string | null;
   until: string | null;
   assignedFamilyMemberIds: string[];
+  collectionId: string | null;
   isCompleted: boolean | null;
   priority: number | null;
   location: string | null;
@@ -97,10 +99,35 @@ export interface NodeResponse {
   updatedAt: string;
   createdByUserId: string;
   assignedFamilyMemberIds: string[];
+  collectionId: string | null;
   isCompleted: boolean | null;
   completedAt: string | null;
   priority: number | null;
   location: string | null;
   allDay: boolean | null;
   recurrenceRule: string | null;
+}
+
+// "Collection" is a backend-only concept — the client only ever talks about its
+// user-facing framing (e.g. a "Task list"). See CONCEPT.md on Collection/CollectionType.
+export type CollectionType = 'TaskList';
+
+export interface CreateCollectionRequest {
+  name: string;
+  type: CollectionType;
+  parentCollectionId: string | null;
+}
+
+export interface UpdateCollectionRequest {
+  name: string;
+}
+
+export interface CollectionResponse {
+  id: string;
+  name: string;
+  type: CollectionType;
+  parentCollectionId: string | null;
+  createdAt: string;
+  nodeCount: number;
+  incompleteCount: number | null;
 }

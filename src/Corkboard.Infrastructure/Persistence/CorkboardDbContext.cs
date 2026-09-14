@@ -27,6 +27,8 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
 
     public DbSet<NodeAssignment> NodeAssignments => Set<NodeAssignment>();
 
+    public DbSet<Collection> Collections => Set<Collection>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -63,10 +65,34 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
             entity.HasIndex(n => n.FamilyId);
             entity.HasIndex(n => new { n.FamilyId, n.From, n.Until });
 
+            // Deleting a Collection (e.g. a Task list) deletes the Nodes in it —
+            // matches the expected "delete this list" behavior.
+            entity.HasOne(n => n.Collection)
+                .WithMany(c => c.Nodes)
+                .HasForeignKey(n => n.CollectionId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(n => n.CollectionId);
+
             entity.HasDiscriminator<string>("NodeType")
                 .HasValue<Note>("Note")
                 .HasValue<TaskNode>("Task")
                 .HasValue<Appointment>("Appointment");
+        });
+
+        builder.Entity<Collection>(entity =>
+        {
+            entity.HasOne(c => c.Family)
+                .WithMany()
+                .HasForeignKey(c => c.FamilyId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(c => new { c.FamilyId, c.Type });
+
+            // A parent Collection can't be deleted while it still has children —
+            // avoids silently orphaning or cascading through a whole subtree.
+            entity.HasOne(c => c.ParentCollection)
+                .WithMany(c => c.ChildCollections)
+                .HasForeignKey(c => c.ParentCollectionId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         builder.Entity<AppointmentException>(entity =>

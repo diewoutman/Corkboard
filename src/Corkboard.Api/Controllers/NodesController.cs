@@ -14,13 +14,15 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
 {
     /// <summary>
     /// Lists Nodes in the caller's Family, optionally filtered by type, assignee,
-    /// and a From/Until window. The window filter treats a null From/Until on a
-    /// Node as open-ended (a plain Note has neither) rather than excluding it.
+    /// containing Collection, and a From/Until window. The window filter treats a
+    /// null From/Until on a Node as open-ended (a plain Note has neither) rather
+    /// than excluding it.
     /// </summary>
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<NodeResponse>>> List(
         [FromQuery] ContractNodeType? type,
         [FromQuery] Guid? assignedTo,
+        [FromQuery] Guid? collectionId,
         [FromQuery] DateTimeOffset? from,
         [FromQuery] DateTimeOffset? until,
         CancellationToken cancellationToken)
@@ -40,6 +42,11 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
         if (assignedTo is { } familyMemberId)
         {
             query = query.Where(n => n.Assignments.Any(a => a.FamilyMemberId == familyMemberId));
+        }
+
+        if (collectionId is { } collectionIdValue)
+        {
+            query = query.Where(n => n.CollectionId == collectionIdValue);
         }
 
         if (from is { } fromValue)
@@ -75,6 +82,8 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
         var assignedIds = await ValidateFamilyMemberIds(familyId, request.AssignedFamilyMemberIds, cancellationToken);
         if (assignedIds is null) return InvalidAssigneesProblem();
 
+        if (!await IsValidCollectionId(familyId, request.CollectionId, cancellationToken)) return InvalidCollectionProblem();
+
         var now = DateTimeOffset.UtcNow;
         Node node = request.Type switch
         {
@@ -95,6 +104,7 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
         node.Description = request.Description;
         node.From = request.From;
         node.Until = request.Until;
+        node.CollectionId = request.CollectionId;
         node.CreatedAt = now;
         node.UpdatedAt = now;
         node.CreatedByUserId = CurrentUserId;
@@ -118,10 +128,13 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
         var assignedIds = await ValidateFamilyMemberIds(familyId, request.AssignedFamilyMemberIds, cancellationToken);
         if (assignedIds is null) return InvalidAssigneesProblem();
 
+        if (!await IsValidCollectionId(familyId, request.CollectionId, cancellationToken)) return InvalidCollectionProblem();
+
         node.Title = request.Title;
         node.Description = request.Description;
         node.From = request.From;
         node.Until = request.Until;
+        node.CollectionId = request.CollectionId;
         node.UpdatedAt = DateTimeOffset.UtcNow;
 
         switch (node)
@@ -178,9 +191,20 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
         return validCount == distinctIds.Count ? distinctIds : null;
     }
 
+    private async Task<bool> IsValidCollectionId(Guid familyId, Guid? collectionId, CancellationToken cancellationToken)
+    {
+        if (collectionId is not { } id) return true;
+        return await db.Collections.AnyAsync(c => c.FamilyId == familyId && c.Id == id, cancellationToken);
+    }
+
     private ObjectResult InvalidAssigneesProblem() => Problem(
         title: "Invalid assignee",
         detail: "One or more AssignedFamilyMemberIds don't belong to this Family.",
+        statusCode: StatusCodes.Status400BadRequest);
+
+    private ObjectResult InvalidCollectionProblem() => Problem(
+        title: "Invalid collection",
+        detail: "CollectionId doesn't belong to this Family.",
         statusCode: StatusCodes.Status400BadRequest);
 
     private static NodeResponse ToResponse(Node node)
@@ -191,17 +215,17 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
         {
             TaskNode task => new NodeResponse(
                 task.Id, ContractNodeType.Task, task.Title, task.Description, task.From, task.Until,
-                task.CreatedAt, task.UpdatedAt, task.CreatedByUserId, assignedIds,
+                task.CreatedAt, task.UpdatedAt, task.CreatedByUserId, assignedIds, task.CollectionId,
                 task.IsCompleted, task.CompletedAt, task.Priority,
                 Location: null, AllDay: null, RecurrenceRule: null),
             Appointment appointment => new NodeResponse(
                 appointment.Id, ContractNodeType.Appointment, appointment.Title, appointment.Description, appointment.From, appointment.Until,
-                appointment.CreatedAt, appointment.UpdatedAt, appointment.CreatedByUserId, assignedIds,
+                appointment.CreatedAt, appointment.UpdatedAt, appointment.CreatedByUserId, assignedIds, appointment.CollectionId,
                 IsCompleted: null, CompletedAt: null, Priority: null,
                 appointment.Location, appointment.AllDay, appointment.RecurrenceRule),
             _ => new NodeResponse(
                 node.Id, ContractNodeType.Note, node.Title, node.Description, node.From, node.Until,
-                node.CreatedAt, node.UpdatedAt, node.CreatedByUserId, assignedIds,
+                node.CreatedAt, node.UpdatedAt, node.CreatedByUserId, assignedIds, node.CollectionId,
                 IsCompleted: null, CompletedAt: null, Priority: null,
                 Location: null, AllDay: null, RecurrenceRule: null),
         };

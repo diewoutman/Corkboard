@@ -28,6 +28,11 @@ const routes: Routes = [
     loadChildren: () => import('./pages/tasks/tasks.module').then((m) => m.TasksPageModule),
   },
   {
+    path: 'tasks/:id',
+    canActivate: [familyGuard],
+    loadChildren: () => import('./pages/task-list/task-list.module').then((m) => m.TaskListPageModule),
+  },
+  {
     path: 'notes',
     canActivate: [familyGuard],
     loadChildren: () => import('./pages/notes/notes.module').then((m) => m.NotesPageModule),
