@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Auth } from '../../core/auth';
+import { extractErrorMessage } from '../../core/http-error';
 import { Setup } from '../../core/setup';
 
 @Component({
@@ -63,8 +64,7 @@ export class LoginPage implements OnInit {
       },
       error: (err) => {
         this.submitting = false;
-        this.errorMessage =
-          err?.error?.title ?? err?.error?.detail ?? 'Something went wrong. Please try again.';
+        this.errorMessage = extractErrorMessage(err, 'Something went wrong. Please try again.');
         this.cdr.markForCheck();
       },
     });

@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { Auth } from '../../core/auth';
 import { Families } from '../../core/families';
+import { extractErrorMessage } from '../../core/http-error';
 
 @Component({
   selector: 'app-family-setup',
@@ -45,8 +46,7 @@ export class FamilySetupPage {
         },
         error: (err) => {
           this.submitting = false;
-          this.errorMessage =
-            err?.error?.title ?? err?.error?.detail ?? 'Something went wrong. Please try again.';
+          this.errorMessage = extractErrorMessage(err, 'Something went wrong. Please try again.');
           this.cdr.markForCheck();
         },
       });

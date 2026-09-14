@@ -30,6 +30,14 @@ builder.Services
     .AddIdentityCore<ApplicationUser>(options =>
     {
         options.User.RequireUniqueEmail = true;
+        // Default Identity password policy (upper+lower+digit+special char) is
+        // enterprise-grade friction for a personal family app, and didn't match
+        // what the client's own form actually validates (length >= 6 only).
+        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequiredLength = 6;
     })
     .AddRoles<IdentityRole<Guid>>()
     .AddEntityFrameworkStores<CorkboardDbContext>()
