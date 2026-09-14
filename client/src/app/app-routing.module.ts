@@ -22,6 +22,11 @@ const routes: Routes = [
     canActivate: [familyGuard],
     loadChildren: () => import('./pages/board/board.module').then((m) => m.BoardPageModule),
   },
+  {
+    path: 'add-members',
+    canActivate: [authGuard],
+    loadChildren: () => import('./pages/add-members/add-members.module').then((m) => m.AddMembersPageModule),
+  },
 ];
 
 @NgModule({

@@ -5,7 +5,13 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  <h2>{{ mode === 'login' ? 'Log in' : 'Create an account' }}</h2>
+  <ng-container *ngIf="isFirstRun">
+    <ion-text color="medium"><p>Step 1 of 3 — Set up Corkboard</p></ion-text>
+    <h2>Welcome! Let's create your account</h2>
+    <p>Nobody's set up this Corkboard yet. Create your account first — you'll set up your family next.</p>
+  </ng-container>
+
+  <h2 *ngIf="!isFirstRun">{{ mode === 'login' ? 'Log in' : 'Create an account' }}</h2>
 
   <form (ngSubmit)="submit()" #form="ngForm">
     <ion-list>
@@ -39,10 +45,10 @@
     </ion-text>
 
     <ion-button expand="block" type="submit" [disabled]="form.invalid || submitting" class="ion-margin-top">
-      {{ mode === 'login' ? 'Log in' : 'Register' }}
+      {{ mode === 'login' ? 'Log in' : (isFirstRun ? 'Create account and continue' : 'Register') }}
     </ion-button>
 
-    <ion-button expand="block" fill="clear" type="button" (click)="toggleMode()">
+    <ion-button expand="block" fill="clear" type="button" *ngIf="!isFirstRun" (click)="toggleMode()">
       {{ mode === 'login' ? "Don't have an account? Register" : 'Already have an account? Log in' }}
     </ion-button>
   </form>

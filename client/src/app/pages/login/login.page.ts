@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Auth } from '../../core/auth';
+import { Setup } from '../../core/setup';
 
 @Component({
   selector: 'app-login',
@@ -8,8 +9,10 @@ import { Auth } from '../../core/auth';
   styleUrls: ['./login.page.scss'],
   standalone: false,
 })
-export class LoginPage {
+export class LoginPage implements OnInit {
   mode: 'login' | 'register' = 'login';
+  /** True when this Corkboard instance has no Family yet — frames this page as step 1 of the first-run wizard. */
+  isFirstRun = false;
   email = '';
   password = '';
   errorMessage: string | null = null;
@@ -17,8 +20,18 @@ export class LoginPage {
 
   constructor(
     private readonly auth: Auth,
+    private readonly setup: Setup,
     private readonly router: Router,
   ) {}
+
+  ngOnInit() {
+    this.setup.status().subscribe((status) => {
+      if (!status.isConfigured) {
+        this.isFirstRun = true;
+        this.mode = 'register';
+      }
+    });
+  }
 
   toggleMode() {
     this.mode = this.mode === 'login' ? 'register' : 'login';

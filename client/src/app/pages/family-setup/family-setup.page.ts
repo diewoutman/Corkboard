@@ -40,7 +40,7 @@ export class FamilySetupPage {
         next: (result) => {
           this.submitting = false;
           this.auth.applyAuth(result.authResponse);
-          this.router.navigateByUrl('/board');
+          this.router.navigateByUrl('/add-members');
         },
         error: (err) => {
           this.submitting = false;

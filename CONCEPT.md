@@ -267,8 +267,8 @@ tests/
   Corkboard.Domain.Tests/  # empty so far
   Corkboard.Api.Tests/     # empty so far
 client/                  # Angular 22 + Ionic 9, Capacitor-ready, PWA (service worker) configured
-  src/app/core/           # Auth, Families, FamilyMembers, Nodes services + auth interceptor/guards
-  src/app/pages/          # login, family-setup, board
+  src/app/core/           # Auth, Families, FamilyMembers, Nodes, Setup services + auth interceptor/guards
+  src/app/pages/          # login, family-setup, add-members, board
 ```
 
 **API surface implemented so far** (all family-scoped ones require a JWT with a
@@ -276,10 +276,20 @@ client/                  # Angular 22 + Ionic 9, Capacitor-ready, PWA (service w
 
 | Endpoint | Purpose |
 |---|---|
+| `GET /api/setup/status` | Anonymous — whether this instance has any Family yet, drives the client's first-run wizard framing |
 | `POST /api/auth/register`, `/login` | Identity account creation/login → JWT |
 | `POST /api/families`, `GET /api/families/mine` | One-time family setup (creates Family + Owner FamilyMember, returns a fresh token) |
 | `GET/POST /api/family-members`, `GET/PUT/DELETE /api/family-members/{id}` | FamilyMember CRUD |
 | `GET/POST /api/nodes`, `PUT/DELETE /api/nodes/{id}` | Node CRUD across all three types, with `?type=`/`?assignedTo=`/`?from=`/`?until=` filters on the list endpoint |
+
+**First-run setup wizard**: the client doesn't have a separate `/setup` route —
+instead `/login` checks `GET /api/setup/status` on load, and when no Family exists
+yet anywhere on the instance it frames itself as "Step 1 of 3" and defaults to
+register mode. Registering routes to `/family-setup` ("Step 2 of 3", creates the
+Family + the caller's own FamilyMember as Owner), which routes to `/add-members`
+("Step 3 of 3", add the rest of the family before landing on `/board`). Ordinary
+subsequent logins skip all of this — `isFirstRun` on `LoginPage` only turns on when
+the instance-wide check comes back `false`.
 
 **To run the whole stack locally: `./scripts/dev.sh`** (needs Docker, the .NET 10
 SDK, and Node/npm on `PATH`). It starts Postgres, waits for it to actually be ready

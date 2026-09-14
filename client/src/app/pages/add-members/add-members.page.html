@@ -1,0 +1,48 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Add your family</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-text color="medium"><p>Step 3 of 3 — Set up Corkboard</p></ion-text>
+  <p>Add the rest of your family so you can assign notes, tasks, and appointments to them. You can always add more later.</p>
+
+  <ion-list *ngIf="!loading">
+    <ion-item *ngFor="let member of members">
+      <ion-avatar slot="start" [style.background]="member.color"></ion-avatar>
+      <ion-label>{{ member.displayName }}</ion-label>
+      <ion-button slot="end" fill="clear" color="danger" (click)="removeMember(member)">✕</ion-button>
+    </ion-item>
+  </ion-list>
+
+  <form (ngSubmit)="addMember()" #form="ngForm" class="ion-margin-top">
+    <ion-list>
+      <ion-item>
+        <ion-input
+          label="Name"
+          labelPlacement="stacked"
+          name="displayName"
+          placeholder="e.g. Kids, partner, grandparent…"
+          [(ngModel)]="displayName"
+          required
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input label="Color" labelPlacement="stacked" type="color" name="color" [(ngModel)]="color" required></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <ion-button expand="block" fill="outline" type="submit" [disabled]="form.invalid || submitting" class="ion-margin-top">
+      Add family member
+    </ion-button>
+  </form>
+
+  <ion-text color="danger" *ngIf="errorMessage">
+    <p>{{ errorMessage }}</p>
+  </ion-text>
+
+  <ion-button expand="block" (click)="finish()" class="ion-margin-top">
+    Finish setup — go to board
+  </ion-button>
+</ion-content>
