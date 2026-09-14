@@ -56,6 +56,14 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+const string ClientCorsPolicy = "Client";
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(ClientCorsPolicy, policy =>
+        policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod());
+});
+
 builder.Services.Configure<JwtOptions>(jwtSection);
 builder.Services.AddScoped<ITokenService, TokenService>();
 
@@ -83,6 +91,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(ClientCorsPolicy);
 
 app.UseAuthentication();
 app.UseAuthorization();

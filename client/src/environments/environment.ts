@@ -4,7 +4,11 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'https://localhost:7127/api',
+  // Plain HTTP for local dev — avoids the ASP.NET Core dev HTTPS cert trust
+  // dance (especially painful on Linux); see CONCEPT.md §6. `dotnet run`
+  // without an explicit --launch-profile also lands on the "http" profile
+  // (http://localhost:5147), matching this.
+  apiUrl: 'http://localhost:5147/api',
 };
 
 /*

@@ -39,7 +39,7 @@ dotnet ef database update \
   --project src/Corkboard.Infrastructure \
   --startup-project src/Corkboard.Api
 
-echo "==> Starting API (https://localhost:7127) and client (Ionic dev server)..."
+echo "==> Starting API (http://localhost:5147) and client (Ionic dev server)..."
 npx --yes concurrently --kill-others --names API,CLIENT --prefix-colors "blue,green" \
-  "dotnet run --project src/Corkboard.Api" \
+  "dotnet run --project src/Corkboard.Api --launch-profile http" \
   "npm --prefix client start"
