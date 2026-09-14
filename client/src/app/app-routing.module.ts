@@ -5,12 +5,17 @@ import { authGuard, familyGuard } from './core/auth-guard';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'tasks',
+    redirectTo: 'home',
     pathMatch: 'full',
   },
   {
     path: 'login',
     loadChildren: () => import('./pages/login/login.module').then((m) => m.LoginPageModule),
+  },
+  {
+    path: 'home',
+    canActivate: [familyGuard],
+    loadChildren: () => import('./pages/home/home.module').then((m) => m.HomePageModule),
   },
   {
     path: 'family-setup',

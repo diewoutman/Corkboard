@@ -286,6 +286,11 @@ targets one family for now.
   talks about tasks (due dates, priority, "mark done"), Notes talks about notes,
   Calendar talks about events/appointments. All three still just call
   `GET/POST /api/nodes` with a `type` filter under the hood (see `core/nodes.ts`).
+- **`/home` is the application's entry point** — `/` redirects there, and it's
+  where login/registration and the setup wizard land once a family exists. It's a
+  plain tile grid (Tasks/Notes/Calendar), each tile just a `routerLink` to that
+  page — no data fetching beyond a `Families.mine()` call for the greeting. Kept
+  deliberately dumb: it's a launcher, not a dashboard.
 
 ## 5. MVP scope
 
@@ -355,7 +360,8 @@ tests/
 client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no Ionic, see §4
   src/app/core/           # Auth, Families, FamilyMembers, Nodes, Collections, CalendarApi,
                           # Setup services + auth interceptor/guards
-  src/app/pages/          # login, family-setup, add-members, tasks (Lists overview),
+  src/app/pages/          # login, family-setup, add-members, home (entry point,
+                          # / redirects here), tasks (Lists overview),
                           # task-list (one list's Tasks, /tasks/:id), notes,
                           # calendar (multi-calendar/schedule month grid),
                           # schedule-editor (weekly grid, /calendar/schedules/:id)
@@ -383,7 +389,7 @@ instead `/login` checks `GET /api/setup/status` on load, and when no Family exis
 yet anywhere on the instance it frames itself as "Step 1 of 3" and defaults to
 register mode. Registering routes to `/family-setup` ("Step 2 of 3", creates the
 Family + the caller's own FamilyMember as Owner), which routes to `/add-members`
-("Step 3 of 3", add the rest of the family before landing on `/tasks`). Ordinary
+("Step 3 of 3", add the rest of the family before landing on `/home`). Ordinary
 subsequent logins skip all of this — `isFirstRun` on `LoginPage` only turns on when
 the instance-wide check comes back `false`.
 

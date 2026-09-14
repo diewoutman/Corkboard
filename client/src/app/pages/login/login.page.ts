@@ -60,7 +60,7 @@ export class LoginPage implements OnInit {
     request$.subscribe({
       next: (auth) => {
         this.submitting = false;
-        this.router.navigateByUrl(auth.familyId ? '/tasks' : '/family-setup');
+        this.router.navigateByUrl(auth.familyId ? '/home' : '/family-setup');
       },
       error: (err) => {
         this.submitting = false;
