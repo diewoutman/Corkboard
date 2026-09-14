@@ -305,11 +305,23 @@ What that script does, spelled out (useful if something in it needs debugging):
    connection string — change both together if you change one).
 2. `dotnet ef database update --project src/Corkboard.Infrastructure --startup-project src/Corkboard.Api`
    — applies the `InitialCreate` migration (Identity + domain + TickerQ tables).
-3. `dotnet run --project src/Corkboard.Api` — API on `https://localhost:7127`. A
-   real `Jwt:SigningKey` is already set via `dotnet user-secrets` (not committed —
+3. `dotnet run --project src/Corkboard.Api --launch-profile http` — API on
+   `http://localhost:5147` (plain HTTP, deliberately — see below). A real
+   `Jwt:SigningKey` is already set via `dotnet user-secrets` (not committed —
    see `Corkboard.Api.csproj`'s `UserSecretsId`); nothing to configure there.
 4. `npm --prefix client start` — Ionic dev server (`ionic serve` also works). Points
-   at `https://localhost:7127/api` via `environment.ts`.
+   at `http://localhost:5147/api` via `environment.ts`.
+
+Local dev deliberately uses plain HTTP, not the ASP.NET Core dev HTTPS cert
+(`https://localhost:7127`, the other profile in `launchSettings.json`): that cert's
+trust story is painful cross-platform (especially Linux, no automatic trust store
+hookup), and there's no need for it locally per the "no urgency around HTTPS" call in
+§6. Two things this makes necessary, both already wired up: a CORS policy (`Program.cs`,
+`Cors:AllowedOrigins` in `appsettings.Development.json` — defaults to the Angular/Ionic
+dev server ports 4200 and 8100) since client and API are now different origins even
+in dev, and being explicit about `--launch-profile http` rather than relying on
+`dotnet run`'s default profile selection (which happens to pick "http" here since it's
+listed first in `launchSettings.json`, but that's not something to depend on silently).
 
 Not yet done: no automated tests, no reminder jobs wired to TickerQ yet (the
 scheduler itself is running, just unused — see §3.3), no recurrence expansion on
