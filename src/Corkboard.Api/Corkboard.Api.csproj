@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Works around NETSDK1226: framework-reference prune data not yet published
+         for this SDK patch version (10.0.111) at time of writing. Safe to remove
+         once a newer SDK/package index resolves it. -->
+    <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
+    <UserSecretsId>51b18ddf-b833-4e3d-ac92-134ecc8d3751</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="TickerQ" Version="10.4.0" />
+    <PackageReference Include="TickerQ.Dashboard" Version="10.4.0" />
+    <PackageReference Include="TickerQ.EntityFrameworkCore" Version="10.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Corkboard.Infrastructure\Corkboard.Infrastructure.csproj" />
+    <ProjectReference Include="..\Corkboard.Domain\Corkboard.Domain.csproj" />
+    <ProjectReference Include="..\Corkboard.Contracts\Corkboard.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

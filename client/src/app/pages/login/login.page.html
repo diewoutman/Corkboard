@@ -1,0 +1,49 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Corkboard</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <h2>{{ mode === 'login' ? 'Log in' : 'Create an account' }}</h2>
+
+  <form (ngSubmit)="submit()" #form="ngForm">
+    <ion-list>
+      <ion-item>
+        <ion-input
+          label="Email"
+          labelPlacement="stacked"
+          type="email"
+          name="email"
+          [(ngModel)]="email"
+          required
+          autocomplete="email"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Password"
+          labelPlacement="stacked"
+          type="password"
+          name="password"
+          [(ngModel)]="password"
+          required
+          minlength="6"
+          [autocomplete]="mode === 'login' ? 'current-password' : 'new-password'"
+        ></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <ion-text color="danger" *ngIf="errorMessage">
+      <p>{{ errorMessage }}</p>
+    </ion-text>
+
+    <ion-button expand="block" type="submit" [disabled]="form.invalid || submitting" class="ion-margin-top">
+      {{ mode === 'login' ? 'Log in' : 'Register' }}
+    </ion-button>
+
+    <ion-button expand="block" fill="clear" type="button" (click)="toggleMode()">
+      {{ mode === 'login' ? "Don't have an account? Register" : 'Already have an account? Log in' }}
+    </ion-button>
+  </form>
+</ion-content>

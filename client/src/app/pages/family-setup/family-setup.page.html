@@ -1,0 +1,61 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Set up your family</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <p>One-time setup — this creates your family's board and you as its first member.</p>
+
+  <form (ngSubmit)="submit()" #form="ngForm">
+    <ion-list>
+      <ion-item>
+        <ion-input
+          label="Family name"
+          labelPlacement="stacked"
+          name="name"
+          placeholder="e.g. The Smiths"
+          [(ngModel)]="name"
+          required
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Time zone"
+          labelPlacement="stacked"
+          name="timeZone"
+          [(ngModel)]="timeZone"
+          required
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Your display name"
+          labelPlacement="stacked"
+          name="ownerDisplayName"
+          placeholder="e.g. Wouter"
+          [(ngModel)]="ownerDisplayName"
+          required
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Your color"
+          labelPlacement="stacked"
+          type="color"
+          name="ownerColor"
+          [(ngModel)]="ownerColor"
+          required
+        ></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <ion-text color="danger" *ngIf="errorMessage">
+      <p>{{ errorMessage }}</p>
+    </ion-text>
+
+    <ion-button expand="block" type="submit" [disabled]="form.invalid || submitting" class="ion-margin-top">
+      Create family
+    </ion-button>
+  </form>
+</ion-content>

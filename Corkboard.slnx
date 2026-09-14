@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Corkboard.Api/Corkboard.Api.csproj" />
+    <Project Path="src/Corkboard.Contracts/Corkboard.Contracts.csproj" />
+    <Project Path="src/Corkboard.Domain/Corkboard.Domain.csproj" />
+    <Project Path="src/Corkboard.Infrastructure/Corkboard.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Corkboard.Api.Tests/Corkboard.Api.Tests.csproj" />
+    <Project Path="tests/Corkboard.Domain.Tests/Corkboard.Domain.Tests.csproj" />
+  </Folder>
+</Solution>
