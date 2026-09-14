@@ -25,11 +25,16 @@ export class LoginPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.setup.status().subscribe((status) => {
-      if (!status.isConfigured) {
-        this.isFirstRun = true;
-        this.mode = 'register';
-      }
+    this.setup.status().subscribe({
+      next: (status) => {
+        if (!status.isConfigured) {
+          this.isFirstRun = true;
+          this.mode = 'register';
+        }
+      },
+      // If the API is unreachable, fall back to an ordinary login screen rather
+      // than crash — submit() will surface a clearer connection error anyway.
+      error: () => {},
     });
   }
 
