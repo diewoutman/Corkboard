@@ -73,10 +73,7 @@ public class CollectionsController(CorkboardDbContext db) : FamilyScopedControll
             Type = (DomainCollectionType)request.Type,
             Color = request.Color,
             ParentCollectionId = request.ParentCollectionId,
-            Street = request.Street,
-            City = request.City,
-            PostalCode = request.PostalCode,
-            Country = request.Country,
+            Address = BuildAddress(request.Street, request.City, request.PostalCode, request.Country),
             CreatedAt = now,
             UpdatedAt = now,
             CreatedByUserId = CurrentUserId,
@@ -88,7 +85,8 @@ public class CollectionsController(CorkboardDbContext db) : FamilyScopedControll
         var response = new CollectionResponse(
             collection.Id, collection.Name, request.Type, collection.Color, collection.ParentCollectionId,
             collection.CreatedAt, NodeCount: 0, IncompleteCount: request.Type == CollectionType.TaskList ? 0 : null,
-            FeedUrl: null, collection.Street, collection.City, collection.PostalCode, collection.Country);
+            FeedUrl: null,
+            collection.Address?.Street, collection.Address?.City, collection.Address?.PostalCode, collection.Address?.Country);
 
         return CreatedAtAction(nameof(Get), new { id = collection.Id }, response);
     }
@@ -98,16 +96,29 @@ public class CollectionsController(CorkboardDbContext db) : FamilyScopedControll
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var collection = await db.Collections.FirstOrDefaultAsync(c => c.FamilyId == familyId && c.Id == id, cancellationToken);
+        var collection = await db.Collections.Include(c => c.Address)
+            .FirstOrDefaultAsync(c => c.FamilyId == familyId && c.Id == id, cancellationToken);
         if (collection is null) return NotFound();
 
         collection.Name = request.Name;
         collection.Color = request.Color;
-        collection.Street = request.Street;
-        collection.City = request.City;
-        collection.PostalCode = request.PostalCode;
-        collection.Country = request.Country;
         collection.UpdatedAt = DateTimeOffset.UtcNow;
+
+        var hasAddress = request.Street != null || request.City != null || request.PostalCode != null || request.Country != null;
+        if (hasAddress)
+        {
+            collection.Address ??= new Domain.Entities.CollectionAddress { CollectionId = collection.Id };
+            collection.Address.Street = request.Street;
+            collection.Address.City = request.City;
+            collection.Address.PostalCode = request.PostalCode;
+            collection.Address.Country = request.Country;
+        }
+        else if (collection.Address is not null)
+        {
+            db.CollectionAddresses.Remove(collection.Address);
+            collection.Address = null;
+        }
+
         await db.SaveChangesAsync(cancellationToken);
 
         var projection = await db.Collections.Where(c => c.Id == id).Select(ToProjectionExpression).FirstAsync(cancellationToken);
@@ -160,6 +171,12 @@ public class CollectionsController(CorkboardDbContext db) : FamilyScopedControll
 
     private static string GenerateFeedToken() => Convert.ToHexString(RandomNumberGenerator.GetBytes(24)).ToLowerInvariant();
 
+    /// <summary>Null when every field is unset — keeps a Collection without an address from getting an empty row.</summary>
+    private static Domain.Entities.CollectionAddress? BuildAddress(string? street, string? city, string? postalCode, string? country) =>
+        street is null && city is null && postalCode is null && country is null
+            ? null
+            : new Domain.Entities.CollectionAddress { Street = street, City = city, PostalCode = postalCode, Country = country };
+
     private CollectionResponse ToResponse(CollectionProjection p) => new(
         p.Id, p.Name, (CollectionType)p.Type, p.Color, p.ParentCollectionId, p.CreatedAt,
         p.NodeCount, p.IncompleteCount,
@@ -179,5 +196,8 @@ public class CollectionsController(CorkboardDbContext db) : FamilyScopedControll
                 ? c.Nodes.OfType<Domain.Entities.TaskNode>().Count(n => !n.IsCompleted)
                 : (int?)null,
             c.FeedToken,
-            c.Street, c.City, c.PostalCode, c.Country);
+            c.Address != null ? c.Address.Street : null,
+            c.Address != null ? c.Address.City : null,
+            c.Address != null ? c.Address.PostalCode : null,
+            c.Address != null ? c.Address.Country : null);
 }

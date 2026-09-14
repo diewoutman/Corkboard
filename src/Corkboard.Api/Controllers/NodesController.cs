@@ -92,7 +92,7 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
 
         if (!await IsValidCollectionId(familyId, request.CollectionId, cancellationToken)) return InvalidCollectionProblem();
 
-        if (request.Type == ContractNodeType.Contact && !IsValidContact(request.FirstName, request.LastName, request.PhoneNumbers))
+        if (request.Type == ContractNodeType.Contact && string.IsNullOrWhiteSpace(request.FirstName))
         {
             return InvalidContactProblem();
         }
@@ -111,15 +111,15 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
             },
             ContractNodeType.Contact => new Contact
             {
-                Title = $"{request.FirstName} {request.LastName}".Trim(),
+                Title = BuildContactTitle(request.FirstName!, request.LastName),
                 FirstName = request.FirstName!.Trim(),
-                LastName = request.LastName!.Trim(),
+                LastName = string.IsNullOrWhiteSpace(request.LastName) ? null : request.LastName.Trim(),
                 DateOfBirth = request.DateOfBirth,
                 Street = request.Street,
                 City = request.City,
                 PostalCode = request.PostalCode,
                 Country = request.Country,
-                PhoneNumbers = request.PhoneNumbers!.Select(p => new ContactPhoneNumber { Id = Guid.NewGuid(), Number = p.Number, Label = p.Label }).ToList(),
+                PhoneNumbers = (request.PhoneNumbers ?? []).Select(p => new ContactPhoneNumber { Id = Guid.NewGuid(), Number = p.Number, Label = p.Label }).ToList(),
                 Emails = (request.Emails ?? []).Select(e => new ContactEmail { Id = Guid.NewGuid(), Email = e.Email, Label = e.Label }).ToList(),
             },
             _ => throw new ArgumentOutOfRangeException(nameof(request)),
@@ -159,7 +159,7 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
 
         if (!await IsValidCollectionId(familyId, request.CollectionId, cancellationToken)) return InvalidCollectionProblem();
 
-        if (node is Contact && !IsValidContact(request.FirstName, request.LastName, request.PhoneNumbers))
+        if (node is Contact && string.IsNullOrWhiteSpace(request.FirstName))
         {
             return InvalidContactProblem();
         }
@@ -188,25 +188,30 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
                 break;
             case Contact contact:
                 contact.FirstName = request.FirstName!.Trim();
-                contact.LastName = request.LastName!.Trim();
-                contact.Title = $"{contact.FirstName} {contact.LastName}".Trim();
+                contact.LastName = string.IsNullOrWhiteSpace(request.LastName) ? null : request.LastName.Trim();
+                contact.Title = BuildContactTitle(contact.FirstName, contact.LastName);
                 contact.DateOfBirth = request.DateOfBirth;
                 contact.Street = request.Street;
                 contact.City = request.City;
                 contact.PostalCode = request.PostalCode;
                 contact.Country = request.Country;
 
-                contact.PhoneNumbers.Clear();
-                foreach (var phone in request.PhoneNumbers!)
-                {
-                    contact.PhoneNumbers.Add(new ContactPhoneNumber { Id = Guid.NewGuid(), ContactId = contact.Id, Number = phone.Number, Label = phone.Label });
-                }
+                // Explicit RemoveRange/AddRange via the DbSets rather than mutating
+                // contact.PhoneNumbers/Emails in place — the latter, combined with
+                // this entity having been loaded through a cast-based Include (see
+                // the query above), left EF's change tracker treating new rows as
+                // updates to nonexistent ones (DbUpdateConcurrencyException).
+                db.ContactPhoneNumbers.RemoveRange(contact.PhoneNumbers);
+                contact.PhoneNumbers = (request.PhoneNumbers ?? [])
+                    .Select(p => new ContactPhoneNumber { Id = Guid.NewGuid(), ContactId = contact.Id, Number = p.Number, Label = p.Label })
+                    .ToList();
+                db.ContactPhoneNumbers.AddRange(contact.PhoneNumbers);
 
-                contact.Emails.Clear();
-                foreach (var email in request.Emails ?? [])
-                {
-                    contact.Emails.Add(new ContactEmail { Id = Guid.NewGuid(), ContactId = contact.Id, Email = email.Email, Label = email.Label });
-                }
+                db.ContactEmails.RemoveRange(contact.Emails);
+                contact.Emails = (request.Emails ?? [])
+                    .Select(e => new ContactEmail { Id = Guid.NewGuid(), ContactId = contact.Id, Email = e.Email, Label = e.Label })
+                    .ToList();
+                db.ContactEmails.AddRange(contact.Emails);
                 break;
         }
 
@@ -265,14 +270,11 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
 
     private ObjectResult InvalidContactProblem() => Problem(
         title: "Invalid contact",
-        detail: "A Contact requires FirstName, LastName, and at least one phone number.",
+        detail: "A Contact requires a FirstName.",
         statusCode: StatusCodes.Status400BadRequest);
 
-    private static bool IsValidContact(string? firstName, string? lastName, IReadOnlyList<ContactPhoneNumberDto>? phoneNumbers) =>
-        !string.IsNullOrWhiteSpace(firstName)
-        && !string.IsNullOrWhiteSpace(lastName)
-        && phoneNumbers is { Count: > 0 }
-        && phoneNumbers.All(p => !string.IsNullOrWhiteSpace(p.Number));
+    private static string BuildContactTitle(string firstName, string? lastName) =>
+        string.IsNullOrWhiteSpace(lastName) ? firstName.Trim() : $"{firstName.Trim()} {lastName.Trim()}";
 
     private static NodeResponse ToResponse(Node node)
     {

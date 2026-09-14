@@ -19,11 +19,14 @@ export class ContactsPage implements OnInit {
   errorMessage: string | null = null;
 
   showHouseholdsPanel = false;
-  showNewHouseholdForm = false;
-  newHousehold = this.emptyNewHousehold();
 
-  showNewContactForm = false;
-  newContact = this.emptyNewContact();
+  showHouseholdForm = false;
+  editingHouseholdId: string | null = null;
+  householdForm = this.emptyHouseholdForm();
+
+  showContactForm = false;
+  editingContactId: string | null = null;
+  contactForm = this.emptyContactForm();
 
   constructor(
     private readonly nodesApi: Nodes,
@@ -80,47 +83,75 @@ export class ContactsPage implements OnInit {
   }
 
   addPhoneRow() {
-    this.newContact.phoneNumbers = [...this.newContact.phoneNumbers, { number: '', label: '' }];
+    this.contactForm.phoneNumbers = [...this.contactForm.phoneNumbers, { number: '', label: '' }];
   }
 
   removePhoneRow(index: number) {
-    this.newContact.phoneNumbers = this.newContact.phoneNumbers.filter((_, i) => i !== index);
+    this.contactForm.phoneNumbers = this.contactForm.phoneNumbers.filter((_, i) => i !== index);
   }
 
   addEmailRow() {
-    this.newContact.emails = [...this.newContact.emails, { email: '', label: '' }];
+    this.contactForm.emails = [...this.contactForm.emails, { email: '', label: '' }];
   }
 
   removeEmailRow(index: number) {
-    this.newContact.emails = this.newContact.emails.filter((_, i) => i !== index);
+    this.contactForm.emails = this.contactForm.emails.filter((_, i) => i !== index);
   }
 
-  submitNewHousehold() {
-    if (!this.newHousehold.name) return;
+  openNewHouseholdForm() {
+    this.editingHouseholdId = null;
+    this.householdForm = this.emptyHouseholdForm();
+    this.showHouseholdForm = true;
+  }
 
-    this.collectionsApi
-      .create({
-        name: this.newHousehold.name,
-        type: 'Household',
-        color: '#94a3b8',
-        parentCollectionId: null,
-        street: this.newHousehold.street || null,
-        city: this.newHousehold.city || null,
-        postalCode: this.newHousehold.postalCode || null,
-        country: this.newHousehold.country || null,
-      })
-      .subscribe({
-        next: (created) => {
-          this.households = [...this.households, created].sort((a, b) => a.name.localeCompare(b.name));
-          this.newHousehold = this.emptyNewHousehold();
-          this.showNewHouseholdForm = false;
-          this.cdr.markForCheck();
-        },
-        error: (err) => {
-          this.errorMessage = extractErrorMessage(err, 'Could not create that household.');
-          this.cdr.markForCheck();
-        },
-      });
+  openEditHouseholdForm(household: CollectionResponse) {
+    this.editingHouseholdId = household.id;
+    this.householdForm = {
+      name: household.name,
+      street: household.street ?? '',
+      city: household.city ?? '',
+      postalCode: household.postalCode ?? '',
+      country: household.country ?? '',
+    };
+    this.showHouseholdForm = true;
+  }
+
+  cancelHouseholdForm() {
+    this.showHouseholdForm = false;
+    this.editingHouseholdId = null;
+  }
+
+  submitHouseholdForm() {
+    if (!this.householdForm.name) return;
+
+    const request = {
+      name: this.householdForm.name,
+      street: this.householdForm.street || null,
+      city: this.householdForm.city || null,
+      postalCode: this.householdForm.postalCode || null,
+      country: this.householdForm.country || null,
+    };
+
+    const existing = this.editingHouseholdId ? this.households.find((h) => h.id === this.editingHouseholdId) : null;
+
+    const request$ = this.editingHouseholdId
+      ? this.collectionsApi.update(this.editingHouseholdId, { ...request, color: existing?.color ?? '#94a3b8' })
+      : this.collectionsApi.create({ ...request, type: 'Household', color: '#94a3b8', parentCollectionId: null });
+
+    request$.subscribe({
+      next: (saved) => {
+        this.households = (
+          this.editingHouseholdId ? this.households.map((h) => (h.id === saved.id ? saved : h)) : [...this.households, saved]
+        ).sort((a, b) => a.name.localeCompare(b.name));
+        this.showHouseholdForm = false;
+        this.editingHouseholdId = null;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.errorMessage = extractErrorMessage(err, 'Could not save that household.');
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   deleteContact(contact: NodeResponse) {
@@ -136,63 +167,96 @@ export class ContactsPage implements OnInit {
     });
   }
 
-  submitNewContact() {
-    const phoneNumbers = this.newContact.phoneNumbers
+  openNewContactForm() {
+    this.editingContactId = null;
+    this.contactForm = this.emptyContactForm();
+    this.showContactForm = true;
+  }
+
+  openEditContactForm(contact: NodeResponse) {
+    this.editingContactId = contact.id;
+    this.contactForm = {
+      firstName: contact.firstName ?? '',
+      lastName: contact.lastName ?? '',
+      dateOfBirth: contact.dateOfBirth ? contact.dateOfBirth.slice(0, 10) : '',
+      householdId: contact.collectionId ?? '',
+      street: contact.street ?? '',
+      city: contact.city ?? '',
+      postalCode: contact.postalCode ?? '',
+      country: contact.country ?? '',
+      phoneNumbers: contact.phoneNumbers.map((p) => ({ number: p.number, label: p.label ?? '' })),
+      emails: contact.emails.map((e) => ({ email: e.email, label: e.label ?? '' })),
+    };
+    this.showContactForm = true;
+  }
+
+  cancelContactForm() {
+    this.showContactForm = false;
+    this.editingContactId = null;
+  }
+
+  submitContactForm() {
+    if (!this.contactForm.firstName) return;
+
+    const phoneNumbers = this.contactForm.phoneNumbers
       .map((p) => ({ number: p.number.trim(), label: p.label.trim() || null }))
       .filter((p) => p.number.length > 0);
-
-    if (!this.newContact.firstName || !this.newContact.lastName || phoneNumbers.length === 0) return;
-
-    const emails = this.newContact.emails
+    const emails = this.contactForm.emails
       .map((e) => ({ email: e.email.trim(), label: e.label.trim() || null }))
       .filter((e) => e.email.length > 0);
 
-    this.nodesApi
-      .create({
-        type: 'Contact',
-        title: `${this.newContact.firstName} ${this.newContact.lastName}`.trim(),
-        description: null,
-        from: null,
-        until: null,
-        assignedFamilyMemberIds: [],
-        collectionId: this.newContact.householdId || null,
-        priority: null,
-        location: null,
-        allDay: null,
-        recurrenceRule: null,
-        firstName: this.newContact.firstName,
-        lastName: this.newContact.lastName,
-        dateOfBirth: this.newContact.dateOfBirth || null,
-        street: this.newContact.street || null,
-        city: this.newContact.city || null,
-        postalCode: this.newContact.postalCode || null,
-        country: this.newContact.country || null,
-        phoneNumbers,
-        emails,
-      })
-      .subscribe({
-        next: (created) => {
-          this.contacts = this.sortContacts([...this.contacts, created]);
-          this.newContact = this.emptyNewContact();
-          this.showNewContactForm = false;
-          this.cdr.markForCheck();
-        },
-        error: (err) => {
-          this.errorMessage = extractErrorMessage(err, 'Could not create that contact.');
-          this.cdr.markForCheck();
-        },
-      });
+    const common = {
+      description: null,
+      from: null,
+      until: null,
+      assignedFamilyMemberIds: [],
+      collectionId: this.contactForm.householdId || null,
+      priority: null,
+      location: null,
+      allDay: null,
+      recurrenceRule: null,
+      firstName: this.contactForm.firstName,
+      lastName: this.contactForm.lastName || null,
+      dateOfBirth: this.contactForm.dateOfBirth || null,
+      street: this.contactForm.street || null,
+      city: this.contactForm.city || null,
+      postalCode: this.contactForm.postalCode || null,
+      country: this.contactForm.country || null,
+      phoneNumbers,
+      emails,
+    };
+
+    const title = this.contactForm.lastName ? `${this.contactForm.firstName} ${this.contactForm.lastName}` : this.contactForm.firstName;
+
+    const request$ = this.editingContactId
+      ? this.nodesApi.update(this.editingContactId, { ...common, title, isCompleted: null })
+      : this.nodesApi.create({ ...common, type: 'Contact', title });
+
+    request$.subscribe({
+      next: (saved) => {
+        this.contacts = this.sortContacts(
+          this.editingContactId ? this.contacts.map((c) => (c.id === saved.id ? saved : c)) : [...this.contacts, saved],
+        );
+        this.showContactForm = false;
+        this.editingContactId = null;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.errorMessage = extractErrorMessage(err, 'Could not save that contact.');
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   private sortContacts(contacts: NodeResponse[]): NodeResponse[] {
     return [...contacts].sort((a, b) => (a.lastName ?? '').localeCompare(b.lastName ?? '') || (a.firstName ?? '').localeCompare(b.firstName ?? ''));
   }
 
-  private emptyNewHousehold() {
+  private emptyHouseholdForm() {
     return { name: '', street: '', city: '', postalCode: '', country: '' };
   }
 
-  private emptyNewContact() {
+  private emptyContactForm() {
     return {
       firstName: '',
       lastName: '',
@@ -202,7 +266,7 @@ export class ContactsPage implements OnInit {
       city: '',
       postalCode: '',
       country: '',
-      phoneNumbers: [{ number: '', label: '' }] as { number: string; label: string }[],
+      phoneNumbers: [] as { number: string; label: string }[],
       emails: [] as { email: string; label: string }[],
     };
   }

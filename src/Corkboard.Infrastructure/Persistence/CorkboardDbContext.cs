@@ -31,6 +31,7 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
     public DbSet<NodeAssignment> NodeAssignments => Set<NodeAssignment>();
 
     public DbSet<Collection> Collections => Set<Collection>();
+    public DbSet<CollectionAddress> CollectionAddresses => Set<CollectionAddress>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -99,6 +100,15 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(c => c.FeedToken).IsUnique().HasFilter("\"FeedToken\" IS NOT NULL");
+        });
+
+        builder.Entity<CollectionAddress>(entity =>
+        {
+            entity.HasKey(a => a.CollectionId);
+            entity.HasOne(a => a.Collection)
+                .WithOne(c => c.Address)
+                .HasForeignKey<CollectionAddress>(a => a.CollectionId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<AppointmentException>(entity =>

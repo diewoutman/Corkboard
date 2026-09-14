@@ -121,13 +121,15 @@ Type-specific fields to start with:
 - **Appointment**: `Location` (optional), `AllDay` (bool), `RecurrenceRule`
   (nullable — see §3.3 on TickerQ). The `RecurrenceRule` describes the pattern only
   (e.g. an RRULE-style string); no occurrence rows are stored — see §3.3.
-- **Contact**: an address book entry. `FirstName`/`LastName` required; `DateOfBirth`
-  optional; `Street`/`City`/`PostalCode`/`Country` optional (own address — falls back
-  to its Household's address when unset, see §2.3); `PhoneNumbers`/`Emails` are
-  separate one-to-many tables (`ContactPhoneNumber`/`ContactEmail`, each `{value,
-  Label}`) since a Contact can have several of each — at least one PhoneNumber is
-  required, enforced by `NodesController`, not the DB. `Title` mirrors "FirstName
-  LastName", recomputed server-side on every create/update rather than client-set.
+- **Contact**: an address book entry. `FirstName` is the only required field —
+  everything else, including `LastName`, is optional (e.g. "Huisarts" with no last
+  name and no phone number is a valid Contact). `DateOfBirth` optional;
+  `Street`/`City`/`PostalCode`/`Country` optional (own address — falls back to its
+  Household's address when unset, see §2.3); `PhoneNumbers`/`Emails` are separate
+  one-to-many tables (`ContactPhoneNumber`/`ContactEmail`, each `{value, Label}`)
+  since a Contact can have several of each, or none. `Title` mirrors "FirstName
+  LastName" (or just "FirstName" when LastName is unset), recomputed server-side
+  on every create/update rather than client-set.
 
 ### 2.3 Collection — grouping Nodes
 
@@ -159,14 +161,14 @@ never reaches the user; each `CollectionType` gets its own user-facing framing:
   editor — but their occurrences render in the month grid exactly like a Calendar's.
 - **`Household`** — "a Household is a Collection of Contact Nodes". Groups related
   Contacts (e.g. a child and their parents) under one shared address, entirely by
-  reusing existing machinery: no new entity or relationship, just a Household-typed
-  Collection carrying the shared `Street`/`City`/`PostalCode`/`Country`, and Contacts
-  join it the same way a Task joins a TaskList — `Node.CollectionId`. A Contact's own
-  address (see §2.2) wins when set; otherwise the client falls back to its
-  Household's address (`ContactsPage.effectiveAddress`). Household membership is
-  optional — a Contact like the family doctor has no Household at all. Deliberately
-  named "Household" rather than "Family" to avoid colliding with this app's own
-  `Family` (the tenant/instance-owning entity, §2.1) — a completely different concept.
+  reusing existing machinery for the grouping itself: no new relationship, just a
+  Household-typed Collection, and Contacts join it the same way a Task joins a
+  TaskList — `Node.CollectionId`. A Contact's own address (see §2.2) wins when set;
+  otherwise the client falls back to its Household's address
+  (`ContactsPage.effectiveAddress`). Household membership is optional — a Contact
+  like the family doctor has no Household at all. Deliberately named "Household"
+  rather than "Family" to avoid colliding with this app's own `Family` (the
+  tenant/instance-owning entity, §2.1) — a completely different concept.
 
 | Field | Notes |
 |---|---|
@@ -175,7 +177,7 @@ never reaches the user; each `CollectionType` gets its own user-facing framing:
 | Type | `CollectionType` — `TaskList`, `Calendar`, `Schedule`, or `Household` |
 | Color | hex string, same idea as `FamilyMember.Color` — lets the Calendar grid color-code events by which Calendar they're in |
 | FeedToken | nullable opaque string; set the first time a Calendar's iCal subscribe URL is requested (see §3.3) |
-| Street, City, PostalCode, Country | nullable; only meaningful for a Household — its member Contacts' shared address |
+| Address | nullable one-to-one `CollectionAddress` (`Street`/`City`/`PostalCode`/`Country`), only meaningful for a Household. Kept in its own table rather than as columns on Collection itself — Collection is shared by every CollectionType, and an address is a Household-only "feature"; folding it into Collection would mean every future per-type extra keeps widening that one wide table the same way Node's TPH columns do (see §2.2). `CollectionsController` upserts/deletes the row as a unit (no address fields set → no row) rather than exposing it as its own endpoint, since nothing outside a Collection edit needs to address it directly yet. |
 | ParentCollectionId | nullable self-reference; `Restrict` on delete (a Collection with children can't be deleted until they're moved or removed — avoids silently losing a subtree) |
 | CreatedAt, UpdatedAt, CreatedByUserId | |
 
@@ -310,6 +312,13 @@ targets one family for now.
   plain tile grid (Tasks/Notes/Calendar/Contacts), each tile just a `routerLink` to
   that page — no data fetching beyond a `Families.mine()` call for the greeting.
   Kept deliberately dumb: it's a launcher, not a dashboard.
+- **Editing an existing Node/Collection** — every earlier page (Tasks, Notes,
+  Calendar) only ever supported create + delete; Contacts is the first page with
+  real edit forms, for both Contacts and Households. Rather than a separate
+  edit-page or modal, `ContactsPage` reuses one form per entity for both create and
+  edit (`contactForm`/`householdForm`, with an `editingContactId`/
+  `editingHouseholdId` flag choosing `create()` vs `update()` on submit) — avoids
+  keeping two near-identical templates in sync.
 
 ## 5. MVP scope
 

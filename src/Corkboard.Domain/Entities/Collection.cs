@@ -26,13 +26,13 @@ public class Collection
     public string? FeedToken { get; set; }
 
     /// <summary>
-    /// Shared address, only meaningful for a Household — its member Contacts fall
-    /// back to this when they don't set their own address (see Contact.Street etc).
+    /// Optional address "feature" — kept in its own table rather than nullable
+    /// columns here, since it only applies to a Household and more such
+    /// per-type extras are likely as more CollectionTypes appear. Its member
+    /// Contacts fall back to this when they don't set their own address (see
+    /// Contact.Street etc).
     /// </summary>
-    public string? Street { get; set; }
-    public string? City { get; set; }
-    public string? PostalCode { get; set; }
-    public string? Country { get; set; }
+    public CollectionAddress? Address { get; set; }
 
     /// <summary>Null for a top-level Collection.</summary>
     public Guid? ParentCollectionId { get; set; }
