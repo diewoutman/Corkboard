@@ -134,12 +134,28 @@ never reaches the user; each `CollectionType` gets its own user-facing framing:
 - **`Calendar`** — "a Calendar is a Collection of Appointment Nodes". `/calendar`
   renders a month grid overlaying every `Calendar` Collection's Appointments (each
   toggleable, color-coded); creating an event picks which Calendar it belongs to.
+- **`Schedule`** — "a Schedule is a Collection of Appointment Nodes", same shape as
+  `Calendar` — filled in through a dedicated weekly (day-of-week × time) editor
+  instead of one-off dated events, and rendered as just another togglable layer in
+  the `/calendar` month grid rather than a separate view. Modeled this way after
+  looking at how FamilyWall ("Roosters") and OpenFamily represent weekly routines:
+  both use simpler day-of-week+time patterns than our RRULE engine already supports
+  as a superset, so `Schedule` reuses the existing Node/Appointment/RecurrenceRule
+  machinery rather than introducing a new pattern model — each schedule entry is
+  just an Appointment whose `RecurrenceRule` is `FREQ=WEEKLY;BYDAY=<day>[;INTERVAL=2]
+  [;UNTIL=<date>]` and whose `From` is anchored to that weekday in the current week.
+  `/calendar/schedules/:id` is the weekly editor (`ScheduleEditorPage`): seven
+  day-of-week columns, each listing that day's recurring entries, with an add-entry
+  form (day, start/end time, title, location, "every other week", optional "ends
+  on"). Schedule Collections are excluded from the "add event" form's calendar
+  picker (`eventableCalendars`) — schedule entries are only authored via the weekly
+  editor — but their occurrences render in the month grid exactly like a Calendar's.
 
 | Field | Notes |
 |---|---|
 | Id, FamilyId | same pattern as everything else |
 | Name | |
-| Type | `CollectionType` — `TaskList` or `Calendar` |
+| Type | `CollectionType` — `TaskList`, `Calendar`, or `Schedule` |
 | Color | hex string, same idea as `FamilyMember.Color` — lets the Calendar grid color-code events by which Calendar they're in |
 | FeedToken | nullable opaque string; set the first time a Calendar's iCal subscribe URL is requested (see §3.3) |
 | ParentCollectionId | nullable self-reference; `Restrict` on delete (a Collection with children can't be deleted until they're moved or removed — avoids silently losing a subtree) |
@@ -341,7 +357,8 @@ client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no
                           # Setup services + auth interceptor/guards
   src/app/pages/          # login, family-setup, add-members, tasks (Lists overview),
                           # task-list (one list's Tasks, /tasks/:id), notes,
-                          # calendar (multi-calendar month grid)
+                          # calendar (multi-calendar/schedule month grid),
+                          # schedule-editor (weekly grid, /calendar/schedules/:id)
 ```
 
 **API surface implemented so far** (all family-scoped ones require a JWT with a
@@ -354,7 +371,7 @@ client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no
 | `POST /api/families`, `GET /api/families/mine` | One-time family setup (creates Family + Owner FamilyMember, returns a fresh token) |
 | `GET/POST /api/family-members`, `GET/PUT/DELETE /api/family-members/{id}` | FamilyMember CRUD |
 | `GET/POST /api/nodes`, `PUT/DELETE /api/nodes/{id}` | Node CRUD across all three types, with `?type=`/`?assignedTo=`/`?collectionId=`/`?from=`/`?until=` filters on the list endpoint |
-| `GET/POST /api/collections`, `PUT/DELETE /api/collections/{id}` | Collection CRUD (Task lists, Calendars), with `?type=`/`?parentCollectionId=` filters — list responses include `NodeCount`/`IncompleteCount` |
+| `GET/POST /api/collections`, `PUT/DELETE /api/collections/{id}` | Collection CRUD (Task lists, Calendars, Schedules), with `?type=`/`?parentCollectionId=` filters — list responses include `NodeCount`/`IncompleteCount` |
 | `POST /api/collections/{id}/feed-token` | (Re)generates a Calendar's iCal feed URL |
 | `GET /api/calendar-feed/{collectionId}/{token}.ics` | Anonymous — the actual iCal subscribe feed |
 | `GET /api/calendar/occurrences` | Expanded Appointment occurrences for a date range (`?from=&until=&calendarId=`) — what the month grid renders |

@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import {
   addMonths,
   eachDayOfInterval,
@@ -52,6 +53,7 @@ export class CalendarPage implements OnInit {
   showNewCalendarForm = false;
   newCalendarName = '';
   newCalendarColor = '#4c6ef5';
+  newCalendarType: 'Calendar' | 'Schedule' = 'Calendar';
 
   showNewEventForm = false;
   newEvent = this.emptyNewEvent();
@@ -103,12 +105,17 @@ export class CalendarPage implements OnInit {
     return this.members.find((m) => m.id === id)?.displayName ?? '?';
   }
 
+  /** Both Calendars and Schedules are shown as togglable layers in the same grid — see CONCEPT.md. */
   loadCalendars() {
-    this.collectionsApi.list({ type: 'Calendar' }).subscribe({
-      next: (calendars) => {
-        this.calendars = calendars;
-        if (!this.newEvent.calendarId && calendars.length > 0) {
-          this.newEvent.calendarId = calendars[0].id;
+    forkJoin({
+      calendars: this.collectionsApi.list({ type: 'Calendar' }),
+      schedules: this.collectionsApi.list({ type: 'Schedule' }),
+    }).subscribe({
+      next: ({ calendars, schedules }) => {
+        this.calendars = [...calendars, ...schedules].sort((a, b) => a.name.localeCompare(b.name));
+        const plainCalendars = calendars;
+        if (!this.newEvent.calendarId && plainCalendars.length > 0) {
+          this.newEvent.calendarId = plainCalendars[0].id;
         }
         this.loadOccurrences();
       },
@@ -118,6 +125,11 @@ export class CalendarPage implements OnInit {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  /** Only plain Calendars, not Schedules — schedules are authored via their own weekly editor, not the "add event" form. */
+  get eventableCalendars(): CollectionResponse[] {
+    return this.calendars.filter((c) => c.type === 'Calendar');
   }
 
   loadOccurrences() {
@@ -202,13 +214,14 @@ export class CalendarPage implements OnInit {
     if (!this.newCalendarName) return;
 
     this.collectionsApi
-      .create({ name: this.newCalendarName, type: 'Calendar', color: this.newCalendarColor, parentCollectionId: null })
+      .create({ name: this.newCalendarName, type: this.newCalendarType, color: this.newCalendarColor, parentCollectionId: null })
       .subscribe({
         next: (created) => {
-          this.calendars = [...this.calendars, created];
-          if (!this.newEvent.calendarId) this.newEvent.calendarId = created.id;
+          this.calendars = [...this.calendars, created].sort((a, b) => a.name.localeCompare(b.name));
+          if (created.type === 'Calendar' && !this.newEvent.calendarId) this.newEvent.calendarId = created.id;
           this.newCalendarName = '';
           this.newCalendarColor = '#4c6ef5';
+          this.newCalendarType = 'Calendar';
           this.showNewCalendarForm = false;
           this.cdr.markForCheck();
         },
@@ -262,7 +275,7 @@ export class CalendarPage implements OnInit {
 
   openNewEventForm(dayKey?: string) {
     this.newEvent = this.emptyNewEvent();
-    if (this.calendars.length > 0) this.newEvent.calendarId = this.calendars[0].id;
+    if (this.eventableCalendars.length > 0) this.newEvent.calendarId = this.eventableCalendars[0].id;
     if (dayKey) {
       this.newEvent.start = `${dayKey}T09:00`;
     }

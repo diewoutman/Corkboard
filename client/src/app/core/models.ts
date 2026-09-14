@@ -109,9 +109,10 @@ export interface NodeResponse {
 }
 
 // "Collection" is a backend-only concept — the client only ever talks about its
-// user-facing framing (a "Task list" or a "Calendar"). See CONCEPT.md on
-// Collection/CollectionType.
-export type CollectionType = 'TaskList' | 'Calendar';
+// user-facing framing (a "Task list", a "Calendar", or a "Schedule" — the last
+// two are the same shape, a Schedule is just filled in via the weekly editor
+// instead of one-off dated events). See CONCEPT.md on Collection/CollectionType.
+export type CollectionType = 'TaskList' | 'Calendar' | 'Schedule';
 
 export interface CreateCollectionRequest {
   name: string;

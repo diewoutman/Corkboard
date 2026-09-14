@@ -42,6 +42,11 @@ const routes: Routes = [
     canActivate: [familyGuard],
     loadChildren: () => import('./pages/calendar/calendar.module').then((m) => m.CalendarPageModule),
   },
+  {
+    path: 'calendar/schedules/:id',
+    canActivate: [familyGuard],
+    loadChildren: () => import('./pages/schedule-editor/schedule-editor.module').then((m) => m.ScheduleEditorPageModule),
+  },
 ];
 
 @NgModule({
