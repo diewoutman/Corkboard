@@ -11,11 +11,15 @@ export interface QuickAddResult {
   category: string | null;
 }
 
+/** Parsers tried for every quick-add — longest match wins, so English and Dutch input both work without a language switcher. */
+const PARSERS = [chrono, chrono.nl];
+
 /**
  * Parses Todoist-style quick-add text: a title plus an optional natural-language
- * date/time ("tomorrow 5pm", "next Monday") and an optional "#tag" for Category.
- * Both are stripped from the returned title. Client-side only — the backend still
- * just sees a plain title + ISO date, same as the full forms.
+ * date/time ("tomorrow 5pm" / "morgen om 17:00", "next Monday" / "volgende
+ * maandag") and an optional "#tag" for Category. Both are stripped from the
+ * returned title. Client-side only — the backend still just sees a plain title
+ * + ISO date, same as the full forms.
  */
 export function parseQuickAdd(input: string): QuickAddResult {
   let text = input;
@@ -27,13 +31,15 @@ export function parseQuickAdd(input: string): QuickAddResult {
     text = (text.slice(0, tagMatch.index) + text.slice(tagMatch.index + tagMatch[0].length)).trim();
   }
 
-  const results = chrono.parse(text, new Date(), { forwardDate: true });
+  const result = PARSERS.map((parser) => parser.parse(text, new Date(), { forwardDate: true })[0])
+    .filter((r) => !!r)
+    .sort((a, b) => b.text.length - a.text.length)[0];
+
   let start: Date | null = null;
   let end: Date | null = null;
   let hasTime = false;
 
-  if (results.length > 0) {
-    const result = results[0];
+  if (result) {
     start = result.start.date();
     end = result.end ? result.end.date() : null;
     hasTime = result.start.isCertain('hour');
