@@ -5,9 +5,19 @@ import { FormsModule } from '@angular/forms';
 import { LoginPageRoutingModule } from './login-routing.module';
 
 import { LoginPage } from './login.page';
+import { SetupStepHeaderComponent } from '../../shared/components/setup-step-header/setup-step-header.component';
+import { TextInputComponent } from '../../shared/components/text-input/text-input.component';
+import { ErrorBannerComponent } from '../../shared/components/error-banner/error-banner.component';
 
 @NgModule({
-  imports: [CommonModule, FormsModule, LoginPageRoutingModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    LoginPageRoutingModule,
+    SetupStepHeaderComponent,
+    TextInputComponent,
+    ErrorBannerComponent,
+  ],
   declarations: [LoginPage],
 })
 export class LoginPageModule {}
