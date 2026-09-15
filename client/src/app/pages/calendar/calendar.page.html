@@ -1,10 +1,10 @@
 <div class="flex items-center justify-between gap-2">
-  <h1 class="text-2xl font-semibold text-gray-900">Calendar</h1>
+  <h1 class="text-2xl font-extrabold text-ink">Calendar 🗓️</h1>
 </div>
 
-<p *ngIf="errorMessage" class="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage }}</p>
+<p *ngIf="errorMessage" class="mt-4 rounded-2xl bg-danger-bg px-3 py-2 text-sm font-semibold text-danger-text">{{ errorMessage }}</p>
 
-<div *ngIf="loading" class="mt-8 text-center text-sm text-gray-500">Loading…</div>
+<div *ngIf="loading" class="mt-8 text-center text-sm font-semibold text-ink-muted">Loading…</div>
 
 <div *ngIf="!loading" class="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
   <!-- Calendar: the main event, given the rest of the screen -->
@@ -14,9 +14,9 @@
         name="quickAddText"
         [(ngModel)]="quickAddText"
         placeholder="Add an event… try &quot;Dentist tomorrow 3pm&quot; or &quot;Tandarts morgen 15:00&quot;"
-        class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        class="block w-full rounded-full border-2 border-border-soft px-4 py-2 text-sm font-semibold shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       />
-      <button type="submit" [disabled]="!quickAddText.trim()" class="shrink-0 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50">
+      <button type="submit" [disabled]="!quickAddText.trim()" class="shrink-0 rounded-full bg-coral px-5 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
         Add
       </button>
     </form>
@@ -24,61 +24,61 @@
     <!-- View navigation -->
     <div class="mt-4 flex flex-wrap items-center justify-between gap-2">
       <div class="flex items-center gap-3">
-        <button type="button" (click)="previousPeriod()" class="rounded-md p-2 text-gray-500 hover:bg-gray-100" aria-label="Previous">‹</button>
-        <span class="text-lg font-medium text-gray-900">{{ periodLabel }}</span>
-        <button type="button" (click)="nextPeriod()" class="rounded-md p-2 text-gray-500 hover:bg-gray-100" aria-label="Next">›</button>
-        <button type="button" (click)="goToToday()" class="rounded-md border border-gray-300 px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50">Today</button>
+        <button type="button" (click)="previousPeriod()" class="rounded-full p-2 text-ink-muted hover:bg-cork" aria-label="Previous">‹</button>
+        <span class="font-heading text-lg font-bold text-ink">{{ periodLabel }}</span>
+        <button type="button" (click)="nextPeriod()" class="rounded-full p-2 text-ink-muted hover:bg-cork" aria-label="Next">›</button>
+        <button type="button" (click)="goToToday()" class="rounded-full border-2 border-border-soft px-2.5 py-1 text-xs font-bold text-ink-muted hover:bg-cork">Today</button>
       </div>
-      <div class="flex items-center rounded-md border border-gray-300 text-xs font-medium">
+      <div class="flex items-center rounded-full border-2 border-border-soft p-0.5 text-xs font-extrabold">
         <button
           type="button"
           (click)="setViewMode('month')"
-          class="rounded-l-md px-2.5 py-1.5"
-          [class.bg-blue-600]="viewMode === 'month'"
+          class="rounded-full px-3 py-1.5"
+          [class.bg-coral]="viewMode === 'month'"
           [class.text-white]="viewMode === 'month'"
-          [class.text-gray-600]="viewMode !== 'month'"
+          [class.text-ink-muted]="viewMode !== 'month'"
         >Month</button>
         <button
           type="button"
           (click)="setViewMode('week')"
-          class="border-l border-gray-300 px-2.5 py-1.5"
-          [class.bg-blue-600]="viewMode === 'week'"
+          class="rounded-full px-3 py-1.5"
+          [class.bg-coral]="viewMode === 'week'"
           [class.text-white]="viewMode === 'week'"
-          [class.text-gray-600]="viewMode !== 'week'"
+          [class.text-ink-muted]="viewMode !== 'week'"
         >Week</button>
         <button
           type="button"
           (click)="setViewMode('day')"
-          class="rounded-r-md border-l border-gray-300 px-2.5 py-1.5"
-          [class.bg-blue-600]="viewMode === 'day'"
+          class="rounded-full px-3 py-1.5"
+          [class.bg-coral]="viewMode === 'day'"
           [class.text-white]="viewMode === 'day'"
-          [class.text-gray-600]="viewMode !== 'day'"
+          [class.text-ink-muted]="viewMode !== 'day'"
         >Day</button>
       </div>
     </div>
 
     <!-- Month grid -->
     <div *ngIf="viewMode === 'month'" class="mt-3 overflow-x-auto">
-      <div class="grid min-w-[560px] grid-cols-7 gap-px rounded-lg bg-gray-200 text-center text-xs font-medium text-gray-500">
-        <div class="bg-gray-50 py-1" *ngFor="let d of ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']">{{ d }}</div>
+      <div class="grid min-w-[560px] grid-cols-7 gap-1.5 rounded-t-2xl bg-white p-2 pb-0 text-center text-xs font-extrabold text-ink-muted shadow-sticker">
+        <div class="py-1" *ngFor="let d of ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']">{{ d }}</div>
       </div>
-      <div class="grid min-w-[560px] grid-cols-7 gap-px rounded-b-lg bg-gray-200">
+      <div class="grid min-w-[560px] grid-cols-7 gap-1.5 rounded-b-2xl bg-white p-2 pt-1.5 shadow-sticker">
         <ng-container *ngFor="let week of weeks">
           <button
             *ngFor="let cell of week"
             type="button"
             (click)="selectDay(cell)"
-            class="flex min-h-20 flex-col items-start gap-0.5 bg-white p-1.5 text-left hover:bg-gray-50"
-            [class.bg-blue-50]="cell.key === selectedDayKey"
-            [class.text-gray-300]="!cell.inCurrentMonth"
+            class="flex min-h-20 flex-col items-start gap-0.5 rounded-xl bg-cork p-1.5 text-left hover:brightness-95"
+            [class.bg-pastel-coral]="cell.key === selectedDayKey"
+            [class.opacity-40]="!cell.inCurrentMonth"
           >
-            <span class="text-xs font-medium" [class.text-blue-600]="cell.isToday" [class.font-bold]="cell.isToday">{{ cell.date.getDate() }}</span>
+            <span class="text-xs font-extrabold text-ink" [class.text-coral]="cell.isToday">{{ cell.date.getDate() }}</span>
             <span
               *ngFor="let o of cell.occurrences.slice(0, 3)"
-              class="w-full truncate rounded px-1 text-[10px] text-white"
+              class="w-full truncate rounded-md px-1 text-[10px] font-bold text-white"
               [style.background]="calendarColor(o.collectionId)"
             >{{ o.title }}</span>
-            <span *ngIf="cell.occurrences.length > 3" class="text-[10px] text-gray-500">+{{ cell.occurrences.length - 3 }} more</span>
+            <span *ngIf="cell.occurrences.length > 3" class="text-[10px] font-bold text-ink-muted">+{{ cell.occurrences.length - 3 }} more</span>
           </button>
         </ng-container>
       </div>
@@ -95,101 +95,101 @@
         (selectDay)="onGridSelectDay($event)"
         (deleteOccurrence)="deleteOccurrence($event)"
       ></app-time-grid>
-      <p class="mt-1.5 text-xs text-gray-400">Drag on the grid to add an event, or drag an event to reschedule it.</p>
+      <p class="mt-1.5 text-xs font-semibold text-ink-muted">Drag on the grid to add an event, or drag an event to reschedule it.</p>
     </div>
 
     <!-- Selected day detail -->
-    <div *ngIf="selectedDayKey" class="mt-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+    <div *ngIf="selectedDayKey" class="mt-4 rounded-3xl bg-white p-4 shadow-sticker">
       <div class="flex items-center justify-between">
-        <h2 class="font-medium text-gray-900">{{ selectedDayKey }}</h2>
-        <button type="button" (click)="openNewEventForm(selectedDayKey)" class="text-sm font-medium text-blue-600 hover:text-blue-500">+ Add event</button>
+        <h2 class="font-heading font-bold text-ink">{{ selectedDayKey }}</h2>
+        <button type="button" (click)="openNewEventForm(selectedDayKey)" class="text-sm font-extrabold text-coral hover:text-coral-strong">+ Add event</button>
       </div>
 
       <ul class="mt-2 space-y-2">
-        <li *ngFor="let o of selectedDayOccurrences" class="flex items-start gap-2 rounded-md border border-gray-100 px-2 py-1.5">
+        <li *ngFor="let o of selectedDayOccurrences" class="flex items-start gap-2 rounded-2xl bg-cork px-2 py-1.5">
           <span class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full" [style.background]="calendarColor(o.collectionId)"></span>
           <div class="min-w-0 flex-1">
-            <p class="text-sm font-medium text-gray-900">{{ o.title }}</p>
-            <p class="text-xs text-gray-500">
+            <p class="text-sm font-bold text-ink">{{ o.title }}</p>
+            <p class="text-xs font-semibold text-ink-muted">
               <ng-container *ngIf="o.allDay; else timeRange">All day</ng-container>
               <ng-template #timeRange>{{ o.from | date: 'shortTime' }}<ng-container *ngIf="o.until"> – {{ o.until | date: 'shortTime' }}</ng-container></ng-template>
               · {{ calendarName(o.collectionId) }}
             </p>
-            <p *ngIf="o.location" class="text-xs text-gray-500">📍 {{ o.location }}</p>
+            <p *ngIf="o.location" class="text-xs font-semibold text-ink-muted">📍 {{ o.location }}</p>
             <div class="mt-1 flex flex-wrap gap-1">
               <span
                 *ngFor="let memberId of o.assignedFamilyMemberIds"
-                class="rounded-full px-2 py-0.5 text-[10px] font-medium text-white"
+                class="rounded-full px-2 py-0.5 text-[10px] font-extrabold text-white"
                 [style.background]="memberColor(memberId)"
               >{{ memberName(memberId) }}</span>
             </div>
           </div>
-          <button type="button" (click)="deleteOccurrence(o)" class="shrink-0 text-gray-300 hover:text-red-600" aria-label="Delete">✕</button>
+          <button type="button" (click)="deleteOccurrence(o)" class="shrink-0 text-ink-muted hover:text-danger" aria-label="Delete">✕</button>
         </li>
 
-        <li *ngIf="selectedDayOccurrences.length === 0" class="text-sm text-gray-500">Nothing on this day.</li>
+        <li *ngIf="selectedDayOccurrences.length === 0" class="text-sm font-semibold text-ink-muted">Nothing on this day.</li>
       </ul>
     </div>
 
     <!-- New event form -->
-    <div *ngIf="showNewEventForm" class="mt-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+    <div *ngIf="showNewEventForm" class="mt-4 rounded-3xl bg-white p-4 shadow-sticker">
       <form (ngSubmit)="submitNewEvent()" #form="ngForm" class="space-y-3">
         <div>
-          <label for="calendarId" class="block text-sm font-medium text-gray-700">Calendar</label>
+          <label for="calendarId" class="block text-sm font-bold text-ink">Calendar</label>
           <select
             id="calendarId"
             name="calendarId"
             [(ngModel)]="newEvent.calendarId"
             required
-            class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           >
             <option *ngFor="let calendar of eventableCalendars" [ngValue]="calendar.id">{{ calendar.name }}</option>
           </select>
         </div>
         <div>
-          <label for="eventTitle" class="block text-sm font-medium text-gray-700">Event</label>
+          <label for="eventTitle" class="block text-sm font-bold text-ink">Event</label>
           <input
             id="eventTitle"
             name="eventTitle"
             [(ngModel)]="newEvent.title"
             required
-            class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           />
         </div>
-        <label class="flex items-center gap-2 text-sm text-gray-600">
-          <input type="checkbox" name="allDay" [(ngModel)]="newEvent.allDay" class="rounded border-gray-300" />
+        <label class="flex items-center gap-2 text-sm font-semibold text-ink-muted">
+          <input type="checkbox" name="allDay" [(ngModel)]="newEvent.allDay" class="rounded-md accent-coral" />
           All day
         </label>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label for="eventStart" class="block text-sm font-medium text-gray-700">Start</label>
+            <label for="eventStart" class="block text-sm font-bold text-ink">Start</label>
             <input
               id="eventStart"
               [type]="newEvent.allDay ? 'date' : 'datetime-local'"
               name="eventStart"
               [(ngModel)]="newEvent.start"
               required
-              class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
             />
           </div>
           <div>
-            <label for="eventEnd" class="block text-sm font-medium text-gray-700">End</label>
+            <label for="eventEnd" class="block text-sm font-bold text-ink">End</label>
             <input
               id="eventEnd"
               [type]="newEvent.allDay ? 'date' : 'datetime-local'"
               name="eventEnd"
               [(ngModel)]="newEvent.end"
-              class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
             />
           </div>
         </div>
         <div>
-          <label for="repeat" class="block text-sm font-medium text-gray-700">Repeat</label>
+          <label for="repeat" class="block text-sm font-bold text-ink">Repeat</label>
           <select
             id="repeat"
             name="repeat"
             [(ngModel)]="newEvent.repeat"
-            class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           >
             <option value="never">Never</option>
             <option value="daily">Daily</option>
@@ -198,33 +198,33 @@
           </select>
         </div>
         <div>
-          <label for="eventLocation" class="block text-sm font-medium text-gray-700">Location</label>
+          <label for="eventLocation" class="block text-sm font-bold text-ink">Location</label>
           <input
             id="eventLocation"
             name="eventLocation"
             [(ngModel)]="newEvent.location"
-            class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           />
         </div>
         <div>
-          <label for="eventDescription" class="block text-sm font-medium text-gray-700">Notes</label>
+          <label for="eventDescription" class="block text-sm font-bold text-ink">Notes</label>
           <textarea
             id="eventDescription"
             name="eventDescription"
             [(ngModel)]="newEvent.description"
             rows="2"
-            class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           ></textarea>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Assigned to</label>
+          <label class="block text-sm font-bold text-ink">Assigned to</label>
           <div class="mt-1 flex flex-wrap gap-2">
-            <label *ngFor="let member of members" class="flex items-center gap-1.5 rounded-full border border-gray-300 px-2.5 py-1 text-xs text-gray-700 has-checked:border-blue-500 has-checked:bg-blue-50">
+            <label *ngFor="let member of members" class="flex items-center gap-1.5 rounded-full border-2 border-border-soft px-2.5 py-1 text-xs font-bold text-ink has-checked:border-coral has-checked:bg-pastel-coral">
               <input
                 type="checkbox"
                 [checked]="newEvent.assignedFamilyMemberIds.includes(member.id)"
                 (change)="toggleAssignee(member.id)"
-                class="h-3.5 w-3.5 rounded border-gray-300"
+                class="h-3.5 w-3.5 rounded-md accent-coral"
               />
               {{ member.displayName }}
             </label>
@@ -232,17 +232,17 @@
         </div>
 
         <div class="flex gap-2 pt-1">
-          <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50">
+          <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
             Add event
           </button>
-          <button type="button" (click)="showNewEventForm = false" class="rounded-md px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
+          <button type="button" (click)="showNewEventForm = false" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">
             Cancel
           </button>
         </div>
       </form>
     </div>
 
-    <p *ngIf="eventableCalendars.length === 0" class="mt-4 text-sm text-gray-500">
+    <p *ngIf="eventableCalendars.length === 0" class="mt-4 text-sm font-semibold text-ink-muted">
       Add a calendar in the sidebar to start adding events.
     </p>
 
@@ -250,7 +250,7 @@
       *ngIf="!showNewEventForm && eventableCalendars.length > 0"
       type="button"
       (click)="openNewEventForm()"
-      class="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-2xl text-white shadow-lg hover:bg-blue-500 sm:bottom-6"
+      class="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-coral text-2xl text-white shadow-button hover:bg-coral-strong sm:bottom-6"
       aria-label="Add event"
     >+</button>
   </div>
@@ -259,21 +259,21 @@
   <aside class="space-y-6">
     <section>
       <div class="flex items-center justify-between">
-        <h2 class="text-sm font-semibold text-gray-900">Calendars</h2>
-        <button type="button" (click)="openNewCalendarForm('Calendar')" class="text-xs font-medium text-blue-600 hover:text-blue-500">+ Add</button>
+        <h2 class="font-heading text-sm font-bold text-ink">Calendars</h2>
+        <button type="button" (click)="openNewCalendarForm('Calendar')" class="text-xs font-extrabold text-coral hover:text-coral-strong">+ Add</button>
       </div>
       <ul class="mt-2 space-y-2">
-        <li *ngFor="let calendar of plainCalendars" class="rounded-lg border border-gray-200 bg-white p-2.5">
+        <li *ngFor="let calendar of plainCalendars" class="rounded-2xl bg-white p-2.5 shadow-sticker-sm">
           <div class="flex flex-wrap items-center gap-2">
-            <label class="flex flex-1 items-center gap-2 text-sm text-gray-900">
-              <input type="checkbox" [checked]="!hiddenCalendarIds.has(calendar.id)" (change)="toggleCalendarVisibility(calendar.id)" class="rounded border-gray-300" />
+            <label class="flex flex-1 items-center gap-2 text-sm font-bold text-ink">
+              <input type="checkbox" [checked]="!hiddenCalendarIds.has(calendar.id)" (change)="toggleCalendarVisibility(calendar.id)" class="rounded-md accent-coral" />
               <span class="h-3 w-3 shrink-0 rounded-full" [style.background]="calendar.color"></span>
               <span class="truncate">{{ calendar.name }}</span>
             </label>
           </div>
           <div class="mt-1 flex flex-wrap gap-x-2 gap-y-1 pl-5 text-xs">
-            <button type="button" (click)="getFeedUrl(calendar)" class="font-medium text-blue-600 hover:text-blue-500">Subscribe link</button>
-            <button type="button" (click)="startImport(calendar.id)" class="font-medium text-blue-600 hover:text-blue-500">Import .ics</button>
+            <button type="button" (click)="getFeedUrl(calendar)" class="font-extrabold text-coral hover:text-coral-strong">Subscribe link</button>
+            <button type="button" (click)="startImport(calendar.id)" class="font-extrabold text-coral hover:text-coral-strong">Import .ics</button>
           </div>
           <input
             *ngIf="importingCalendarId === calendar.id"
@@ -288,54 +288,54 @@
             readonly
             [value]="feedUrlByCalendarId[calendar.id]"
             onclick="this.select()"
-            class="mt-1 ml-5 w-[calc(100%-1.25rem)] rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-600"
+            class="mt-1 ml-5 w-[calc(100%-1.25rem)] rounded-lg border-2 border-border-soft px-2 py-1 text-xs font-semibold text-ink-muted"
           />
         </li>
 
-        <li *ngIf="plainCalendars.length === 0" class="text-sm text-gray-500">No calendars yet.</li>
+        <li *ngIf="plainCalendars.length === 0" class="text-sm font-semibold text-ink-muted">No calendars yet.</li>
       </ul>
 
-      <form *ngIf="showNewCalendarForm && newCalendarType === 'Calendar'" (ngSubmit)="submitNewCalendar()" #calForm="ngForm" class="mt-2 space-y-2 rounded-lg border border-gray-200 bg-white p-2.5">
+      <form *ngIf="showNewCalendarForm && newCalendarType === 'Calendar'" (ngSubmit)="submitNewCalendar()" #calForm="ngForm" class="mt-2 space-y-2 rounded-2xl bg-white p-2.5 shadow-sticker-sm">
         <div class="flex items-end gap-2">
           <div class="flex-1">
-            <label for="calendarName" class="block text-xs font-medium text-gray-700">Name</label>
+            <label for="calendarName" class="block text-xs font-bold text-ink">Name</label>
             <input
               id="calendarName"
               name="calendarName"
               placeholder="e.g. Family, Work…"
               [(ngModel)]="newCalendarName"
               required
-              class="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              class="mt-1 block w-full rounded-lg border-2 border-border-soft px-2 py-1.5 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
             />
           </div>
-          <input type="color" name="calendarColor" [(ngModel)]="newCalendarColor" class="h-9 w-10 rounded-md border border-gray-300" />
+          <input type="color" name="calendarColor" [(ngModel)]="newCalendarColor" class="h-9 w-10 rounded-lg border-2 border-border-soft" />
         </div>
         <div class="flex gap-2">
-          <button type="submit" [disabled]="calForm.invalid" class="flex-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50">
+          <button type="submit" [disabled]="calForm.invalid" class="flex-1 rounded-full bg-coral px-3 py-1.5 text-xs font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
             Add
           </button>
-          <button type="button" (click)="showNewCalendarForm = false" class="rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100">Cancel</button>
+          <button type="button" (click)="showNewCalendarForm = false" class="rounded-full px-3 py-1.5 text-xs font-bold text-ink-muted hover:bg-cork">Cancel</button>
         </div>
       </form>
     </section>
 
     <section>
       <div class="flex items-center justify-between">
-        <h2 class="text-sm font-semibold text-gray-900">Schedules</h2>
-        <button type="button" (click)="openNewCalendarForm('Schedule')" class="text-xs font-medium text-blue-600 hover:text-blue-500">+ Add</button>
+        <h2 class="font-heading text-sm font-bold text-ink">Schedules</h2>
+        <button type="button" (click)="openNewCalendarForm('Schedule')" class="text-xs font-extrabold text-coral hover:text-coral-strong">+ Add</button>
       </div>
       <ul class="mt-2 space-y-2">
-        <li *ngFor="let schedule of schedules" class="rounded-lg border border-gray-200 bg-white p-2.5">
+        <li *ngFor="let schedule of schedules" class="rounded-2xl bg-white p-2.5 shadow-sticker-sm">
           <div class="flex flex-wrap items-center gap-2">
-            <label class="flex flex-1 items-center gap-2 text-sm text-gray-900">
-              <input type="checkbox" [checked]="!hiddenCalendarIds.has(schedule.id)" (change)="toggleCalendarVisibility(schedule.id)" class="rounded border-gray-300" />
+            <label class="flex flex-1 items-center gap-2 text-sm font-bold text-ink">
+              <input type="checkbox" [checked]="!hiddenCalendarIds.has(schedule.id)" (change)="toggleCalendarVisibility(schedule.id)" class="rounded-md accent-coral" />
               <span class="h-3 w-3 shrink-0 rounded-full" [style.background]="schedule.color"></span>
               <span class="truncate">{{ schedule.name }}</span>
             </label>
           </div>
           <div class="mt-1 flex flex-wrap gap-x-2 gap-y-1 pl-5 text-xs">
-            <a [routerLink]="['/calendar/schedules', schedule.id]" class="font-medium text-blue-600 hover:text-blue-500">Edit schedule</a>
-            <button type="button" (click)="getFeedUrl(schedule)" class="font-medium text-blue-600 hover:text-blue-500">Subscribe link</button>
+            <a [routerLink]="['/calendar/schedules', schedule.id]" class="font-extrabold text-coral hover:text-coral-strong">Edit schedule</a>
+            <button type="button" (click)="getFeedUrl(schedule)" class="font-extrabold text-coral hover:text-coral-strong">Subscribe link</button>
           </div>
           <input
             *ngIf="feedUrlByCalendarId[schedule.id]"
@@ -343,33 +343,33 @@
             readonly
             [value]="feedUrlByCalendarId[schedule.id]"
             onclick="this.select()"
-            class="mt-1 ml-5 w-[calc(100%-1.25rem)] rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-600"
+            class="mt-1 ml-5 w-[calc(100%-1.25rem)] rounded-lg border-2 border-border-soft px-2 py-1 text-xs font-semibold text-ink-muted"
           />
         </li>
 
-        <li *ngIf="schedules.length === 0" class="text-sm text-gray-500">No schedules yet.</li>
+        <li *ngIf="schedules.length === 0" class="text-sm font-semibold text-ink-muted">No schedules yet.</li>
       </ul>
 
-      <form *ngIf="showNewCalendarForm && newCalendarType === 'Schedule'" (ngSubmit)="submitNewCalendar()" #schedForm="ngForm" class="mt-2 space-y-2 rounded-lg border border-gray-200 bg-white p-2.5">
+      <form *ngIf="showNewCalendarForm && newCalendarType === 'Schedule'" (ngSubmit)="submitNewCalendar()" #schedForm="ngForm" class="mt-2 space-y-2 rounded-2xl bg-white p-2.5 shadow-sticker-sm">
         <div class="flex items-end gap-2">
           <div class="flex-1">
-            <label for="scheduleName" class="block text-xs font-medium text-gray-700">Name</label>
+            <label for="scheduleName" class="block text-xs font-bold text-ink">Name</label>
             <input
               id="scheduleName"
               name="scheduleName"
               placeholder="e.g. School schedule…"
               [(ngModel)]="newCalendarName"
               required
-              class="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              class="mt-1 block w-full rounded-lg border-2 border-border-soft px-2 py-1.5 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
             />
           </div>
-          <input type="color" name="scheduleColor" [(ngModel)]="newCalendarColor" class="h-9 w-10 rounded-md border border-gray-300" />
+          <input type="color" name="scheduleColor" [(ngModel)]="newCalendarColor" class="h-9 w-10 rounded-lg border-2 border-border-soft" />
         </div>
         <div class="flex gap-2">
-          <button type="submit" [disabled]="schedForm.invalid" class="flex-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50">
+          <button type="submit" [disabled]="schedForm.invalid" class="flex-1 rounded-full bg-coral px-3 py-1.5 text-xs font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
             Add
           </button>
-          <button type="button" (click)="showNewCalendarForm = false" class="rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100">Cancel</button>
+          <button type="button" (click)="showNewCalendarForm = false" class="rounded-full px-3 py-1.5 text-xs font-bold text-ink-muted hover:bg-cork">Cancel</button>
         </div>
       </form>
     </section>
