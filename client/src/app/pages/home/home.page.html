@@ -29,9 +29,9 @@
     <div cdkDragHandle class="mb-2 flex cursor-grab items-center justify-between gap-2 active:cursor-grabbing">
       <h2 class="text-sm font-semibold text-gray-900">{{ widgetTitle(widget) }}</h2>
       <div class="flex items-center gap-2">
-        <button type="button" (click)="cycleWidgetWidth(widget)" class="text-gray-400 hover:text-blue-600" aria-label="Resize widget" title="Resize">↔</button>
-        <button type="button" (click)="openEditWidgetForm(widget)" class="text-xs font-medium text-blue-600 hover:text-blue-500" aria-label="Configure widget">⚙</button>
-        <button type="button" (click)="removeWidget(widget)" class="text-gray-400 hover:text-red-600" aria-label="Remove widget">✕</button>
+        <button type="button" (click)="cycleWidgetWidth(widget)" class="text-gray-400 hover:text-blue-600" aria-label="Resize widget" title="Resize widget">↔</button>
+        <button type="button" (click)="openEditWidgetForm(widget)" class="text-xs font-medium text-blue-600 hover:text-blue-500" aria-label="Configure widget" title="Configure widget">⚙</button>
+        <button type="button" (click)="removeWidget(widget)" class="text-gray-400 hover:text-red-600" aria-label="Remove widget" title="Remove widget">✕</button>
       </div>
     </div>
 
