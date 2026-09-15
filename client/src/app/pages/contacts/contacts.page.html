@@ -90,13 +90,13 @@
 
 <div *ngIf="!loading" class="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
   <!-- Scrollable contact list -->
-  <div class="rounded-3xl bg-white shadow-sticker lg:h-[calc(100vh-11rem)] lg:overflow-y-auto">
+  <div class="overflow-hidden rounded-3xl bg-white shadow-sticker lg:max-h-[calc(100vh-11rem)] lg:overflow-y-auto">
     <ul class="divide-y divide-cork">
       <li *ngFor="let contact of contacts">
         <button
           type="button"
           (click)="selectContact(contact)"
-          class="flex w-full items-center gap-2.5 px-3 py-2.5 text-left first:rounded-t-3xl last:rounded-b-3xl hover:bg-cork"
+          class="flex w-full items-center gap-2.5 px-3 py-2.5 text-left hover:bg-cork"
           [class.bg-pastel-coral]="contact.id === selectedContactId"
         >
           <span
