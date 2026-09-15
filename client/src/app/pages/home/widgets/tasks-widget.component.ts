@@ -3,8 +3,8 @@ import { forkJoin, of, switchMap } from 'rxjs';
 import { Auth } from '../../../core/auth';
 import { Collections } from '../../../core/collections';
 import { FamilyMembers } from '../../../core/family-members';
-import { FamilyMemberResponse, NodeResponse, UpdateNodeRequest } from '../../../core/models';
-import { Nodes } from '../../../core/nodes';
+import { FamilyMemberResponse, NodeResponse } from '../../../core/models';
+import { Nodes, toggleTaskCompletionRequest } from '../../../core/nodes';
 
 const MAX_TASKS_SHOWN = 8;
 
@@ -83,32 +83,7 @@ export class TasksWidgetComponent implements OnInit {
   }
 
   toggleDone(task: NodeResponse) {
-    const request: UpdateNodeRequest = {
-      title: task.title,
-      description: task.description,
-      from: task.from,
-      until: task.until,
-      assignedFamilyMemberIds: task.assignedFamilyMemberIds,
-      collectionId: task.collectionId,
-      isImportant: null,
-      isCompleted: true,
-      priority: task.priority,
-      category: task.category,
-      location: null,
-      allDay: null,
-      recurrenceRule: null,
-      firstName: null,
-      lastName: null,
-      dateOfBirth: null,
-      street: null,
-      city: null,
-      postalCode: null,
-      country: null,
-      phoneNumbers: null,
-      emails: null,
-    };
-
-    this.nodesApi.update(task.id, request).subscribe({
+    this.nodesApi.update(task.id, toggleTaskCompletionRequest(task, true)).subscribe({
       next: () => {
         this.tasks = this.tasks.filter((t) => t.id !== task.id);
         this.cdr.markForCheck();

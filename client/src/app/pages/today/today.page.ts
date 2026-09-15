@@ -1,19 +1,20 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { forkJoin } from 'rxjs';
-import { dueTasks, groupByMember, MemberGroup, occurrenceToAgendaItem, taskToAgendaItem } from '../../../core/agenda';
-import { CalendarApi } from '../../../core/calendar';
-import { FamilyMembers } from '../../../core/family-members';
-import { NodeResponse } from '../../../core/models';
-import { Nodes, toggleTaskCompletionRequest } from '../../../core/nodes';
+import { dueTasks, groupByMember, MemberGroup, occurrenceToAgendaItem, taskToAgendaItem } from '../../core/agenda';
+import { CalendarApi } from '../../core/calendar';
+import { FamilyMembers } from '../../core/family-members';
+import { NodeResponse } from '../../core/models';
+import { Nodes, toggleTaskCompletionRequest } from '../../core/nodes';
 
 @Component({
-  selector: 'app-today-widget',
-  templateUrl: './today-widget.component.html',
+  selector: 'app-today',
+  templateUrl: './today.page.html',
   standalone: false,
 })
-export class TodayWidgetComponent implements OnInit {
+export class TodayPage implements OnInit {
   loading = true;
   groups: MemberGroup[] = [];
+  todayLabel = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
 
   constructor(
     private readonly nodesApi: Nodes,

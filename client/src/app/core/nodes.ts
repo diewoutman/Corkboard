@@ -29,6 +29,26 @@ export const NULL_NOTE_FIELDS = {
   isImportant: null,
 } as const;
 
+/** Builds the UpdateNodeRequest to toggle a Task's done state, preserving its other fields — used by every compact task checkbox (Today/Upcoming/Tasks widget). */
+export function toggleTaskCompletionRequest(task: NodeResponse, isCompleted: boolean): UpdateNodeRequest {
+  return {
+    title: task.title,
+    description: task.description,
+    from: task.from,
+    until: task.until,
+    assignedFamilyMemberIds: task.assignedFamilyMemberIds,
+    collectionId: task.collectionId,
+    isImportant: null,
+    isCompleted,
+    priority: task.priority,
+    category: task.category,
+    location: null,
+    allDay: null,
+    recurrenceRule: task.recurrenceRule,
+    ...NULL_CONTACT_FIELDS,
+  };
+}
+
 @Service()
 export class Nodes {
   private readonly http = inject(HttpClient);
