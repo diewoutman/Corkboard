@@ -46,7 +46,6 @@ export class CalendarPage implements OnInit {
 
   loading = true;
   errorMessage: string | null = null;
-  showCalendarsPanel = false;
 
   selectedDayKey: string | null = null;
 
@@ -136,6 +135,16 @@ export class CalendarPage implements OnInit {
     return this.calendars.filter((c) => c.type === 'Calendar');
   }
 
+  /** Sidebar's "Calendars" section — same set as eventableCalendars, named for template clarity. */
+  get plainCalendars(): CollectionResponse[] {
+    return this.eventableCalendars;
+  }
+
+  /** Sidebar's "Schedules" section. */
+  get schedules(): CollectionResponse[] {
+    return this.calendars.filter((c) => c.type === 'Schedule');
+  }
+
   loadOccurrences() {
     this.loading = true;
     this.errorMessage = null;
@@ -212,6 +221,11 @@ export class CalendarPage implements OnInit {
       this.hiddenCalendarIds.add(id);
     }
     this.buildGrid(startOfWeek(this.monthStart, { weekStartsOn: 1 }), endOfWeek(endOfMonth(this.monthStart), { weekStartsOn: 1 }));
+  }
+
+  openNewCalendarForm(type: 'Calendar' | 'Schedule') {
+    this.newCalendarType = type;
+    this.showNewCalendarForm = true;
   }
 
   submitNewCalendar() {
