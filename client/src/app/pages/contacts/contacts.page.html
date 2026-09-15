@@ -1,166 +1,166 @@
 <div class="flex items-center justify-between gap-2">
-  <h1 class="text-2xl font-semibold text-gray-900">Contacts</h1>
-  <button type="button" (click)="showHouseholdsPanel = !showHouseholdsPanel" class="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50">
+  <h1 class="text-2xl font-extrabold text-ink">Contacts 📇</h1>
+  <button type="button" (click)="showHouseholdsPanel = !showHouseholdsPanel" class="rounded-full border-2 border-border-soft px-3 py-1.5 text-sm font-bold text-ink hover:bg-cork">
     Households ({{ households.length }})
   </button>
 </div>
 
-<p *ngIf="errorMessage" class="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage }}</p>
+<p *ngIf="errorMessage" class="mt-4 rounded-2xl bg-danger-bg px-3 py-2 text-sm font-semibold text-danger-text">{{ errorMessage }}</p>
 
 <!-- Households panel: shared addresses contacts can fall back to -->
-<div *ngIf="showHouseholdsPanel" class="mt-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+<div *ngIf="showHouseholdsPanel" class="mt-4 rounded-3xl bg-white p-4 shadow-sticker">
   <ul class="space-y-2">
-    <li *ngFor="let household of households" class="flex items-start justify-between gap-2 rounded-md border border-gray-100 px-2 py-1.5">
+    <li *ngFor="let household of households" class="flex items-start justify-between gap-2 rounded-2xl bg-cork px-3 py-2">
       <div>
-        <p class="text-sm font-medium text-gray-900">{{ household.name }}</p>
-        <p *ngIf="household.street || household.city" class="text-xs text-gray-500">
+        <p class="text-sm font-bold text-ink">{{ household.name }}</p>
+        <p *ngIf="household.street || household.city" class="text-xs font-semibold text-ink-muted">
           {{ household.street }}<ng-container *ngIf="household.street && (household.city || household.postalCode)">, </ng-container>{{ household.postalCode }} {{ household.city }}<ng-container *ngIf="household.country">, {{ household.country }}</ng-container>
         </p>
       </div>
-      <button type="button" (click)="openEditHouseholdForm(household)" class="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-500">Edit</button>
+      <button type="button" (click)="openEditHouseholdForm(household)" class="shrink-0 text-xs font-extrabold text-coral hover:text-coral-strong">Edit</button>
     </li>
-    <li *ngIf="households.length === 0" class="text-sm text-gray-500">No households yet.</li>
+    <li *ngIf="households.length === 0" class="text-sm font-semibold text-ink-muted">No households yet.</li>
   </ul>
 
   <form *ngIf="showHouseholdForm" (ngSubmit)="submitHouseholdForm()" #householdFormRef="ngForm" class="mt-3 space-y-2">
     <div>
-      <label for="householdName" class="block text-sm font-medium text-gray-700">Name</label>
+      <label for="householdName" class="block text-sm font-bold text-ink">Name</label>
       <input
         id="householdName"
         name="householdName"
         placeholder="e.g. Jansen"
         [(ngModel)]="householdForm.name"
         required
-        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       />
     </div>
     <div>
-      <label for="householdStreet" class="block text-sm font-medium text-gray-700">Street <span class="text-gray-400">(optional)</span></label>
+      <label for="householdStreet" class="block text-sm font-bold text-ink">Street <span class="font-semibold text-ink-muted">(optional)</span></label>
       <input
         id="householdStreet"
         name="householdStreet"
         [(ngModel)]="householdForm.street"
-        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       />
     </div>
     <div class="grid grid-cols-2 gap-2">
       <div>
-        <label for="householdPostalCode" class="block text-sm font-medium text-gray-700">Postal code</label>
+        <label for="householdPostalCode" class="block text-sm font-bold text-ink">Postal code</label>
         <input
           id="householdPostalCode"
           name="householdPostalCode"
           [(ngModel)]="householdForm.postalCode"
-          class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
         />
       </div>
       <div>
-        <label for="householdCity" class="block text-sm font-medium text-gray-700">City</label>
+        <label for="householdCity" class="block text-sm font-bold text-ink">City</label>
         <input
           id="householdCity"
           name="householdCity"
           [(ngModel)]="householdForm.city"
-          class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
         />
       </div>
     </div>
     <div>
-      <label for="householdCountry" class="block text-sm font-medium text-gray-700">Country</label>
+      <label for="householdCountry" class="block text-sm font-bold text-ink">Country</label>
       <input
         id="householdCountry"
         name="householdCountry"
         [(ngModel)]="householdForm.country"
-        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       />
     </div>
     <div class="flex gap-2 pt-1">
-      <button type="submit" [disabled]="householdFormRef.invalid" class="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50">
+      <button type="submit" [disabled]="householdFormRef.invalid" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
         {{ editingHouseholdId ? 'Save changes' : 'Add household' }}
       </button>
-      <button type="button" (click)="cancelHouseholdForm()" class="rounded-md px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
+      <button type="button" (click)="cancelHouseholdForm()" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">
         Cancel
       </button>
     </div>
   </form>
-  <button *ngIf="!showHouseholdForm" type="button" (click)="openNewHouseholdForm()" class="mt-3 text-sm font-medium text-blue-600 hover:text-blue-500">
+  <button *ngIf="!showHouseholdForm" type="button" (click)="openNewHouseholdForm()" class="mt-3 text-sm font-extrabold text-coral hover:text-coral-strong">
     + Add a household
   </button>
 </div>
 
-<div *ngIf="loading" class="mt-8 text-center text-sm text-gray-500">Loading…</div>
+<div *ngIf="loading" class="mt-8 text-center text-sm font-semibold text-ink-muted">Loading…</div>
 
 <div *ngIf="!loading" class="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
   <!-- Scrollable contact list -->
-  <div class="rounded-lg border border-gray-200 bg-white lg:h-[calc(100vh-11rem)] lg:overflow-y-auto">
-    <ul class="divide-y divide-gray-100">
+  <div class="rounded-3xl bg-white shadow-sticker lg:h-[calc(100vh-11rem)] lg:overflow-y-auto">
+    <ul class="divide-y divide-cork">
       <li *ngFor="let contact of contacts">
         <button
           type="button"
           (click)="selectContact(contact)"
-          class="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left hover:bg-gray-50"
-          [class.bg-blue-50]="contact.id === selectedContactId"
+          class="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left first:rounded-t-3xl last:rounded-b-3xl hover:bg-cork"
+          [class.bg-pastel-coral]="contact.id === selectedContactId"
         >
-          <span class="truncate text-sm font-medium text-gray-900">
+          <span class="truncate text-sm font-bold text-ink">
             {{ contact.firstName }}<ng-container *ngIf="contact.lastName"> {{ contact.lastName }}</ng-container>
           </span>
-          <span *ngIf="contact.collectionId" class="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-700">
+          <span *ngIf="contact.collectionId" class="shrink-0 rounded-full bg-badge-bg px-2 py-0.5 text-[10px] font-extrabold text-badge-text">
             {{ householdName(contact.collectionId) }}
           </span>
         </button>
       </li>
     </ul>
 
-    <p *ngIf="contacts.length === 0" class="px-4 py-8 text-center text-sm text-gray-500">No contacts here yet.</p>
+    <p *ngIf="contacts.length === 0" class="px-4 py-8 text-center text-sm font-semibold text-ink-muted">No contacts here yet.</p>
   </div>
 
   <!-- Detail panel for the selected contact, or the add/edit form -->
-  <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm lg:sticky lg:top-20">
+  <div class="rounded-3xl bg-white p-4 shadow-sticker lg:sticky lg:top-20">
     <form *ngIf="showContactForm; else detail" (ngSubmit)="submitContactForm()" #form="ngForm" class="space-y-3">
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label for="firstName" class="block text-sm font-medium text-gray-700">First name</label>
+          <label for="firstName" class="block text-sm font-bold text-ink">First name</label>
           <input
             id="firstName"
             name="firstName"
             [(ngModel)]="contactForm.firstName"
             required
-            class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           />
         </div>
         <div>
-          <label for="lastName" class="block text-sm font-medium text-gray-700">Last name <span class="text-gray-400">(optional)</span></label>
+          <label for="lastName" class="block text-sm font-bold text-ink">Last name <span class="font-semibold text-ink-muted">(optional)</span></label>
           <input
             id="lastName"
             name="lastName"
             [(ngModel)]="contactForm.lastName"
-            class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           />
         </div>
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700">Phone numbers <span class="text-gray-400">(optional)</span></label>
+        <label class="block text-sm font-bold text-ink">Phone numbers <span class="font-semibold text-ink-muted">(optional)</span></label>
         <div *ngFor="let phone of contactForm.phoneNumbers; let i = index" class="mt-1 flex gap-2">
           <input
             [name]="'phoneNumber' + i"
             [attr.name]="'phoneNumber' + i"
             placeholder="Phone number"
             [(ngModel)]="phone.number"
-            class="block w-1/2 rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            class="block w-1/2 rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           />
           <input
             [name]="'phoneLabel' + i"
             [attr.name]="'phoneLabel' + i"
             placeholder="Label (optional)"
             [(ngModel)]="phone.label"
-            class="block w-1/2 rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            class="block w-1/2 rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           />
-          <button type="button" (click)="removePhoneRow(i)" class="shrink-0 text-gray-400 hover:text-red-600" aria-label="Remove">✕</button>
+          <button type="button" (click)="removePhoneRow(i)" class="shrink-0 text-ink-muted hover:text-danger" aria-label="Remove">✕</button>
         </div>
-        <button type="button" (click)="addPhoneRow()" class="mt-1 text-xs font-medium text-blue-600 hover:text-blue-500">+ Add phone number</button>
+        <button type="button" (click)="addPhoneRow()" class="mt-1 text-xs font-extrabold text-coral hover:text-coral-strong">+ Add phone number</button>
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700">Email addresses <span class="text-gray-400">(optional)</span></label>
+        <label class="block text-sm font-bold text-ink">Email addresses <span class="font-semibold text-ink-muted">(optional)</span></label>
         <div *ngFor="let email of contactForm.emails; let i = index" class="mt-1 flex gap-2">
           <input
             [name]="'email' + i"
@@ -168,38 +168,38 @@
             type="email"
             placeholder="Email address"
             [(ngModel)]="email.email"
-            class="block w-1/2 rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            class="block w-1/2 rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           />
           <input
             [name]="'emailLabel' + i"
             [attr.name]="'emailLabel' + i"
             placeholder="Label (optional)"
             [(ngModel)]="email.label"
-            class="block w-1/2 rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            class="block w-1/2 rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           />
-          <button type="button" (click)="removeEmailRow(i)" class="shrink-0 text-gray-400 hover:text-red-600" aria-label="Remove">✕</button>
+          <button type="button" (click)="removeEmailRow(i)" class="shrink-0 text-ink-muted hover:text-danger" aria-label="Remove">✕</button>
         </div>
-        <button type="button" (click)="addEmailRow()" class="mt-1 text-xs font-medium text-blue-600 hover:text-blue-500">+ Add email address</button>
+        <button type="button" (click)="addEmailRow()" class="mt-1 text-xs font-extrabold text-coral hover:text-coral-strong">+ Add email address</button>
       </div>
 
       <div>
-        <label for="dateOfBirth" class="block text-sm font-medium text-gray-700">Birthday <span class="text-gray-400">(optional)</span></label>
+        <label for="dateOfBirth" class="block text-sm font-bold text-ink">Birthday <span class="font-semibold text-ink-muted">(optional)</span></label>
         <input
           id="dateOfBirth"
           type="date"
           name="dateOfBirth"
           [(ngModel)]="contactForm.dateOfBirth"
-          class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
         />
       </div>
 
       <div>
-        <label for="household" class="block text-sm font-medium text-gray-700">Household <span class="text-gray-400">(optional)</span></label>
+        <label for="household" class="block text-sm font-bold text-ink">Household <span class="font-semibold text-ink-muted">(optional)</span></label>
         <select
           id="household"
           name="household"
           [(ngModel)]="contactForm.householdId"
-          class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
         >
           <option value="">None</option>
           <option *ngFor="let household of households" [value]="household.id">{{ household.name }}</option>
@@ -207,15 +207,15 @@
       </div>
 
       <div>
-        <label for="contactStreet" class="block text-sm font-medium text-gray-700">
-          Address <span class="text-gray-400">(optional{{ contactForm.householdId ? ' — leave blank to use the household address' : '' }})</span>
+        <label for="contactStreet" class="block text-sm font-bold text-ink">
+          Address <span class="font-semibold text-ink-muted">(optional{{ contactForm.householdId ? ' — leave blank to use the household address' : '' }})</span>
         </label>
         <input
           id="contactStreet"
           name="contactStreet"
           placeholder="Street"
           [(ngModel)]="contactForm.street"
-          class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
         />
       </div>
       <div class="grid grid-cols-2 gap-2">
@@ -224,7 +224,7 @@
             name="contactPostalCode"
             placeholder="Postal code"
             [(ngModel)]="contactForm.postalCode"
-            class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            class="block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           />
         </div>
         <div>
@@ -232,7 +232,7 @@
             name="contactCity"
             placeholder="City"
             [(ngModel)]="contactForm.city"
-            class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            class="block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           />
         </div>
       </div>
@@ -240,14 +240,14 @@
         name="contactCountry"
         placeholder="Country"
         [(ngModel)]="contactForm.country"
-        class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        class="block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       />
 
       <div class="flex gap-2 pt-1">
-        <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50">
+        <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
           {{ editingContactId ? 'Save changes' : 'Add contact' }}
         </button>
-        <button type="button" (click)="cancelContactForm()" class="rounded-md px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
+        <button type="button" (click)="cancelContactForm()" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">
           Cancel
         </button>
       </div>
@@ -256,37 +256,37 @@
     <ng-template #detail>
       <ng-container *ngIf="selectedContact as contact; else noSelection">
         <div class="flex items-start justify-between gap-2">
-          <h2 class="text-lg font-semibold text-gray-900">
+          <h2 class="font-heading text-lg font-bold text-ink">
             {{ contact.firstName }}<ng-container *ngIf="contact.lastName"> {{ contact.lastName }}</ng-container>
           </h2>
           <div class="flex shrink-0 items-center gap-3">
-            <button type="button" (click)="openEditContactForm(contact)" class="text-xs font-medium text-blue-600 hover:text-blue-500">Edit</button>
-            <button type="button" (click)="deleteContact(contact)" class="text-gray-400 hover:text-red-600" aria-label="Delete">✕</button>
+            <button type="button" (click)="openEditContactForm(contact)" class="text-xs font-extrabold text-coral hover:text-coral-strong">Edit</button>
+            <button type="button" (click)="deleteContact(contact)" class="text-ink-muted hover:text-danger" aria-label="Delete">✕</button>
           </div>
         </div>
 
-        <span *ngIf="contact.collectionId" class="mt-2 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-700">
+        <span *ngIf="contact.collectionId" class="mt-2 inline-block rounded-full bg-badge-bg px-2 py-0.5 text-[10px] font-extrabold text-badge-text">
           {{ householdName(contact.collectionId) }}
         </span>
 
-        <p *ngIf="contact.dateOfBirth" class="mt-3 text-sm text-gray-600">🎂 {{ contact.dateOfBirth | date: 'longDate' }}</p>
+        <p *ngIf="contact.dateOfBirth" class="mt-3 text-sm font-semibold text-ink-muted">🎂 {{ contact.dateOfBirth | date: 'longDate' }}</p>
 
         <ul class="mt-3 space-y-1">
-          <li *ngFor="let phone of contact.phoneNumbers" class="text-sm text-gray-600">
-            📞 {{ phone.number }}<span *ngIf="phone.label" class="text-gray-400"> ({{ phone.label }})</span>
+          <li *ngFor="let phone of contact.phoneNumbers" class="text-sm font-semibold text-ink-muted">
+            📞 {{ phone.number }}<span *ngIf="phone.label"> ({{ phone.label }})</span>
           </li>
-          <li *ngFor="let email of contact.emails" class="text-sm text-gray-600">
-            ✉️ {{ email.email }}<span *ngIf="email.label" class="text-gray-400"> ({{ email.label }})</span>
+          <li *ngFor="let email of contact.emails" class="text-sm font-semibold text-ink-muted">
+            ✉️ {{ email.email }}<span *ngIf="email.label"> ({{ email.label }})</span>
           </li>
         </ul>
 
-        <p *ngIf="effectiveAddress(contact) as address" class="mt-3 text-sm text-gray-600">
-          📍 {{ address }}<span *ngIf="!isOwnAddress(contact)" class="text-gray-400"> (via {{ householdName(contact.collectionId) }})</span>
+        <p *ngIf="effectiveAddress(contact) as address" class="mt-3 text-sm font-semibold text-ink-muted">
+          📍 {{ address }}<span *ngIf="!isOwnAddress(contact)"> (via {{ householdName(contact.collectionId) }})</span>
         </p>
       </ng-container>
 
       <ng-template #noSelection>
-        <p class="py-8 text-center text-sm text-gray-500">Select a contact to see their details.</p>
+        <p class="py-8 text-center text-sm font-semibold text-ink-muted">Select a contact to see their details.</p>
       </ng-template>
     </ng-template>
   </div>
@@ -296,6 +296,6 @@
   *ngIf="!showContactForm"
   type="button"
   (click)="openNewContactForm()"
-  class="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-2xl text-white shadow-lg hover:bg-blue-500 sm:bottom-6"
+  class="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-coral text-2xl text-white shadow-button hover:bg-coral-strong sm:bottom-6"
   aria-label="Add contact"
 >+</button>
