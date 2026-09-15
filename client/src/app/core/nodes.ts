@@ -61,6 +61,10 @@ export class Nodes {
     return this.http.get<NodeResponse[]>(`${environment.apiUrl}/nodes`, { params });
   }
 
+  get(id: string) {
+    return this.http.get<NodeResponse>(`${environment.apiUrl}/nodes/${id}`);
+  }
+
   create(request: CreateNodeRequest) {
     return this.http.post<NodeResponse>(`${environment.apiUrl}/nodes`, request);
   }

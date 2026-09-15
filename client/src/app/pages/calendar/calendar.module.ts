@@ -5,9 +5,10 @@ import { FormsModule } from '@angular/forms';
 import { CalendarPageRoutingModule } from './calendar-routing.module';
 
 import { CalendarPage } from './calendar.page';
+import { TimeGridComponent } from './time-grid.component';
 
 @NgModule({
   imports: [CommonModule, FormsModule, CalendarPageRoutingModule],
-  declarations: [CalendarPage],
+  declarations: [CalendarPage, TimeGridComponent],
 })
 export class CalendarPageModule {}

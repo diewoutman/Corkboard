@@ -1,15 +1,19 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable, switchMap } from 'rxjs';
 import {
+  addDays,
   addMonths,
   eachDayOfInterval,
+  endOfDay,
   endOfMonth,
   endOfWeek,
   format,
   isSameMonth,
   isToday,
+  startOfDay,
   startOfMonth,
   startOfWeek,
+  subDays,
   subMonths,
 } from 'date-fns';
 import { CalendarApi } from '../../core/calendar';
@@ -29,6 +33,7 @@ interface DayCell {
 }
 
 type Repeat = 'never' | 'daily' | 'weekly' | 'monthly';
+type ViewMode = 'month' | 'week' | 'day';
 
 @Component({
   selector: 'app-calendar',
@@ -37,7 +42,8 @@ type Repeat = 'never' | 'daily' | 'weekly' | 'monthly';
   standalone: false,
 })
 export class CalendarPage implements OnInit {
-  monthStart = startOfMonth(new Date());
+  viewMode: ViewMode = 'month';
+  viewDate = startOfDay(new Date());
   weeks: DayCell[][] = [];
 
   calendars: CollectionResponse[] = [];
@@ -78,10 +84,26 @@ export class CalendarPage implements OnInit {
     this.loadCalendars();
   }
 
+  get monthStart(): Date {
+    return startOfMonth(this.viewDate);
+  }
+
+  get weekDays(): Date[] {
+    const start = startOfWeek(this.viewDate, { weekStartsOn: 1 });
+    return Array.from({ length: 7 }, (_, i) => addDays(start, i));
+  }
+
+  get dayViewDays(): Date[] {
+    return [this.viewDate];
+  }
+
+  get visibleOccurrences(): OccurrenceResponse[] {
+    return this.occurrences.filter((o) => !this.hiddenCalendarIds.has(o.collectionId));
+  }
+
   get visibleOccurrencesByDay(): Map<string, OccurrenceResponse[]> {
     const map = new Map<string, OccurrenceResponse[]>();
-    for (const o of this.occurrences) {
-      if (this.hiddenCalendarIds.has(o.collectionId)) continue;
+    for (const o of this.visibleOccurrences) {
       const list = map.get(o.originalDate) ?? [];
       list.push(o);
       map.set(o.originalDate, list);
@@ -147,17 +169,30 @@ export class CalendarPage implements OnInit {
     return this.calendars.filter((c) => c.type === 'Schedule');
   }
 
+  /** The queried/displayed date range for the current viewMode — month always loads/shows a full 7-day-aligned grid. */
+  private currentRange(): { rangeStart: Date; rangeEnd: Date } {
+    if (this.viewMode === 'month') {
+      return {
+        rangeStart: startOfWeek(this.monthStart, { weekStartsOn: 1 }),
+        rangeEnd: endOfWeek(endOfMonth(this.monthStart), { weekStartsOn: 1 }),
+      };
+    }
+    if (this.viewMode === 'week') {
+      return { rangeStart: startOfWeek(this.viewDate, { weekStartsOn: 1 }), rangeEnd: endOfWeek(this.viewDate, { weekStartsOn: 1 }) };
+    }
+    return { rangeStart: startOfDay(this.viewDate), rangeEnd: endOfDay(this.viewDate) };
+  }
+
   loadOccurrences() {
     this.loading = true;
     this.errorMessage = null;
 
-    const gridStart = startOfWeek(this.monthStart, { weekStartsOn: 1 });
-    const gridEnd = endOfWeek(endOfMonth(this.monthStart), { weekStartsOn: 1 });
+    const { rangeStart, rangeEnd } = this.currentRange();
 
-    this.calendarApi.occurrences({ from: gridStart.toISOString(), until: gridEnd.toISOString() }).subscribe({
+    this.calendarApi.occurrences({ from: rangeStart.toISOString(), until: rangeEnd.toISOString() }).subscribe({
       next: (occurrences) => {
         this.occurrences = occurrences;
-        this.buildGrid(gridStart, gridEnd);
+        if (this.viewMode === 'month') this.buildGrid(rangeStart, rangeEnd);
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -190,30 +225,53 @@ export class CalendarPage implements OnInit {
     }
   }
 
-  previousMonth() {
-    this.monthStart = subMonths(this.monthStart, 1);
+  setViewMode(mode: ViewMode) {
+    if (this.viewMode === mode) return;
+    this.viewMode = mode;
     this.selectedDayKey = null;
     this.loadOccurrences();
   }
 
-  nextMonth() {
-    this.monthStart = addMonths(this.monthStart, 1);
+  previousPeriod() {
+    if (this.viewMode === 'month') this.viewDate = startOfMonth(subMonths(this.viewDate, 1));
+    else if (this.viewMode === 'week') this.viewDate = subDays(this.viewDate, 7);
+    else this.viewDate = subDays(this.viewDate, 1);
+    this.selectedDayKey = null;
+    this.loadOccurrences();
+  }
+
+  nextPeriod() {
+    if (this.viewMode === 'month') this.viewDate = addMonths(this.viewDate, 1);
+    else if (this.viewMode === 'week') this.viewDate = addDays(this.viewDate, 7);
+    else this.viewDate = addDays(this.viewDate, 1);
     this.selectedDayKey = null;
     this.loadOccurrences();
   }
 
   goToToday() {
-    this.monthStart = startOfMonth(new Date());
+    this.viewDate = startOfDay(new Date());
     this.selectedDayKey = null;
     this.loadOccurrences();
   }
 
-  get monthLabel(): string {
-    return format(this.monthStart, 'MMMM yyyy');
+  get periodLabel(): string {
+    if (this.viewMode === 'month') return format(this.viewDate, 'MMMM yyyy');
+    if (this.viewMode === 'day') return format(this.viewDate, 'EEEE, MMMM d');
+    const start = this.weekDays[0];
+    const lastDay = this.weekDays[6];
+    return isSameMonth(start, lastDay)
+      ? `${format(start, 'MMM d')} – ${format(lastDay, 'd, yyyy')}`
+      : `${format(start, 'MMM d')} – ${format(lastDay, 'MMM d, yyyy')}`;
   }
 
   selectDay(cell: DayCell) {
     this.selectedDayKey = this.selectedDayKey === cell.key ? null : cell.key;
+  }
+
+  /** For the Week/Day time grid, which emits the picked Date rather than a DayCell. */
+  onGridSelectDay(date: Date) {
+    const key = format(date, 'yyyy-MM-dd');
+    this.selectedDayKey = this.selectedDayKey === key ? null : key;
   }
 
   toggleCalendarVisibility(id: string) {
@@ -222,7 +280,10 @@ export class CalendarPage implements OnInit {
     } else {
       this.hiddenCalendarIds.add(id);
     }
-    this.buildGrid(startOfWeek(this.monthStart, { weekStartsOn: 1 }), endOfWeek(endOfMonth(this.monthStart), { weekStartsOn: 1 }));
+    if (this.viewMode === 'month') {
+      const { rangeStart, rangeEnd } = this.currentRange();
+      this.buildGrid(rangeStart, rangeEnd);
+    }
   }
 
   openNewCalendarForm(type: 'Calendar' | 'Schedule') {
@@ -306,6 +367,55 @@ export class CalendarPage implements OnInit {
       this.newEvent.start = `${dayKey}T09:00`;
     }
     this.showNewEventForm = true;
+  }
+
+  /** Click-drag on the Week/Day time grid to create an event — pre-fills the same form the "+ Add event" button opens. */
+  onGridCreateRange({ start, end }: { date: Date; start: Date; end: Date }) {
+    this.newEvent = this.emptyNewEvent();
+    if (this.eventableCalendars.length > 0) this.newEvent.calendarId = this.eventableCalendars[0].id;
+    this.newEvent.start = toDatetimeLocalValue(start);
+    this.newEvent.end = toDatetimeLocalValue(end);
+    this.showNewEventForm = true;
+  }
+
+  /** Drag an existing block on the Week/Day time grid to reschedule it — one occurrence (via an exception) if recurring, the Appointment itself otherwise. */
+  onGridReschedule({ occurrence, newStart, newEnd }: { occurrence: OccurrenceResponse; newStart: Date; newEnd: Date | null }) {
+    const request$: Observable<unknown> = occurrence.isRecurring
+      ? this.calendarApi.setOccurrenceException(occurrence.appointmentId, occurrence.originalDate, {
+          isSkipped: false,
+          overrideTitle: null,
+          overrideLocation: null,
+          overrideFrom: newStart.toISOString(),
+          overrideUntil: newEnd ? newEnd.toISOString() : null,
+        })
+      : this.nodesApi.get(occurrence.appointmentId).pipe(
+          switchMap((node) =>
+            this.nodesApi.update(node.id, {
+              title: node.title,
+              description: node.description,
+              from: newStart.toISOString(),
+              until: newEnd ? newEnd.toISOString() : null,
+              assignedFamilyMemberIds: node.assignedFamilyMemberIds,
+              collectionId: node.collectionId,
+              isImportant: null,
+              isCompleted: null,
+              priority: null,
+              category: null,
+              location: node.location,
+              allDay: node.allDay,
+              recurrenceRule: node.recurrenceRule,
+              ...NULL_CONTACT_FIELDS,
+            }),
+          ),
+        );
+
+    request$.subscribe({
+      next: () => this.loadOccurrences(),
+      error: () => {
+        this.errorMessage = 'Could not reschedule that event.';
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   /** Todoist/Google-Calendar-style fast capture: "Dentist tomorrow 3pm" — parsed client-side, same create call as the full form. */
@@ -426,4 +536,9 @@ export class CalendarPage implements OnInit {
       assignedFamilyMemberIds: [] as string[],
     };
   }
+}
+
+function toDatetimeLocalValue(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }

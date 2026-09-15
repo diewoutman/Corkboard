@@ -1,0 +1,81 @@
+<div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+  <!-- Day headers -->
+  <div class="flex border-b border-gray-200">
+    <div class="w-12 shrink-0"></div>
+    <div class="grid flex-1" [style.grid-template-columns]="'repeat(' + columns.length + ', minmax(0, 1fr))'">
+      <div *ngFor="let column of columns; trackBy: trackByDayKey" class="border-l border-gray-100 px-1 py-1.5 text-center">
+        <div class="text-[10px] font-medium uppercase text-gray-400">{{ column.date | date: 'EEE' }}</div>
+        <div class="text-sm font-semibold text-gray-900" [class.text-blue-600]="isToday(column.date)">{{ column.date | date: 'd' }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- All-day strip -->
+  <div class="flex border-b border-gray-200" *ngIf="hasAnyAllDay()">
+    <div class="w-12 shrink-0 pr-1 py-1 text-right text-[9px] text-gray-400">All day</div>
+    <div class="grid flex-1" [style.grid-template-columns]="'repeat(' + columns.length + ', minmax(0, 1fr))'">
+      <div *ngFor="let column of columns; trackBy: trackByDayKey" class="space-y-0.5 border-l border-gray-100 p-0.5">
+        <span
+          *ngFor="let o of column.allDay"
+          class="block truncate rounded px-1 text-[10px] text-white"
+          [style.background]="calendarColor(o.collectionId)"
+        >{{ o.title }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scrollable hour grid -->
+  <div class="flex h-[32rem] overflow-y-auto select-none">
+    <div class="w-12 shrink-0">
+      <div *ngFor="let h of hours" class="relative" [style.height.px]="hourHeight">
+        <span *ngIf="h > 0" class="absolute -top-2 right-1 text-[10px] text-gray-400">{{ h }}:00</span>
+      </div>
+    </div>
+
+    <div class="grid flex-1" [style.grid-template-columns]="'repeat(' + columns.length + ', minmax(0, 1fr))'">
+      <div
+        *ngFor="let column of columns; let i = index; trackBy: trackByDayKey"
+        class="relative border-l border-gray-100"
+        [style.height.px]="hourHeight * 24"
+        [attr.data-day-index]="i"
+        (pointerdown)="onColumnPointerDown($event, i)"
+      >
+        <div *ngFor="let h of hours" class="border-t border-gray-100" [style.height.px]="hourHeight"></div>
+
+        <div
+          *ngIf="isToday(column.date)"
+          class="pointer-events-none absolute inset-x-0 z-10 border-t-2 border-red-500"
+          [style.top.px]="nowOffsetPx()"
+        ></div>
+
+        <div
+          *ngFor="let laned of column.timed; trackBy: trackByOccurrenceKey"
+          data-occurrence-block
+          class="group absolute z-20 cursor-grab overflow-hidden rounded px-1 py-0.5 text-[10px] leading-tight text-white shadow-sm active:cursor-grabbing"
+          [style.background]="calendarColor(laned.occurrence.collectionId)"
+          [style.top.px]="topPx(laned.startMinutes)"
+          [style.height.px]="heightPx(laned.endMinutes - laned.startMinutes)"
+          [style.left]="(laned.lane / laned.laneCount) * 100 + '%'"
+          [style.width]="'calc(' + (100 / laned.laneCount) + '% - 2px)'"
+          (pointerdown)="onBlockPointerDown($event, laned, i)"
+        >
+          <button
+            type="button"
+            class="float-right ml-1 hidden shrink-0 leading-none opacity-80 hover:opacity-100 group-hover:inline"
+            aria-label="Delete"
+            (pointerdown)="$event.stopPropagation()"
+            (click)="onDeleteClick($event, laned.occurrence)"
+          >✕</button>
+          {{ laned.occurrence.title }}
+        </div>
+
+        <div
+          *ngIf="ghostVisible && ghostDayIndex === i"
+          class="pointer-events-none absolute inset-x-0.5 z-30 rounded border-2 border-dashed border-blue-500 bg-blue-100/60"
+          [style.top.px]="ghostTop"
+          [style.height.px]="ghostHeight"
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>
