@@ -9,4 +9,14 @@ public class TaskNode : Node
 
     /// <summary>Free-text grouping label (e.g. "Produce", "Household") — lets a TaskList double as a categorized shopping list.</summary>
     public string? Category { get; set; }
+
+    /// <summary>
+    /// Same RRULE format and column as Appointment.RecurrenceRule (TPH siblings
+    /// sharing one "RecurrenceRule" column — only one of the two types applies
+    /// per row, per NodeType). Unlike Appointment, a Task isn't expanded into
+    /// multiple occurrences: completing a recurring Task just rolls Until
+    /// forward to the next occurrence instead of completing it — see
+    /// NodesController.Update.
+    /// </summary>
+    public string? RecurrenceRule { get; set; }
 }

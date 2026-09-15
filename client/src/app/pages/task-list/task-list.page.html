@@ -10,6 +10,18 @@
 
 <p *ngIf="errorMessage" class="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage }}</p>
 
+<form (ngSubmit)="submitQuickAdd()" class="mt-4 flex gap-2">
+  <input
+    name="quickAddText"
+    [(ngModel)]="quickAddText"
+    placeholder="Add a task… try &quot;Buy milk tomorrow 5pm #Groceries&quot;"
+    class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+  />
+  <button type="submit" [disabled]="!quickAddText.trim()" class="shrink-0 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50">
+    Add
+  </button>
+</form>
+
 <div *ngIf="loading" class="mt-8 text-center text-sm text-gray-500">Loading…</div>
 
 <div *ngIf="!loading" class="mt-4 space-y-4">
@@ -37,6 +49,7 @@
             <span *ngIf="task.until" class="text-xs" [ngClass]="dueClass(task)">
               Due {{ task.until | date: 'mediumDate' }}
             </span>
+            <span *ngIf="task.recurrenceRule" class="text-xs text-gray-400" title="Repeats — completing it rolls the due date forward">🔁</span>
             <span
               *ngFor="let memberId of task.assignedFamilyMemberIds"
               class="rounded-full px-2 py-0.5 text-xs font-medium text-white"
@@ -115,6 +128,20 @@
       <datalist id="knownCategories">
         <option *ngFor="let category of knownCategories" [value]="category"></option>
       </datalist>
+    </div>
+    <div>
+      <label for="repeat" class="block text-sm font-medium text-gray-700">Repeat <span class="text-gray-400">(optional — completing it rolls the due date forward instead of finishing it)</span></label>
+      <select
+        id="repeat"
+        name="repeat"
+        [(ngModel)]="newTask.repeat"
+        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      >
+        <option value="never">Never</option>
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+        <option value="monthly">Monthly</option>
+      </select>
     </div>
     <div>
       <label class="block text-sm font-medium text-gray-700">Assigned to</label>

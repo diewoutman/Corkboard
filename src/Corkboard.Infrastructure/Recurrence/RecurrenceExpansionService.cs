@@ -75,4 +75,23 @@ public class RecurrenceExpansionService
 
         return occurrences;
     }
+
+    /// <summary>
+    /// The next occurrence strictly after <paramref name="current"/> for a recurring
+    /// Task's RecurrenceRule — used to roll a completed recurring Task's due date
+    /// forward instead of storing occurrence rows the way Appointment does.
+    /// Null once the rule has no more occurrences (e.g. a COUNT/UNTIL-bounded rule).
+    /// </summary>
+    public DateTimeOffset? NextOccurrenceAfter(DateTimeOffset current, string recurrenceRule)
+    {
+        var calendarEvent = new CalendarEvent
+        {
+            Start = new CalDateTime(current.UtcDateTime, "UTC"),
+            RecurrenceRule = new RecurrenceRule(recurrenceRule),
+        };
+
+        var searchFrom = new CalDateTime(current.UtcDateTime.AddSeconds(1), "UTC");
+        var next = calendarEvent.GetOccurrences(searchFrom).FirstOrDefault();
+        return next is null ? null : new DateTimeOffset(next.Period.StartTime.AsUtc, TimeSpan.Zero);
+    }
 }

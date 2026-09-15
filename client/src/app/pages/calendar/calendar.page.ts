@@ -18,6 +18,7 @@ import { extractErrorMessage } from '../../core/http-error';
 import { FamilyMembers } from '../../core/family-members';
 import { CollectionResponse, FamilyMemberResponse, OccurrenceResponse } from '../../core/models';
 import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
+import { parseQuickAdd } from '../../core/quick-add';
 
 interface DayCell {
   date: Date;
@@ -48,6 +49,7 @@ export class CalendarPage implements OnInit {
   errorMessage: string | null = null;
 
   selectedDayKey: string | null = null;
+  quickAddText = '';
 
   showNewCalendarForm = false;
   newCalendarName = '';
@@ -304,6 +306,47 @@ export class CalendarPage implements OnInit {
       this.newEvent.start = `${dayKey}T09:00`;
     }
     this.showNewEventForm = true;
+  }
+
+  /** Todoist/Google-Calendar-style fast capture: "Dentist tomorrow 3pm" — parsed client-side, same create call as the full form. */
+  submitQuickAdd() {
+    const parsed = parseQuickAdd(this.quickAddText);
+    const calendarId = this.eventableCalendars[0]?.id;
+    if (!parsed.title || !calendarId) return;
+
+    if (!parsed.start) {
+      this.errorMessage = `Couldn't find a date/time in "${this.quickAddText}" — try e.g. "tomorrow 5pm".`;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.nodesApi
+      .create({
+        type: 'Appointment',
+        title: parsed.title,
+        description: null,
+        from: parsed.start.toISOString(),
+        until: parsed.end ? parsed.end.toISOString() : null,
+        assignedFamilyMemberIds: [],
+        collectionId: calendarId,
+        priority: null,
+        category: null,
+        location: null,
+        allDay: !parsed.hasTime,
+        recurrenceRule: null,
+        ...NULL_CONTACT_FIELDS,
+        ...NULL_NOTE_FIELDS,
+      })
+      .subscribe({
+        next: () => {
+          this.quickAddText = '';
+          this.loadOccurrences();
+        },
+        error: (err) => {
+          this.errorMessage = extractErrorMessage(err, 'Could not create that event.');
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   submitNewEvent() {

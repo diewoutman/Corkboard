@@ -9,8 +9,20 @@
 <div *ngIf="!loading" class="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
   <!-- Calendar: the main event, given the rest of the screen -->
   <div class="min-w-0">
+    <form *ngIf="eventableCalendars.length > 0" (ngSubmit)="submitQuickAdd()" class="flex gap-2">
+      <input
+        name="quickAddText"
+        [(ngModel)]="quickAddText"
+        placeholder="Add an event… try &quot;Dentist tomorrow 3pm&quot;"
+        class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      />
+      <button type="submit" [disabled]="!quickAddText.trim()" class="shrink-0 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50">
+        Add
+      </button>
+    </form>
+
     <!-- Month navigation -->
-    <div class="flex items-center justify-between">
+    <div class="mt-4 flex items-center justify-between">
       <button type="button" (click)="previousMonth()" class="rounded-md p-2 text-gray-500 hover:bg-gray-100" aria-label="Previous month">‹</button>
       <div class="flex items-center gap-3">
         <span class="text-lg font-medium text-gray-900">{{ monthLabel }}</span>

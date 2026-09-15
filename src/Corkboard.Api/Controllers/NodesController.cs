@@ -2,6 +2,7 @@ using Corkboard.Api.Common;
 using Corkboard.Contracts.Nodes;
 using Corkboard.Domain.Entities;
 using Corkboard.Infrastructure.Persistence;
+using Corkboard.Infrastructure.Recurrence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ContractNodeType = Corkboard.Contracts.Nodes.NodeType;
@@ -10,7 +11,7 @@ namespace Corkboard.Api.Controllers;
 
 [ApiController]
 [Route("api/nodes")]
-public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
+public class NodesController(CorkboardDbContext db, RecurrenceExpansionService recurrence) : FamilyScopedControllerBase
 {
     /// <summary>
     /// Lists Nodes in the caller's Family, optionally filtered by type, assignee,
@@ -101,7 +102,13 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
         Node node = request.Type switch
         {
             ContractNodeType.Note => new Note { Title = request.Title, IsImportant = request.IsImportant ?? false },
-            ContractNodeType.Task => new TaskNode { Title = request.Title, Priority = request.Priority, Category = NormalizeCategory(request.Category) },
+            ContractNodeType.Task => new TaskNode
+            {
+                Title = request.Title,
+                Priority = request.Priority,
+                Category = NormalizeCategory(request.Category),
+                RecurrenceRule = request.RecurrenceRule,
+            },
             ContractNodeType.Appointment => new Appointment
             {
                 Title = request.Title,
@@ -177,13 +184,28 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
                 note.IsImportant = request.IsImportant ?? note.IsImportant;
                 break;
             case TaskNode task:
-                if (request.IsCompleted is { } isCompleted)
+                task.Priority = request.Priority;
+                task.Category = NormalizeCategory(request.Category);
+                task.RecurrenceRule = request.RecurrenceRule;
+
+                // Completing a recurring Task rolls Until forward to the next occurrence
+                // instead of finishing it for good — matches Todoist's recurring-task model.
+                // Falls through to a normal completion once the rule has no more occurrences.
+                var nextDue = request.IsCompleted is true && task.RecurrenceRule is { } rule && task.Until is { } dueDate
+                    ? recurrence.NextOccurrenceAfter(dueDate, rule)
+                    : null;
+
+                if (nextDue is { } next)
+                {
+                    task.Until = next;
+                    task.IsCompleted = false;
+                    task.CompletedAt = null;
+                }
+                else if (request.IsCompleted is { } isCompleted)
                 {
                     task.IsCompleted = isCompleted;
                     task.CompletedAt = isCompleted ? task.CompletedAt ?? DateTimeOffset.UtcNow : null;
                 }
-                task.Priority = request.Priority;
-                task.Category = NormalizeCategory(request.Category);
                 break;
             case Appointment appointment:
                 appointment.Location = request.Location;
@@ -294,7 +316,7 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
                 task.CreatedAt, task.UpdatedAt, task.CreatedByUserId, assignedIds, task.CollectionId,
                 IsImportant: null,
                 task.IsCompleted, task.CompletedAt, task.Priority, task.Category,
-                Location: null, AllDay: null, RecurrenceRule: null,
+                Location: null, AllDay: null, task.RecurrenceRule,
                 FirstName: null, LastName: null, DateOfBirth: null,
                 Street: null, City: null, PostalCode: null, Country: null,
                 PhoneNumbers: [], Emails: []),

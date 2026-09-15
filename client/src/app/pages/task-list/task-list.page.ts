@@ -6,6 +6,9 @@ import { FamilyMembers } from '../../core/family-members';
 import { extractErrorMessage } from '../../core/http-error';
 import { CollectionResponse, FamilyMemberResponse, NodeResponse, UpdateNodeRequest } from '../../core/models';
 import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
+import { parseQuickAdd } from '../../core/quick-add';
+
+type Repeat = 'never' | 'daily' | 'weekly' | 'monthly';
 
 @Component({
   selector: 'app-task-list',
@@ -21,6 +24,8 @@ export class TaskListPage implements OnInit {
   showCompleted = false;
   loading = true;
   errorMessage: string | null = null;
+
+  quickAddText = '';
 
   showNewTaskForm = false;
   newTask = this.emptyNewTask();
@@ -154,7 +159,7 @@ export class TaskListPage implements OnInit {
         category: this.newTask.category || null,
         location: null,
         allDay: null,
-        recurrenceRule: null,
+        recurrenceRule: this.toRecurrenceRule(this.newTask.repeat),
         ...NULL_CONTACT_FIELDS,
         ...NULL_NOTE_FIELDS,
       })
@@ -163,6 +168,41 @@ export class TaskListPage implements OnInit {
           this.tasks = this.sortTasks([...this.tasks, created]);
           this.newTask = this.emptyNewTask();
           this.showNewTaskForm = false;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.errorMessage = extractErrorMessage(err, 'Could not create that task.');
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  /** Todoist-style fast capture: "Buy milk tomorrow 5pm #Groceries" — parsed client-side, same create call as the full form. */
+  submitQuickAdd() {
+    const parsed = parseQuickAdd(this.quickAddText);
+    if (!parsed.title) return;
+
+    this.nodesApi
+      .create({
+        type: 'Task',
+        title: parsed.title,
+        description: null,
+        from: null,
+        until: parsed.start ? parsed.start.toISOString() : null,
+        assignedFamilyMemberIds: [],
+        collectionId: this.listId,
+        priority: null,
+        category: parsed.category,
+        location: null,
+        allDay: null,
+        recurrenceRule: null,
+        ...NULL_CONTACT_FIELDS,
+        ...NULL_NOTE_FIELDS,
+      })
+      .subscribe({
+        next: (created) => {
+          this.tasks = this.sortTasks([...this.tasks, created]);
+          this.quickAddText = '';
           this.cdr.markForCheck();
         },
         error: (err) => {
@@ -214,7 +254,21 @@ export class TaskListPage implements OnInit {
       dueDate: '',
       priority: null as number | null,
       category: '',
+      repeat: 'never' as Repeat,
       assignedFamilyMemberIds: [] as string[],
     };
+  }
+
+  private toRecurrenceRule(repeat: Repeat): string | null {
+    switch (repeat) {
+      case 'daily':
+        return 'FREQ=DAILY';
+      case 'weekly':
+        return 'FREQ=WEEKLY';
+      case 'monthly':
+        return 'FREQ=MONTHLY';
+      default:
+        return null;
+    }
   }
 }
