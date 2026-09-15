@@ -2,6 +2,11 @@
   <h1 class="text-2xl font-semibold text-gray-900">Family</h1>
 </div>
 
+<p class="mt-1 text-sm text-gray-500">
+  Everyone with a login sees this family's full Tasks, Notes and Calendar — there's no per-list sharing yet.
+  Only the <span class="font-medium">Owner</span> can create logins and manage members; Adult and Member accounts otherwise have the same access.
+</p>
+
 <p *ngIf="errorMessage" class="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage }}</p>
 
 <div *ngIf="loading" class="mt-8 text-center text-sm text-gray-500">Loading…</div>

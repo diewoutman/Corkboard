@@ -1,7 +1,14 @@
 <div class="flex min-h-screen flex-col">
   <header class="sticky top-0 z-10 border-b border-gray-200 bg-white">
     <div class="mx-auto flex max-w-screen-2xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-      <a routerLink="/home" class="text-lg font-semibold text-gray-900">Corkboard</a>
+      <div class="flex items-center gap-2">
+        <a routerLink="/home" class="text-lg font-semibold text-gray-900">Corkboard</a>
+        <span
+          *ngIf="auth.hasFamily()"
+          class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-700"
+          [title]="auth.isOwner() ? 'Owner: can manage family members and create logins for them' : 'Everyone with a login sees this family\'s full Tasks, Notes and Calendar — there is no per-list restriction'"
+        >{{ auth.role() }}</span>
+      </div>
 
       <nav *ngIf="auth.hasFamily()" class="hidden items-center gap-1 sm:flex">
         <a
