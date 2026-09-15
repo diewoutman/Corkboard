@@ -10,6 +10,7 @@ interface TodayItem {
   kind: 'task' | 'event';
   title: string;
   time: string | null;
+  overdue: boolean;
   task?: NodeResponse;
 }
 
@@ -99,6 +100,7 @@ export class TodayWidgetComponent implements OnInit {
     members: FamilyMemberResponse[],
     endOfToday: Date,
   ): MemberGroup[] {
+    const now = new Date();
     const dueTasks = tasks.filter((t) => !t.isCompleted && t.until && new Date(t.until) < endOfToday);
 
     const itemsByMemberId = new Map<string, TodayItem[]>();
@@ -115,7 +117,14 @@ export class TodayWidgetComponent implements OnInit {
     };
 
     for (const task of dueTasks) {
-      assign(task.assignedFamilyMemberIds, { key: `task-${task.id}`, kind: 'task', title: task.title, time: task.until, task });
+      assign(task.assignedFamilyMemberIds, {
+        key: `task-${task.id}`,
+        kind: 'task',
+        title: task.title,
+        time: task.until,
+        overdue: new Date(task.until!) < now,
+        task,
+      });
     }
     for (const occurrence of occurrences) {
       assign(occurrence.assignedFamilyMemberIds, {
@@ -123,6 +132,7 @@ export class TodayWidgetComponent implements OnInit {
         kind: 'event',
         title: occurrence.title,
         time: occurrence.allDay ? null : occurrence.from,
+        overdue: false,
       });
     }
 

@@ -94,6 +94,17 @@ export class TaskListPage implements OnInit {
     return this.members.find((m) => m.id === id)?.color ?? '#999';
   }
 
+  /** Overdue in red, due today/tomorrow in amber — a due date shouldn't read the same whether it's next month or yesterday. */
+  dueClass(task: NodeResponse): string {
+    if (task.isCompleted || !task.until) return 'text-gray-500';
+    const until = new Date(task.until);
+    const now = new Date();
+    const endOfTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2);
+    if (until < now) return 'font-semibold text-red-600';
+    if (until < endOfTomorrow) return 'font-semibold text-amber-600';
+    return 'text-gray-500';
+  }
+
   toggleAssignee(memberId: string) {
     const ids = this.newTask.assignedFamilyMemberIds;
     this.newTask.assignedFamilyMemberIds = ids.includes(memberId)

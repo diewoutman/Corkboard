@@ -34,7 +34,7 @@
           </p>
           <p *ngIf="task.description" class="mt-0.5 text-sm text-gray-500">{{ task.description }}</p>
           <div class="mt-1 flex flex-wrap items-center gap-2">
-            <span *ngIf="task.until" class="text-xs font-medium text-gray-500">
+            <span *ngIf="task.until" class="text-xs" [ngClass]="dueClass(task)">
               Due {{ task.until | date: 'mediumDate' }}
             </span>
             <span

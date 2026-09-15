@@ -71,6 +71,17 @@ export class TasksWidgetComponent implements OnInit {
     });
   }
 
+  /** Overdue in red, due today/tomorrow in amber — matches task-list.page's dueClass(). */
+  dueClass(task: NodeResponse): string {
+    if (!task.until) return 'text-gray-400';
+    const until = new Date(task.until);
+    const now = new Date();
+    const endOfTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2);
+    if (until < now) return 'font-semibold text-red-600';
+    if (until < endOfTomorrow) return 'font-semibold text-amber-600';
+    return 'text-gray-400';
+  }
+
   toggleDone(task: NodeResponse) {
     const request: UpdateNodeRequest = {
       title: task.title,

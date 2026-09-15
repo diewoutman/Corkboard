@@ -19,7 +19,8 @@
           class="h-3.5 w-3.5 shrink-0 rounded border-gray-300"
         />
         <ng-template #eventDot><span class="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400"></span></ng-template>
-        <span class="truncate text-sm text-gray-900">{{ item.title }}</span>
+        <span class="truncate text-sm" [class.text-red-600]="item.overdue" [class.font-semibold]="item.overdue" [class.text-gray-900]="!item.overdue">{{ item.title }}</span>
+        <span *ngIf="item.overdue" class="shrink-0 text-xs font-semibold text-red-600">Overdue</span>
         <span *ngIf="item.time" class="ml-auto shrink-0 text-xs text-gray-400">{{ item.time | date: 'shortTime' }}</span>
       </li>
     </ul>

@@ -8,7 +8,7 @@
     <input type="checkbox" (change)="toggleDone(task)" class="h-4 w-4 shrink-0 rounded border-gray-300" />
     <span class="truncate text-sm text-gray-900">{{ task.title }}</span>
     <app-member-avatars class="ml-auto shrink-0" [members]="members" [assignedIds]="task.assignedFamilyMemberIds"></app-member-avatars>
-    <span *ngIf="task.until" class="shrink-0 text-xs text-gray-400">{{ task.until | date: 'MMM d' }}</span>
+    <span *ngIf="task.until" class="shrink-0 text-xs" [ngClass]="dueClass(task)">{{ task.until | date: 'MMM d' }}</span>
   </li>
   <li *ngIf="tasks.length === 0" class="text-sm text-gray-500">Nothing here.</li>
 </ul>
