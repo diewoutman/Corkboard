@@ -89,6 +89,8 @@ export class HomePage implements OnInit {
         return widget.importantOnly ? 'Important notes' : 'Notes';
       case 'Tasks':
         return widget.collectionId ? this.taskLists.find((l) => l.id === widget.collectionId)?.name ?? 'Tasks' : 'My tasks';
+      case 'Today':
+        return 'Today';
     }
   }
 

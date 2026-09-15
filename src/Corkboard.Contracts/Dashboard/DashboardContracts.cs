@@ -6,6 +6,7 @@ public enum DashboardWidgetType
     Navigation,
     Notes,
     Tasks,
+    Today,
 }
 
 /// <summary>

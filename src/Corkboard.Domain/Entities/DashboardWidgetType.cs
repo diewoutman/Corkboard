@@ -6,4 +6,7 @@ public enum DashboardWidgetType
     Navigation,
     Notes,
     Tasks,
+
+    /// <summary>Today's due Tasks and Calendar occurrences, grouped by FamilyMember. No per-widget config.</summary>
+    Today,
 }

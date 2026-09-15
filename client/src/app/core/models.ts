@@ -243,7 +243,7 @@ export interface ImportIcsResult {
 // Dashboard widgets are per-User, not per-Family — each logged-in User gets
 // their own layout. One flat shape covering every widget type's settings,
 // same convention as CreateNodeRequest — see CONCEPT.md.
-export type DashboardWidgetType = 'Navigation' | 'Notes' | 'Tasks';
+export type DashboardWidgetType = 'Navigation' | 'Notes' | 'Tasks' | 'Today';
 
 export interface CreateDashboardWidgetRequest {
   type: DashboardWidgetType;

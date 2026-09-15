@@ -42,6 +42,7 @@
       [collectionId]="widget.collectionId"
       [assignedToMeOnly]="widget.assignedToMeOnly"
     ></app-tasks-widget>
+    <app-today-widget *ngIf="widget.type === 'Today'"></app-today-widget>
   </div>
 </div>
 
@@ -61,6 +62,7 @@
           <option value="Navigation">Navigation</option>
           <option value="Notes">Notes</option>
           <option value="Tasks">Tasks</option>
+          <option value="Today">Today</option>
         </select>
       </div>
 

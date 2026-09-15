@@ -10,9 +10,10 @@ import { HomePage } from './home.page';
 import { NavigationWidgetComponent } from './widgets/navigation-widget.component';
 import { NotesWidgetComponent } from './widgets/notes-widget.component';
 import { TasksWidgetComponent } from './widgets/tasks-widget.component';
+import { TodayWidgetComponent } from './widgets/today-widget.component';
 
 @NgModule({
   imports: [CommonModule, FormsModule, DragDropModule, HomePageRoutingModule, MemberAvatarsComponent],
-  declarations: [HomePage, NavigationWidgetComponent, NotesWidgetComponent, TasksWidgetComponent],
+  declarations: [HomePage, NavigationWidgetComponent, NotesWidgetComponent, TasksWidgetComponent, TodayWidgetComponent],
 })
 export class HomePageModule {}
