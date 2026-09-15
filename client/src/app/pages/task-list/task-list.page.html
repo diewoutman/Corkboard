@@ -1,112 +1,112 @@
-<a routerLink="/tasks" class="text-sm font-medium text-blue-600 hover:text-blue-500">← Lists</a>
+<a routerLink="/tasks" class="text-sm font-extrabold text-coral hover:text-coral-strong">← Lists</a>
 
 <div class="mt-2 flex items-center justify-between">
-  <h1 class="text-2xl font-semibold text-gray-900">{{ list?.name ?? 'Loading…' }}</h1>
-  <label class="flex items-center gap-2 text-sm text-gray-600">
-    <input type="checkbox" [(ngModel)]="showCompleted" name="showCompleted" class="rounded border-gray-300" />
+  <h1 class="text-2xl font-extrabold text-ink">{{ list?.name ?? 'Loading…' }}</h1>
+  <label class="flex items-center gap-2 text-sm font-bold text-ink-muted">
+    <input type="checkbox" [(ngModel)]="showCompleted" name="showCompleted" class="rounded-md accent-coral" />
     Show completed
   </label>
 </div>
 
-<p *ngIf="errorMessage" class="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage }}</p>
+<p *ngIf="errorMessage" class="mt-4 rounded-2xl bg-danger-bg px-3 py-2 text-sm font-semibold text-danger-text">{{ errorMessage }}</p>
 
 <form (ngSubmit)="submitQuickAdd()" class="mt-4 flex gap-2">
   <input
     name="quickAddText"
     [(ngModel)]="quickAddText"
     placeholder="Add a task… try &quot;Buy milk tomorrow 5pm #Groceries&quot; or &quot;Boodschappen morgen 17:00&quot;"
-    class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+    class="block w-full rounded-full border-2 border-border-soft px-4 py-2 text-sm font-semibold shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
   />
-  <button type="submit" [disabled]="!quickAddText.trim()" class="shrink-0 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50">
+  <button type="submit" [disabled]="!quickAddText.trim()" class="shrink-0 rounded-full bg-coral px-5 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
     Add
   </button>
 </form>
 
-<div *ngIf="loading" class="mt-8 text-center text-sm text-gray-500">Loading…</div>
+<div *ngIf="loading" class="mt-8 text-center text-sm font-semibold text-ink-muted">Loading…</div>
 
 <div *ngIf="!loading" class="mt-4 space-y-4">
   <div *ngFor="let group of groupedTasks">
-    <h2 *ngIf="groupedTasks.length > 1" class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
+    <h2 *ngIf="groupedTasks.length > 1" class="mb-1.5 text-xs font-extrabold uppercase tracking-wide text-ink-muted">
       {{ group.category ?? 'Other' }}
     </h2>
     <ul class="space-y-2">
       <li
         *ngFor="let task of group.tasks"
-        class="flex items-start gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm"
+        class="flex items-start gap-3 rounded-2xl bg-white px-4 py-3 shadow-sticker-sm"
       >
         <input
           type="checkbox"
           [checked]="!!task.isCompleted"
           (change)="toggleDone(task)"
-          class="mt-1 h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600"
+          class="mt-1 h-5 w-5 shrink-0 rounded-md accent-coral"
         />
         <div class="min-w-0 flex-1">
-          <p class="truncate font-medium text-gray-900" [class.line-through]="task.isCompleted" [class.text-gray-400]="task.isCompleted">
+          <p class="truncate font-bold text-ink" [class.line-through]="task.isCompleted" [class.text-ink-muted]="task.isCompleted">
             {{ task.title }}
           </p>
-          <p *ngIf="task.description" class="mt-0.5 text-sm text-gray-500">{{ task.description }}</p>
+          <p *ngIf="task.description" class="mt-0.5 text-sm font-semibold text-ink-muted">{{ task.description }}</p>
           <div class="mt-1 flex flex-wrap items-center gap-2">
             <span *ngIf="task.until" class="text-xs" [ngClass]="dueClass(task)">
               Due {{ task.until | date: 'mediumDate' }}
             </span>
-            <span *ngIf="task.recurrenceRule" class="text-xs text-gray-400" title="Repeats — completing it rolls the due date forward">🔁</span>
+            <span *ngIf="task.recurrenceRule" class="text-xs text-ink-muted" title="Repeats — completing it rolls the due date forward">🔁</span>
             <span
               *ngFor="let memberId of task.assignedFamilyMemberIds"
-              class="rounded-full px-2 py-0.5 text-xs font-medium text-white"
+              class="rounded-full px-2 py-0.5 text-xs font-extrabold text-white"
               [style.background]="memberColor(memberId)"
             >{{ memberName(memberId) }}</span>
           </div>
         </div>
-        <button type="button" (click)="deleteTask(task)" class="shrink-0 text-gray-300 hover:text-red-600" aria-label="Delete">✕</button>
+        <button type="button" (click)="deleteTask(task)" class="shrink-0 text-ink-muted hover:text-danger" aria-label="Delete">✕</button>
       </li>
     </ul>
   </div>
 
-  <p *ngIf="visibleTasks.length === 0" class="rounded-lg border border-dashed border-gray-300 px-4 py-8 text-center text-sm text-gray-500">
+  <p *ngIf="visibleTasks.length === 0" class="rounded-3xl border-2 border-dashed border-border-soft px-4 py-8 text-center text-sm font-semibold text-ink-muted">
     No tasks here yet.
   </p>
 </div>
 
-<div *ngIf="showNewTaskForm" class="mt-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+<div *ngIf="showNewTaskForm" class="mt-4 rounded-3xl bg-white p-4 shadow-sticker">
   <form (ngSubmit)="submitNewTask()" #form="ngForm" class="space-y-3">
     <div>
-      <label for="title" class="block text-sm font-medium text-gray-700">Task</label>
+      <label for="title" class="block text-sm font-bold text-ink">Task</label>
       <input
         id="title"
         name="title"
         [(ngModel)]="newTask.title"
         required
-        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       />
     </div>
     <div>
-      <label for="description" class="block text-sm font-medium text-gray-700">Notes</label>
+      <label for="description" class="block text-sm font-bold text-ink">Notes</label>
       <textarea
         id="description"
         name="description"
         [(ngModel)]="newTask.description"
         rows="2"
-        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       ></textarea>
     </div>
     <div class="grid grid-cols-2 gap-3">
       <div>
-        <label for="dueDate" class="block text-sm font-medium text-gray-700">Due date</label>
+        <label for="dueDate" class="block text-sm font-bold text-ink">Due date</label>
         <input
           id="dueDate"
           type="date"
           name="dueDate"
           [(ngModel)]="newTask.dueDate"
-          class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
         />
       </div>
       <div>
-        <label for="priority" class="block text-sm font-medium text-gray-700">Priority</label>
+        <label for="priority" class="block text-sm font-bold text-ink">Priority</label>
         <select
           id="priority"
           name="priority"
           [(ngModel)]="newTask.priority"
-          class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
         >
           <option [ngValue]="null">None</option>
           <option [ngValue]="1">Low</option>
@@ -116,26 +116,26 @@
       </div>
     </div>
     <div>
-      <label for="category" class="block text-sm font-medium text-gray-700">Category <span class="text-gray-400">(optional — groups the list, e.g. for a shopping list)</span></label>
+      <label for="category" class="block text-sm font-bold text-ink">Category <span class="font-semibold text-ink-muted">(optional — groups the list, e.g. for a shopping list)</span></label>
       <input
         id="category"
         name="category"
         list="knownCategories"
         placeholder="e.g. Produce, Dairy, Household…"
         [(ngModel)]="newTask.category"
-        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       />
       <datalist id="knownCategories">
         <option *ngFor="let category of knownCategories" [value]="category"></option>
       </datalist>
     </div>
     <div>
-      <label for="repeat" class="block text-sm font-medium text-gray-700">Repeat <span class="text-gray-400">(optional — completing it rolls the due date forward instead of finishing it)</span></label>
+      <label for="repeat" class="block text-sm font-bold text-ink">Repeat <span class="font-semibold text-ink-muted">(optional — completing it rolls the due date forward instead of finishing it)</span></label>
       <select
         id="repeat"
         name="repeat"
         [(ngModel)]="newTask.repeat"
-        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       >
         <option value="never">Never</option>
         <option value="daily">Daily</option>
@@ -144,14 +144,14 @@
       </select>
     </div>
     <div>
-      <label class="block text-sm font-medium text-gray-700">Assigned to</label>
+      <label class="block text-sm font-bold text-ink">Assigned to</label>
       <div class="mt-1 flex flex-wrap gap-2">
-        <label *ngFor="let member of members" class="flex items-center gap-1.5 rounded-full border border-gray-300 px-2.5 py-1 text-xs text-gray-700 has-checked:border-blue-500 has-checked:bg-blue-50">
+        <label *ngFor="let member of members" class="flex items-center gap-1.5 rounded-full border-2 border-border-soft px-2.5 py-1 text-xs font-bold text-ink has-checked:border-coral has-checked:bg-pastel-coral">
           <input
             type="checkbox"
             [checked]="newTask.assignedFamilyMemberIds.includes(member.id)"
             (change)="toggleAssignee(member.id)"
-            class="h-3.5 w-3.5 rounded border-gray-300"
+            class="h-3.5 w-3.5 rounded-md accent-coral"
           />
           {{ member.displayName }}
         </label>
@@ -159,10 +159,10 @@
     </div>
 
     <div class="flex gap-2 pt-1">
-      <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50">
+      <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
         Add task
       </button>
-      <button type="button" (click)="showNewTaskForm = false" class="rounded-md px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
+      <button type="button" (click)="showNewTaskForm = false" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">
         Cancel
       </button>
     </div>
@@ -173,6 +173,6 @@
   *ngIf="!showNewTaskForm"
   type="button"
   (click)="showNewTaskForm = true"
-  class="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-2xl text-white shadow-lg hover:bg-blue-500 sm:bottom-6"
+  class="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-coral text-2xl text-white shadow-button hover:bg-coral-strong sm:bottom-6"
   aria-label="Add task"
 >+</button>

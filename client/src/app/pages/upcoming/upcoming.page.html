@@ -1,28 +1,28 @@
 <div class="flex items-center justify-between gap-2">
-  <h1 class="text-2xl font-semibold text-gray-900">Upcoming</h1>
-  <a routerLink="/today" class="text-sm font-medium text-blue-600 hover:text-blue-500">← Today</a>
+  <h1 class="text-2xl font-extrabold text-ink">Upcoming 📅</h1>
+  <a routerLink="/today" class="text-sm font-extrabold text-coral hover:text-coral-strong">← Today</a>
 </div>
-<p class="mt-1 text-sm text-gray-500">The next 7 days.</p>
+<p class="mt-1 text-sm font-bold text-ink-muted">The next 7 days.</p>
 
-<div *ngIf="loading" class="mt-8 text-center text-sm text-gray-500">Loading…</div>
+<div *ngIf="loading" class="mt-8 text-center text-sm font-semibold text-ink-muted">Loading…</div>
 
 <div *ngIf="!loading" class="mt-4 space-y-4">
-  <div *ngIf="overdue.length > 0" class="rounded-lg border border-red-200 bg-red-50 p-4">
-    <h2 class="mb-2 text-sm font-semibold text-red-700">Overdue</h2>
+  <div *ngIf="overdue.length > 0" class="rounded-3xl bg-danger-bg p-4 shadow-[0_4px_0_0_var(--color-danger-shadow)]">
+    <h2 class="mb-2 font-heading text-sm font-bold text-danger-text-strong">Overdue ⚠️</h2>
     <ul class="space-y-1.5">
       <li *ngFor="let item of overdue" class="flex items-center gap-2">
-        <input type="checkbox" (change)="toggleDone(item.task!)" class="h-4 w-4 shrink-0 rounded border-gray-300" />
-        <span class="truncate text-sm font-semibold text-red-700">{{ item.title }}</span>
+        <input type="checkbox" (change)="toggleDone(item.task!)" class="h-5 w-5 shrink-0 rounded-md accent-coral" />
+        <span class="truncate text-sm font-extrabold text-danger-text-strong">{{ item.title }}</span>
         <app-member-avatars class="ml-auto shrink-0" [members]="members" [assignedIds]="item.assignedFamilyMemberIds"></app-member-avatars>
-        <span *ngIf="item.time" class="shrink-0 text-xs text-red-500">{{ item.time | date: 'mediumDate' }}</span>
+        <span *ngIf="item.time" class="shrink-0 text-xs font-bold text-danger-text">{{ item.time | date: 'mediumDate' }}</span>
       </li>
     </ul>
   </div>
 
-  <div *ngFor="let day of days" class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-    <h2 class="mb-2 flex items-baseline gap-2 text-sm font-semibold text-gray-900">
+  <div *ngFor="let day of days" class="rounded-3xl bg-white p-4 shadow-sticker">
+    <h2 class="mb-2 flex items-baseline gap-2 font-heading text-sm font-bold text-ink">
       {{ day.label }}
-      <span class="text-xs font-normal text-gray-400">{{ day.date | date: 'MMM d' }}</span>
+      <span class="text-xs font-bold text-ink-muted">{{ day.date | date: 'MMM d' }}</span>
     </h2>
     <ul *ngIf="day.items.length > 0; else noItems" class="space-y-1.5">
       <li *ngFor="let item of day.items" class="flex items-center gap-2">
@@ -30,16 +30,16 @@
           *ngIf="item.kind === 'task'; else eventDot"
           type="checkbox"
           (change)="toggleDone(item.task!)"
-          class="h-4 w-4 shrink-0 rounded border-gray-300"
+          class="h-4 w-4 shrink-0 rounded-md accent-coral"
         />
-        <ng-template #eventDot><span class="h-2 w-2 shrink-0 rounded-full bg-blue-400"></span></ng-template>
-        <span class="truncate text-sm text-gray-900">{{ item.title }}</span>
+        <ng-template #eventDot><span class="h-2 w-2 shrink-0 rounded-full bg-wouter"></span></ng-template>
+        <span class="truncate text-sm font-semibold text-ink">{{ item.title }}</span>
         <app-member-avatars class="ml-auto shrink-0" [members]="members" [assignedIds]="item.assignedFamilyMemberIds"></app-member-avatars>
-        <span *ngIf="item.time" class="shrink-0 text-xs text-gray-400">{{ item.time | date: 'shortTime' }}</span>
+        <span *ngIf="item.time" class="shrink-0 text-xs font-bold text-ink-muted">{{ item.time | date: 'shortTime' }}</span>
       </li>
     </ul>
     <ng-template #noItems>
-      <p class="text-sm text-gray-400">Nothing planned.</p>
+      <p class="text-sm font-semibold text-ink-muted">Nothing planned.</p>
     </ng-template>
   </div>
 </div>

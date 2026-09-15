@@ -1,45 +1,48 @@
-<h1 class="text-2xl font-semibold text-gray-900">Lists</h1>
+<h1 class="text-2xl font-extrabold text-ink">Lists 📋</h1>
 
-<p *ngIf="errorMessage" class="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage }}</p>
+<p *ngIf="errorMessage" class="mt-4 rounded-2xl bg-danger-bg px-3 py-2 text-sm font-semibold text-danger-text">{{ errorMessage }}</p>
 
-<div *ngIf="loading" class="mt-8 text-center text-sm text-gray-500">Loading…</div>
+<div *ngIf="loading" class="mt-8 text-center text-sm font-semibold text-ink-muted">Loading…</div>
 
-<ul *ngIf="!loading" class="mt-4 space-y-2">
-  <li *ngFor="let list of lists">
-    <a
-      [routerLink]="['/tasks', list.id]"
-      class="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm hover:border-blue-300 hover:bg-blue-50/40"
-    >
-      <span class="font-medium text-gray-900">{{ list.name }}</span>
-      <span *ngIf="list.nodeCount > 0" class="text-sm text-gray-500">
-        {{ list.incompleteCount }} of {{ list.nodeCount }} left
-      </span>
-      <span *ngIf="list.nodeCount === 0" class="text-sm text-gray-400">Empty</span>
-    </a>
-  </li>
+<div *ngIf="!loading" class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+  <a
+    *ngFor="let list of lists"
+    [routerLink]="['/tasks', list.id]"
+    [style.background]="list.color"
+    class="flex min-h-[92px] flex-col justify-between gap-2 rounded-3xl p-5 text-white shadow-sticker transition hover:brightness-105"
+  >
+    <span class="font-heading text-lg font-bold">{{ list.name }}</span>
+    <div *ngIf="list.nodeCount > 0">
+      <span class="text-sm font-extrabold opacity-95">{{ list.incompleteCount }} of {{ list.nodeCount }} left</span>
+      <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/30">
+        <div class="h-full rounded-full bg-white" [style.width.%]="((list.nodeCount - (list.incompleteCount ?? 0)) / list.nodeCount) * 100"></div>
+      </div>
+    </div>
+    <span *ngIf="list.nodeCount === 0" class="text-sm font-extrabold opacity-90">Empty</span>
+  </a>
 
-  <li *ngIf="lists.length === 0" class="rounded-lg border border-dashed border-gray-300 px-4 py-8 text-center text-sm text-gray-500">
+  <div *ngIf="lists.length === 0" class="col-span-full rounded-3xl border-2 border-dashed border-border-soft px-4 py-8 text-center text-sm font-semibold text-ink-muted">
     No lists yet — create one to start adding tasks.
-  </li>
-</ul>
+  </div>
+</div>
 
-<div *ngIf="showNewListForm" class="mt-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+<div *ngIf="showNewListForm" class="mt-4 rounded-3xl bg-white p-4 shadow-sticker">
   <form (ngSubmit)="submitNewList()" #form="ngForm" class="flex items-end gap-2">
     <div class="flex-1">
-      <label for="listName" class="block text-sm font-medium text-gray-700">List name</label>
+      <label for="listName" class="block text-sm font-bold text-ink">List name</label>
       <input
         id="listName"
         name="listName"
         placeholder="e.g. Groceries, Chores…"
         [(ngModel)]="newListName"
         required
-        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       />
     </div>
-    <button type="submit" [disabled]="form.invalid || submitting" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50">
+    <button type="submit" [disabled]="form.invalid || submitting" class="rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
       Create
     </button>
-    <button type="button" (click)="showNewListForm = false" class="rounded-md px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
+    <button type="button" (click)="showNewListForm = false" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">
       Cancel
     </button>
   </form>
@@ -49,6 +52,6 @@
   *ngIf="!showNewListForm"
   type="button"
   (click)="showNewListForm = true"
-  class="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-2xl text-white shadow-lg hover:bg-blue-500 sm:bottom-6"
+  class="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-coral text-2xl text-white shadow-button hover:bg-coral-strong sm:bottom-6"
   aria-label="Add list"
 >+</button>
