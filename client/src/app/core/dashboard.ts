@@ -6,6 +6,7 @@ import {
   DashboardWidgetResponse,
   ReorderDashboardWidgetsRequest,
   UpdateDashboardWidgetRequest,
+  UpdateDashboardWidgetSpanRequest,
 } from './models';
 
 @Service()
@@ -22,6 +23,10 @@ export class Dashboard {
 
   update(id: string, request: UpdateDashboardWidgetRequest) {
     return this.http.put<DashboardWidgetResponse>(`${environment.apiUrl}/dashboard/${id}`, request);
+  }
+
+  updateSpan(id: string, request: UpdateDashboardWidgetSpanRequest) {
+    return this.http.put<DashboardWidgetResponse>(`${environment.apiUrl}/dashboard/${id}/span`, request);
   }
 
   /** Full replacement of the caller's widget order. */

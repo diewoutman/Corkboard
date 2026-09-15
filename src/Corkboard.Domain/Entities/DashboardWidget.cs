@@ -22,6 +22,14 @@ public class DashboardWidget
     public int SortOrder { get; set; }
 
     /// <summary>
+    /// How many of the dashboard's fixed columns (see DashboardController.ColumnCount) this
+    /// widget's card spans, 1-ColumnCount. The grid auto-flows widgets in SortOrder, wrapping to
+    /// a new row whenever a widget doesn't fit the remaining width — there's no separate row/column
+    /// coordinate to maintain.
+    /// </summary>
+    public int Span { get; set; } = 1;
+
+    /// <summary>
     /// Per-widget-type settings as JSON (jsonb column) — deliberately not
     /// columns on this entity: the shapes are heterogeneous (Navigation's is a
     /// tile-key array, Notes' and Tasks' are scalars) and there's no need to

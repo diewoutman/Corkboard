@@ -11,8 +11,9 @@ public enum DashboardWidgetType
 /// <summary>
 /// One flat shape covering every widget type's settings, same convention as
 /// CreateNodeRequest — fields that don't apply to the given Type are ignored
-/// server-side. New widgets are appended at the end; reordering is a separate
-/// call (see ReorderDashboardWidgetsRequest).
+/// server-side. New widgets are appended at the end, one column wide;
+/// repositioning is a separate call (see ReorderDashboardWidgetsRequest), and
+/// resizing another (see UpdateDashboardWidgetSpanRequest).
 /// </summary>
 public record CreateDashboardWidgetRequest(
     DashboardWidgetType Type,
@@ -33,10 +34,14 @@ public record UpdateDashboardWidgetRequest(
 /// <summary>Full replacement of the caller's widget order — SortOrder becomes each id's index in this list.</summary>
 public record ReorderDashboardWidgetsRequest(IReadOnlyList<Guid> OrderedWidgetIds);
 
+/// <summary>How many grid columns (1-DashboardController.ColumnCount) a widget's card should span.</summary>
+public record UpdateDashboardWidgetSpanRequest(int Span);
+
 public record DashboardWidgetResponse(
     Guid Id,
     DashboardWidgetType Type,
     int SortOrder,
+    int Span,
     IReadOnlyList<string>? TileOrder,
     bool? ImportantOnly,
     Guid? CollectionId,

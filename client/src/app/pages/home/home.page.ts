@@ -23,6 +23,9 @@ interface WidgetFormState {
   standalone: false,
 })
 export class HomePage implements OnInit {
+  /** Fixed number of grid columns the dashboard lays widgets out in — mirrors DashboardController.ColumnCount. */
+  static readonly COLUMN_COUNT = 3;
+
   familyName: string | null = null;
 
   widgets: DashboardWidgetResponse[] = [];
@@ -95,6 +98,32 @@ export class HomePage implements OnInit {
       error: () => {
         this.errorMessage = 'Could not save the new widget order.';
         this.reload();
+      },
+    });
+  }
+
+  /** Tailwind's grid column-span scale is fixed at build time, so spell each step out literally for the content scanner to find. */
+  widgetSpanClass(widget: DashboardWidgetResponse): string {
+    switch (widget.span) {
+      case 3:
+        return 'col-span-1 sm:col-span-3';
+      case 2:
+        return 'col-span-1 sm:col-span-2';
+      default:
+        return 'col-span-1';
+    }
+  }
+
+  /** Cycles a widget's width: 1/3 → 2/3 → full width → back to 1/3. */
+  cycleWidgetWidth(widget: DashboardWidgetResponse) {
+    const nextSpan = (widget.span % HomePage.COLUMN_COUNT) + 1;
+    const previousSpan = widget.span;
+    widget.span = nextSpan;
+    this.dashboardApi.updateSpan(widget.id, { span: nextSpan }).subscribe({
+      error: () => {
+        widget.span = previousSpan;
+        this.errorMessage = 'Could not resize that widget.';
+        this.cdr.markForCheck();
       },
     });
   }

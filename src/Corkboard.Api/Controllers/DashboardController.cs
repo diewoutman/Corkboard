@@ -12,6 +12,9 @@ namespace Corkboard.Api.Controllers;
 [Route("api/dashboard")]
 public class DashboardController(CorkboardDbContext db) : FamilyScopedControllerBase
 {
+    /// <summary>Fixed number of columns the dashboard lays widgets out in — the client mirrors this.</summary>
+    private const int ColumnCount = 3;
+
     /// <summary>Widgets belong to this caller specifically, not the whole Family — every other endpoint here is scoped the same way.</summary>
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<DashboardWidgetResponse>>> List(CancellationToken cancellationToken)
@@ -33,6 +36,7 @@ public class DashboardController(CorkboardDbContext db) : FamilyScopedController
                 FamilyId = familyId,
                 Type = DomainWidgetType.Navigation,
                 SortOrder = 0,
+                Span = ColumnCount,
                 CreatedAt = DateTimeOffset.UtcNow,
                 UpdatedAt = DateTimeOffset.UtcNow,
             };
@@ -64,6 +68,7 @@ public class DashboardController(CorkboardDbContext db) : FamilyScopedController
             FamilyId = familyId,
             Type = (DomainWidgetType)request.Type,
             SortOrder = nextSortOrder,
+            Span = 1,
             Config = ToConfigJson(request.TileOrder, request.ImportantOnly, request.CollectionId, request.AssignedToMeOnly),
             CreatedAt = now,
             UpdatedAt = now,
@@ -87,6 +92,31 @@ public class DashboardController(CorkboardDbContext db) : FamilyScopedController
         if (widget is null) return NotFound();
 
         widget.Config = ToConfigJson(request.TileOrder, request.ImportantOnly, request.CollectionId, request.AssignedToMeOnly);
+        widget.UpdatedAt = DateTimeOffset.UtcNow;
+        await db.SaveChangesAsync(cancellationToken);
+
+        return Ok(ToResponse(widget));
+    }
+
+    /// <summary>Resizing — how many grid columns wide the caller wants this widget's card.</summary>
+    [HttpPut("{id:guid}/span")]
+    public async Task<ActionResult<DashboardWidgetResponse>> UpdateSpan(Guid id, UpdateDashboardWidgetSpanRequest request, CancellationToken cancellationToken)
+    {
+        if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
+
+        if (request.Span is < 1 || request.Span > ColumnCount)
+        {
+            return Problem(
+                title: "Invalid span",
+                detail: $"Span must be between 1 and {ColumnCount}.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var widget = await db.DashboardWidgets.FirstOrDefaultAsync(
+            w => w.UserId == CurrentUserId && w.FamilyId == familyId && w.Id == id, cancellationToken);
+        if (widget is null) return NotFound();
+
+        widget.Span = request.Span;
         widget.UpdatedAt = DateTimeOffset.UtcNow;
         await db.SaveChangesAsync(cancellationToken);
 
@@ -160,7 +190,7 @@ public class DashboardController(CorkboardDbContext db) : FamilyScopedController
     {
         var config = widget.Config is null ? null : JsonSerializer.Deserialize<WidgetConfig>(widget.Config);
         return new DashboardWidgetResponse(
-            widget.Id, (DashboardWidgetType)widget.Type, widget.SortOrder,
+            widget.Id, (DashboardWidgetType)widget.Type, widget.SortOrder, widget.Span,
             config?.TileOrder, config?.ImportantOnly, config?.CollectionId, config?.AssignedToMeOnly);
     }
 

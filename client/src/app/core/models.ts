@@ -264,10 +264,16 @@ export interface ReorderDashboardWidgetsRequest {
   orderedWidgetIds: string[];
 }
 
+export interface UpdateDashboardWidgetSpanRequest {
+  span: number;
+}
+
 export interface DashboardWidgetResponse {
   id: string;
   type: DashboardWidgetType;
   sortOrder: number;
+  /** How many of the dashboard's fixed columns (1-3) this widget's card spans. */
+  span: number;
   tileOrder: string[] | null;
   importantOnly: boolean | null;
   collectionId: string | null;
