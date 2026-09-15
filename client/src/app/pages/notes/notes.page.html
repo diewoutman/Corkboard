@@ -1,41 +1,20 @@
 <h1 class="text-2xl font-extrabold text-ink">Notes 📌</h1>
 
-<p *ngIf="errorMessage" class="mt-4 rounded-2xl bg-danger-bg px-3 py-2 text-sm font-semibold text-danger-text">{{ errorMessage }}</p>
+<app-error-banner [message]="errorMessage" />
 
-<div *ngIf="loading" class="mt-8 text-center text-sm font-semibold text-ink-muted">Loading…</div>
+<app-loading-indicator *ngIf="loading" class="mt-8" />
 
 <div *ngIf="!loading" class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-  <div
+  <app-sticky-note-card
     *ngFor="let note of notes; let i = index"
-    [ngClass]="[noteColor(i), noteRotation(i)]"
-    class="relative rounded-2xl p-4 shadow-[0_5px_0_0_rgba(0,0,0,0.06)]"
-  >
-    <div class="absolute right-3 top-3 flex items-center gap-2">
-      <button
-        type="button"
-        (click)="toggleImportant(note)"
-        [class.text-coral]="note.isImportant"
-        [class.opacity-100]="note.isImportant"
-        [class.text-ink]="!note.isImportant"
-        class="opacity-60 hover:text-coral hover:opacity-100"
-        [attr.aria-label]="note.isImportant ? 'Unmark as important' : 'Mark as important'"
-      >★</button>
-      <button type="button" (click)="deleteNote(note)" class="text-ink opacity-50 hover:text-danger hover:opacity-100" aria-label="Delete">✕</button>
-    </div>
-    <p class="pr-14 font-heading font-bold text-ink">{{ note.title }}</p>
-    <p *ngIf="note.description" class="mt-1 whitespace-pre-line text-sm font-semibold text-ink/80">{{ note.description }}</p>
-    <div class="mt-2 flex flex-wrap gap-2">
-      <span
-        *ngFor="let memberId of note.assignedFamilyMemberIds"
-        class="rounded-full px-2 py-0.5 text-xs font-extrabold text-white"
-        [style.background]="memberColor(memberId)"
-      >{{ memberName(memberId) }}</span>
-    </div>
-  </div>
+    [note]="note"
+    [members]="members"
+    [index]="i"
+    (toggleImportant)="toggleImportant(note)"
+    (delete)="deleteNote(note)"
+  />
 
-  <div *ngIf="notes.length === 0" class="col-span-full rounded-3xl border-2 border-dashed border-border-soft px-4 py-8 text-center text-sm font-semibold text-ink-muted">
-    No notes here yet.
-  </div>
+  <app-empty-state *ngIf="notes.length === 0" class="col-span-full">No notes here yet.</app-empty-state>
 </div>
 
 <div *ngIf="showNewNoteForm" class="mt-4 rounded-3xl bg-white p-4 shadow-sticker">
@@ -60,20 +39,7 @@
         class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       ></textarea>
     </div>
-    <div>
-      <label class="block text-sm font-bold text-ink">Assigned to</label>
-      <div class="mt-1 flex flex-wrap gap-2">
-        <label *ngFor="let member of members" class="flex items-center gap-1.5 rounded-full border-2 border-border-soft px-2.5 py-1 text-xs font-bold text-ink has-checked:border-coral has-checked:bg-pastel-coral">
-          <input
-            type="checkbox"
-            [checked]="newNote.assignedFamilyMemberIds.includes(member.id)"
-            (change)="toggleAssignee(member.id)"
-            class="h-3.5 w-3.5 rounded-md accent-coral"
-          />
-          {{ member.displayName }}
-        </label>
-      </div>
-    </div>
+    <app-assignee-chip-group [members]="members" [selectedIds]="newNote.assignedFamilyMemberIds" (toggled)="toggleAssignee($event)" />
 
     <label class="flex items-center gap-2 text-sm font-semibold text-ink-muted">
       <input type="checkbox" name="isImportant" [(ngModel)]="newNote.isImportant" class="rounded-md accent-coral" />
@@ -91,10 +57,4 @@
   </form>
 </div>
 
-<button
-  *ngIf="!showNewNoteForm"
-  type="button"
-  (click)="showNewNoteForm = true"
-  class="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-coral text-2xl text-white shadow-button hover:bg-coral-strong sm:bottom-6"
-  aria-label="Add note"
->+</button>
+<app-fab-button *ngIf="!showNewNoteForm" label="Add note" (clicked)="showNewNoteForm = true" />

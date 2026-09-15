@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { environment } from '../../../environments/environment';
 import { Auth } from '../../core/auth';
 import { extractErrorMessage } from '../../core/http-error';
 import { Setup } from '../../core/setup';
@@ -23,6 +24,9 @@ export class LoginPage implements OnInit {
   password = '';
   errorMessage: string | null = null;
   submitting = false;
+
+  /** Gates the dev-only "Seed test data & log in" button — mirrors the server's own Development-only gate on the endpoint it calls. */
+  readonly isProduction = environment.production;
 
   constructor(
     private readonly auth: Auth,
@@ -61,6 +65,25 @@ export class LoginPage implements OnInit {
       error: (err) => {
         this.submitting = false;
         this.errorMessage = extractErrorMessage(err, 'Something went wrong. Please try again.');
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  /** Dev-only convenience — see Setup.seedDevData(). */
+  seedAndLogIn() {
+    this.submitting = true;
+    this.errorMessage = null;
+
+    this.setup.seedDevData().subscribe({
+      next: (auth) => {
+        this.auth.applyAuth(auth);
+        this.submitting = false;
+        this.router.navigateByUrl(auth.familyId ? '/home' : '/family-setup');
+      },
+      error: (err) => {
+        this.submitting = false;
+        this.errorMessage = extractErrorMessage(err, 'Could not seed dev data.');
         this.cdr.markForCheck();
       },
     });

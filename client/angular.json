@@ -114,6 +114,22 @@
               "src/**/*.html"
             ]
           }
+        },
+        "storybook": {
+          "builder": "@storybook/angular-vite:start-storybook",
+          "options": {
+            "configDir": ".storybook",
+            "browserTarget": "app:build",
+            "port": 6006
+          }
+        },
+        "build-storybook": {
+          "builder": "@storybook/angular-vite:build-storybook",
+          "options": {
+            "configDir": ".storybook",
+            "browserTarget": "app:build",
+            "outputDir": "storybook-static"
+          }
         }
       }
     }
@@ -123,5 +139,8 @@
       "style": "scss",
       "standalone": false
     }
+  },
+  "cli": {
+    "analytics": false
   }
 }

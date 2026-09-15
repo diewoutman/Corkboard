@@ -3,13 +3,11 @@
   <p class="mt-1 text-sm font-semibold text-ink-muted">Drag widgets to reorder them, or use ↔ to resize.</p>
 </div>
 
-<p *ngIf="errorMessage" class="mt-4 rounded-2xl bg-danger-bg px-3 py-2 text-sm font-semibold text-danger-text">{{ errorMessage }}</p>
+<app-error-banner [message]="errorMessage" />
 
-<div *ngIf="loading" class="mt-8 text-center text-sm font-semibold text-ink-muted">Loading…</div>
+<app-loading-indicator *ngIf="loading" class="mt-8" />
 
-<div *ngIf="!loading && widgets.length === 0" class="mt-6 rounded-3xl border-2 border-dashed border-border-soft px-4 py-8 text-center text-sm font-semibold text-ink-muted">
-  Your dashboard is empty — add a widget to get started.
-</div>
+<app-empty-state *ngIf="!loading && widgets.length === 0" class="mt-6">Your dashboard is empty — add a widget to get started.</app-empty-state>
 
 <div
   *ngIf="!loading && widgets.length > 0"
@@ -110,10 +108,4 @@
   </div>
 </div>
 
-<button
-  *ngIf="!showWidgetForm"
-  type="button"
-  (click)="openAddWidgetForm()"
-  class="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-coral text-2xl text-white shadow-button hover:bg-coral-strong sm:bottom-6"
-  aria-label="Add widget"
->+</button>
+<app-fab-button *ngIf="!showWidgetForm" label="Add widget" (clicked)="openAddWidgetForm()" />
