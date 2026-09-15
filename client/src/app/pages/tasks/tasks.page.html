@@ -8,17 +8,19 @@
   <a
     *ngFor="let list of lists"
     [routerLink]="['/tasks', list.id]"
-    [style.background]="list.color"
-    class="flex min-h-[92px] flex-col justify-between gap-2 rounded-3xl p-5 text-white shadow-sticker transition hover:brightness-105"
+    class="flex min-h-[92px] flex-col justify-between gap-2 rounded-3xl bg-white p-5 shadow-sticker transition hover:brightness-[0.98]"
   >
-    <span class="font-heading text-lg font-bold">{{ list.name }}</span>
+    <div class="flex items-center gap-2">
+      <span class="h-3 w-3 shrink-0 rounded-full" [style.background]="list.color"></span>
+      <span class="font-heading text-lg font-bold text-ink">{{ list.name }}</span>
+    </div>
     <div *ngIf="list.nodeCount > 0">
-      <span class="text-sm font-extrabold opacity-95">{{ list.incompleteCount }} of {{ list.nodeCount }} left</span>
-      <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/30">
-        <div class="h-full rounded-full bg-white" [style.width.%]="((list.nodeCount - (list.incompleteCount ?? 0)) / list.nodeCount) * 100"></div>
+      <span class="text-sm font-extrabold text-ink-muted">{{ list.incompleteCount }} of {{ list.nodeCount }} left</span>
+      <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-cork">
+        <div class="h-full rounded-full" [style.background]="list.color" [style.width.%]="((list.nodeCount - (list.incompleteCount ?? 0)) / list.nodeCount) * 100"></div>
       </div>
     </div>
-    <span *ngIf="list.nodeCount === 0" class="text-sm font-extrabold opacity-90">Empty</span>
+    <span *ngIf="list.nodeCount === 0" class="text-sm font-extrabold text-ink-muted">Empty</span>
   </a>
 
   <div *ngIf="lists.length === 0" class="col-span-full rounded-3xl border-2 border-dashed border-border-soft px-4 py-8 text-center text-sm font-semibold text-ink-muted">
