@@ -5,6 +5,8 @@ import { FamilyMemberResponse, NodeResponse } from '../../../core/models';
 import { Nodes } from '../../../core/nodes';
 
 const MAX_NOTES_SHOWN = 5;
+const NOTE_COLORS = ['bg-pastel-amber', 'bg-pastel-teal', 'bg-pastel-green', 'bg-pastel-purple', 'bg-pastel-coral'];
+const NOTE_ROTATIONS = ['-rotate-1', 'rotate-1', '-rotate-[0.5deg]', 'rotate-[1.5deg]', 'rotate-0'];
 
 @Component({
   selector: 'app-notes-widget',
@@ -40,5 +42,13 @@ export class NotesWidgetComponent implements OnInit {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  noteColor(index: number): string {
+    return NOTE_COLORS[index % NOTE_COLORS.length];
+  }
+
+  noteRotation(index: number): string {
+    return NOTE_ROTATIONS[index % NOTE_ROTATIONS.length];
   }
 }

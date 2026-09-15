@@ -1,5 +1,62 @@
 @import "tailwindcss";
 
+/*
+ * Corkboard design tokens — "Speels & Kleurrijk" (Playful & Colorful).
+ * Kept in sync by hand with design/design-tokens.json (the Penpot-importable
+ * source of truth) — same hex values, same names where Tailwind's own
+ * namespacing allows it.
+ */
+@theme {
+  --color-cork: #f6f2e3;
+  --color-ink: #2b2c3d;
+  --color-ink-muted: #5f6275;
+  --color-border-soft: #e5e7f5;
+
+  --color-coral: #ec5542;
+  --color-coral-strong: #cb4838;
+  --color-coral-deep: #a8372a;
+
+  --color-emma: #ec5542;
+  --color-wouter: #2a80e2;
+  --color-wouter-strong: #1570d1;
+  --color-finn: #1eab53;
+  --color-finn-strong: #009342;
+  --color-lotte: #bc9c00;
+  --color-lotte-strong: #997e00;
+  --color-person-extra: #b45bc8;
+
+  --color-danger: #e64343;
+  --color-danger-bg: #ffdad0;
+  --color-danger-shadow: #f2a89b;
+  --color-danger-text: #ac1b18;
+  --color-danger-text-strong: #7c2620;
+  --color-success-bg: #b8e7ae;
+  --color-success-text: #214f16;
+
+  --color-badge-bg: #eadeb2;
+  --color-badge-text: #6f4f07;
+  --color-owner-bg: #ffcbbf;
+  --color-owner-text: #a13124;
+  --color-adult-bg: #bddaff;
+  --color-adult-text: #0c54a0;
+
+  --color-pastel-amber: #eedea1;
+  --color-pastel-teal: #a8eee8;
+  --color-pastel-green: #beecc6;
+  --color-pastel-purple: #f4d5fb;
+  --color-pastel-coral: #ffd7cd;
+  --color-pastel-gold: #ffd7b3;
+
+  --color-shadow-tint: #d3d6ec;
+
+  --font-heading: "Baloo 2", -apple-system, system-ui, sans-serif;
+  --font-body: "Nunito", -apple-system, system-ui, sans-serif;
+
+  --shadow-sticker: 0 4px 0 0 var(--color-shadow-tint);
+  --shadow-sticker-sm: 0 3px 0 0 var(--color-shadow-tint);
+  --shadow-button: 0 4px 0 0 var(--color-coral-deep);
+}
+
 html,
 body {
   height: 100%;
@@ -7,13 +64,12 @@ body {
 
 body {
   margin: 0;
-  font-family:
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+.font-heading {
+  font-family: var(--font-heading);
 }

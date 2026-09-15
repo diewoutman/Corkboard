@@ -1,16 +1,16 @@
-<p *ngIf="listName" class="-mt-1 mb-2 text-xs text-gray-500">{{ listName }}</p>
-<p *ngIf="!listName && assignedToMeOnly" class="-mt-1 mb-2 text-xs text-gray-500">Assigned to me</p>
+<p *ngIf="listName" class="-mt-1 mb-2 text-xs font-bold text-ink-muted">{{ listName }}</p>
+<p *ngIf="!listName && assignedToMeOnly" class="-mt-1 mb-2 text-xs font-bold text-ink-muted">Assigned to me</p>
 
-<div *ngIf="loading" class="text-sm text-gray-500">Loading…</div>
+<div *ngIf="loading" class="text-sm font-semibold text-ink-muted">Loading…</div>
 
 <ul *ngIf="!loading" class="space-y-1.5">
   <li *ngFor="let task of tasks" class="flex items-center gap-2">
-    <input type="checkbox" (change)="toggleDone(task)" class="h-4 w-4 shrink-0 rounded border-gray-300" />
-    <span class="truncate text-sm text-gray-900">{{ task.title }}</span>
+    <input type="checkbox" (change)="toggleDone(task)" class="h-5 w-5 shrink-0 rounded-md accent-coral" />
+    <span class="truncate text-sm font-semibold text-ink">{{ task.title }}</span>
     <app-member-avatars class="ml-auto shrink-0" [members]="members" [assignedIds]="task.assignedFamilyMemberIds"></app-member-avatars>
     <span *ngIf="task.until" class="shrink-0 text-xs" [ngClass]="dueClass(task)">{{ task.until | date: 'MMM d' }}</span>
   </li>
-  <li *ngIf="tasks.length === 0" class="text-sm text-gray-500">Nothing here.</li>
+  <li *ngIf="tasks.length === 0" class="text-sm font-semibold text-ink-muted">Nothing here.</li>
 </ul>
 
-<a [routerLink]="collectionId ? ['/tasks', collectionId] : ['/tasks']" class="mt-3 inline-block text-xs font-medium text-blue-600 hover:text-blue-500">View all →</a>
+<a [routerLink]="collectionId ? ['/tasks', collectionId] : ['/tasks']" class="mt-3 inline-block text-xs font-extrabold text-coral hover:text-coral-strong">View all →</a>

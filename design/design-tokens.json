@@ -1,0 +1,127 @@
+{
+  "Corkboard": {
+    "color": {
+      "background": { "$value": "#f6f2e3", "$type": "color", "$description": "Page background" },
+      "surface": { "$value": "#ffffff", "$type": "color", "$description": "Card / panel background" },
+      "border": { "$value": "#e5e7f5", "$type": "color", "$description": "Hairline dividers" },
+      "text": {
+        "primary": { "$value": "#2b2c3d", "$type": "color", "$description": "" },
+        "muted": { "$value": "#5f6275", "$type": "color", "$description": "" }
+      },
+      "accent": {
+        "coral": { "$value": "#ec5542", "$type": "color", "$description": "Primary brand accent — buttons, FAB, checkboxes, links" },
+        "coral-strong": { "$value": "#cb4838", "$type": "color", "$description": "Hover / pressed state of accent.coral" },
+        "coral-deep": { "$value": "#a8372a", "$type": "color", "$description": "Hard-shadow color under coral buttons" }
+      },
+      "person": {
+        "emma": { "$value": "#ec5542", "$type": "color", "$description": "Family member color — Emma" },
+        "wouter": { "$value": "#2a80e2", "$type": "color", "$description": "Family member color — Wouter" },
+        "wouter-strong": { "$value": "#1570d1", "$type": "color", "$description": "" },
+        "finn": { "$value": "#1eab53", "$type": "color", "$description": "Family member color — Finn" },
+        "finn-strong": { "$value": "#009342", "$type": "color", "$description": "" },
+        "lotte": { "$value": "#bc9c00", "$type": "color", "$description": "Family member color — Lotte" },
+        "lotte-strong": { "$value": "#997e00", "$type": "color", "$description": "" },
+        "extra": { "$value": "#b45bc8", "$type": "color", "$description": "Spare accent for contacts/roles beyond the 4 family members" }
+      },
+      "state": {
+        "danger": { "$value": "#e64343", "$type": "color", "$description": "Overdue badge fill" },
+        "danger-bg": { "$value": "#ffdad0", "$type": "color", "$description": "Overdue card background" },
+        "danger-shadow": { "$value": "#f2a89b", "$type": "color", "$description": "Overdue card shadow" },
+        "danger-text": { "$value": "#ac1b18", "$type": "color", "$description": "" },
+        "danger-text-strong": { "$value": "#7c2620", "$type": "color", "$description": "" },
+        "success-bg": { "$value": "#b8e7ae", "$type": "color", "$description": "Category chip fill (e.g. 'Groente')" },
+        "success-text": { "$value": "#214f16", "$type": "color", "$description": "" }
+      },
+      "badge": {
+        "neutral-bg": { "$value": "#eadeb2", "$type": "color", "$description": "'Owner' header badge fill" },
+        "neutral-text": { "$value": "#6f4f07", "$type": "color", "$description": "" },
+        "owner-bg": { "$value": "#ffcbbf", "$type": "color", "$description": "Family page — Owner role chip" },
+        "owner-text": { "$value": "#a13124", "$type": "color", "$description": "" },
+        "adult-bg": { "$value": "#bddaff", "$type": "color", "$description": "Family page — Adult role chip" },
+        "adult-text": { "$value": "#0c54a0", "$type": "color", "$description": "" }
+      },
+      "pastel": {
+        "amber": { "$value": "#eedea1", "$type": "color", "$description": "Sticky-note fill 1" },
+        "teal": { "$value": "#a8eee8", "$type": "color", "$description": "Sticky-note fill 2" },
+        "green": { "$value": "#beecc6", "$type": "color", "$description": "Sticky-note fill 3" },
+        "purple": { "$value": "#f4d5fb", "$type": "color", "$description": "Sticky-note fill 4" },
+        "coral": { "$value": "#ffd7cd", "$type": "color", "$description": "Sticky-note fill 5" },
+        "gold": { "$value": "#ffd7b3", "$type": "color", "$description": "Sticky-note fill 6" }
+      },
+      "shadow-tint": { "$value": "#d3d6ec", "$type": "color", "$description": "Base color for the hard 'sticker' drop-shadow used under every card" }
+    },
+
+    "font": {
+      "family": {
+        "heading": { "$value": "Baloo 2", "$type": "fontFamily", "$description": "Headings, widget titles, nav brand" },
+        "body": { "$value": "Nunito", "$type": "fontFamily", "$description": "Body copy, UI labels" }
+      }
+    },
+
+    "radius": {
+      "sm": { "$value": "12px", "$type": "borderRadius", "$description": "Chips, tags, small tiles" },
+      "md": { "$value": "16px", "$type": "borderRadius", "$description": "Sticky notes, list rows, FAB-adjacent controls" },
+      "lg": { "$value": "22px", "$type": "borderRadius", "$description": "Cards / widgets" },
+      "pill": { "$value": "999px", "$type": "borderRadius", "$description": "Avatars, badges, pill buttons" }
+    },
+
+    "spacing": {
+      "xs": { "$value": "4px", "$type": "spacing", "$description": "" },
+      "sm": { "$value": "8px", "$type": "spacing", "$description": "" },
+      "md": { "$value": "12px", "$type": "spacing", "$description": "" },
+      "lg": { "$value": "16px", "$type": "spacing", "$description": "" },
+      "xl": { "$value": "24px", "$type": "spacing", "$description": "" },
+      "2xl": { "$value": "32px", "$type": "spacing", "$description": "" }
+    },
+
+    "shadow": {
+      "sticker": {
+        "$type": "shadow",
+        "$value": { "color": "#d3d6ec", "x": 0, "y": 4, "blur": 0, "spread": 0, "type": "dropShadow" },
+        "$description": "Hard offset shadow on every card/widget — no blur, flat 4px drop"
+      },
+      "button": {
+        "$type": "shadow",
+        "$value": { "color": "#a8372a", "x": 0, "y": 5, "blur": 0, "spread": 0, "type": "dropShadow" },
+        "$description": "FAB and primary-button shadow"
+      }
+    },
+
+    "typography": {
+      "heading-xl": {
+        "$type": "typography",
+        "$value": { "fontFamily": "Baloo 2", "fontSize": "26px", "fontWeight": "700", "lineHeight": "1.2", "letterSpacing": "0px" },
+        "$description": "Page titles (H1)"
+      },
+      "heading-lg": {
+        "$type": "typography",
+        "$value": { "fontFamily": "Baloo 2", "fontSize": "20px", "fontWeight": "700", "lineHeight": "1.25", "letterSpacing": "0px" },
+        "$description": "Section headers"
+      },
+      "heading-md": {
+        "$type": "typography",
+        "$value": { "fontFamily": "Baloo 2", "fontSize": "15px", "fontWeight": "700", "lineHeight": "1.3", "letterSpacing": "0px" },
+        "$description": "Widget / card titles"
+      },
+      "body": {
+        "$type": "typography",
+        "$value": { "fontFamily": "Nunito", "fontSize": "14px", "fontWeight": "600", "lineHeight": "1.4", "letterSpacing": "0px" },
+        "$description": "Default UI text, list items"
+      },
+      "body-sm": {
+        "$type": "typography",
+        "$value": { "fontFamily": "Nunito", "fontSize": "12.5px", "fontWeight": "600", "lineHeight": "1.4", "letterSpacing": "0px" },
+        "$description": "Secondary text, timestamps, captions"
+      },
+      "label": {
+        "$type": "typography",
+        "$value": { "fontFamily": "Nunito", "fontSize": "11px", "fontWeight": "800", "lineHeight": "1.2", "letterSpacing": "0.02em", "textCase": "uppercase" },
+        "$description": "Eyebrow labels, chip text"
+      }
+    }
+  },
+
+  "$metadata": {
+    "tokenSetOrder": ["Corkboard"]
+  }
+}

@@ -16,7 +16,7 @@ import { FamilyMemberResponse } from '../core/models';
     <span class="flex items-center -space-x-1.5" *ngIf="assignedMembers.length > 0">
       <span
         *ngFor="let member of assignedMembers"
-        class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white text-[10px] font-semibold text-white"
+        class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-white text-[10px] font-extrabold text-white"
         [style.background]="member.color"
         [title]="member.displayName"
       >{{ initial(member.displayName) }}</span>
