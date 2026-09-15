@@ -5,10 +5,17 @@ import { OccurrenceResponse } from '../../../core/models';
  * A single day cell in Calendar's month grid: date number, up to 3 occurrence chips, "+N more".
  * Router/service-agnostic — `calendarColor` is a resolver function passed in by the page (same
  * pattern `time-grid.component.ts` already uses for the same problem), not a DI'd service.
+ *
+ * `host: display:contents`: the month grid is a CSS grid, and a grid blockifies (and stretches)
+ * whatever element is its *direct* child — that's this component's own `<app-month-day-cell>`
+ * tag, not the `<button>` inside it. A bare `<button>` defaults to `display: inline-block` and
+ * shrinks to fit its content, so without `contents` here every cell collapsed to the width of its
+ * date number and only looked right once an event's `w-full` span happened to be present.
  */
 @Component({
   selector: 'app-month-day-cell',
   standalone: true,
+  host: { class: 'contents' },
   template: `
     <button
       type="button"
