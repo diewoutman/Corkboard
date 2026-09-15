@@ -305,6 +305,7 @@ export class CalendarPage implements OnInit {
         assignedFamilyMemberIds: this.newEvent.assignedFamilyMemberIds,
         collectionId: this.newEvent.calendarId,
         priority: null,
+        category: null,
         location: this.newEvent.location || null,
         allDay: this.newEvent.allDay,
         recurrenceRule: this.toRecurrenceRule(this.newEvent.repeat),

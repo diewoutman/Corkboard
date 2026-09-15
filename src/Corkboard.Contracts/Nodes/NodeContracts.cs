@@ -22,6 +22,8 @@ public record CreateNodeRequest(
     bool? IsImportant,
     // Task-only
     int? Priority,
+    /// <summary>Free-text grouping label (e.g. "Produce") — lets a TaskList double as a categorized shopping list.</summary>
+    string? Category,
     // Appointment-only
     string? Location,
     bool? AllDay,
@@ -50,6 +52,7 @@ public record UpdateNodeRequest(
     // Task-only
     bool? IsCompleted,
     int? Priority,
+    string? Category,
     // Appointment-only
     string? Location,
     bool? AllDay,
@@ -83,6 +86,7 @@ public record NodeResponse(
     bool? IsCompleted,
     DateTimeOffset? CompletedAt,
     int? Priority,
+    string? Category,
     // Appointment-only
     string? Location,
     bool? AllDay,

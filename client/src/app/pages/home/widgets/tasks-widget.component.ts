@@ -82,6 +82,7 @@ export class TasksWidgetComponent implements OnInit {
       isImportant: null,
       isCompleted: true,
       priority: task.priority,
+      category: task.category,
       location: null,
       allDay: null,
       recurrenceRule: null,

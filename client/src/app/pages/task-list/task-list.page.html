@@ -12,40 +12,47 @@
 
 <div *ngIf="loading" class="mt-8 text-center text-sm text-gray-500">Loading…</div>
 
-<ul *ngIf="!loading" class="mt-4 space-y-2">
-  <li
-    *ngFor="let task of visibleTasks"
-    class="flex items-start gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm"
-  >
-    <input
-      type="checkbox"
-      [checked]="!!task.isCompleted"
-      (change)="toggleDone(task)"
-      class="mt-1 h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600"
-    />
-    <div class="min-w-0 flex-1">
-      <p class="truncate font-medium text-gray-900" [class.line-through]="task.isCompleted" [class.text-gray-400]="task.isCompleted">
-        {{ task.title }}
-      </p>
-      <p *ngIf="task.description" class="mt-0.5 text-sm text-gray-500">{{ task.description }}</p>
-      <div class="mt-1 flex flex-wrap items-center gap-2">
-        <span *ngIf="task.until" class="text-xs font-medium text-gray-500">
-          Due {{ task.until | date: 'mediumDate' }}
-        </span>
-        <span
-          *ngFor="let memberId of task.assignedFamilyMemberIds"
-          class="rounded-full px-2 py-0.5 text-xs font-medium text-white"
-          [style.background]="memberColor(memberId)"
-        >{{ memberName(memberId) }}</span>
-      </div>
-    </div>
-    <button type="button" (click)="deleteTask(task)" class="shrink-0 text-gray-300 hover:text-red-600" aria-label="Delete">✕</button>
-  </li>
+<div *ngIf="!loading" class="mt-4 space-y-4">
+  <div *ngFor="let group of groupedTasks">
+    <h2 *ngIf="groupedTasks.length > 1" class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
+      {{ group.category ?? 'Other' }}
+    </h2>
+    <ul class="space-y-2">
+      <li
+        *ngFor="let task of group.tasks"
+        class="flex items-start gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm"
+      >
+        <input
+          type="checkbox"
+          [checked]="!!task.isCompleted"
+          (change)="toggleDone(task)"
+          class="mt-1 h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600"
+        />
+        <div class="min-w-0 flex-1">
+          <p class="truncate font-medium text-gray-900" [class.line-through]="task.isCompleted" [class.text-gray-400]="task.isCompleted">
+            {{ task.title }}
+          </p>
+          <p *ngIf="task.description" class="mt-0.5 text-sm text-gray-500">{{ task.description }}</p>
+          <div class="mt-1 flex flex-wrap items-center gap-2">
+            <span *ngIf="task.until" class="text-xs font-medium text-gray-500">
+              Due {{ task.until | date: 'mediumDate' }}
+            </span>
+            <span
+              *ngFor="let memberId of task.assignedFamilyMemberIds"
+              class="rounded-full px-2 py-0.5 text-xs font-medium text-white"
+              [style.background]="memberColor(memberId)"
+            >{{ memberName(memberId) }}</span>
+          </div>
+        </div>
+        <button type="button" (click)="deleteTask(task)" class="shrink-0 text-gray-300 hover:text-red-600" aria-label="Delete">✕</button>
+      </li>
+    </ul>
+  </div>
 
-  <li *ngIf="visibleTasks.length === 0" class="rounded-lg border border-dashed border-gray-300 px-4 py-8 text-center text-sm text-gray-500">
+  <p *ngIf="visibleTasks.length === 0" class="rounded-lg border border-dashed border-gray-300 px-4 py-8 text-center text-sm text-gray-500">
     No tasks here yet.
-  </li>
-</ul>
+  </p>
+</div>
 
 <div *ngIf="showNewTaskForm" class="mt-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
   <form (ngSubmit)="submitNewTask()" #form="ngForm" class="space-y-3">
@@ -94,6 +101,20 @@
           <option [ngValue]="3">High</option>
         </select>
       </div>
+    </div>
+    <div>
+      <label for="category" class="block text-sm font-medium text-gray-700">Category <span class="text-gray-400">(optional — groups the list, e.g. for a shopping list)</span></label>
+      <input
+        id="category"
+        name="category"
+        list="knownCategories"
+        placeholder="e.g. Produce, Dairy, Household…"
+        [(ngModel)]="newTask.category"
+        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      />
+      <datalist id="knownCategories">
+        <option *ngFor="let category of knownCategories" [value]="category"></option>
+      </datalist>
     </div>
     <div>
       <label class="block text-sm font-medium text-gray-700">Assigned to</label>

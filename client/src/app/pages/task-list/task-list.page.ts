@@ -42,6 +42,27 @@ export class TaskListPage implements OnInit {
     return this.showCompleted ? this.tasks : this.tasks.filter((t) => !t.isCompleted);
   }
 
+  /** Groups visibleTasks by Category (in first-seen order), uncategorized tasks last under "Other" — a categorized list doubles as a shopping-mode view. */
+  get groupedTasks(): { category: string | null; tasks: NodeResponse[] }[] {
+    const groups = new Map<string | null, NodeResponse[]>();
+    for (const task of this.visibleTasks) {
+      const key = task.category;
+      groups.set(key, [...(groups.get(key) ?? []), task]);
+    }
+    const entries = [...groups.entries()].map(([category, tasks]) => ({ category, tasks }));
+    entries.sort((a, b) => {
+      if (a.category === null) return 1;
+      if (b.category === null) return -1;
+      return a.category.localeCompare(b.category);
+    });
+    return entries;
+  }
+
+  /** Previously used categories in this list, for the "Category" field's suggestion list. */
+  get knownCategories(): string[] {
+    return [...new Set(this.tasks.map((t) => t.category).filter((c): c is string => !!c))].sort((a, b) => a.localeCompare(b));
+  }
+
   reload() {
     this.loading = true;
     this.errorMessage = null;
@@ -119,6 +140,7 @@ export class TaskListPage implements OnInit {
         assignedFamilyMemberIds: this.newTask.assignedFamilyMemberIds,
         collectionId: this.listId,
         priority: this.newTask.priority,
+        category: this.newTask.category || null,
         location: null,
         allDay: null,
         recurrenceRule: null,
@@ -150,6 +172,7 @@ export class TaskListPage implements OnInit {
       isImportant: task.isImportant,
       isCompleted: task.isCompleted,
       priority: task.priority,
+      category: task.category,
       location: task.location,
       allDay: task.allDay,
       recurrenceRule: task.recurrenceRule,
@@ -179,6 +202,7 @@ export class TaskListPage implements OnInit {
       description: '',
       dueDate: '',
       priority: null as number | null,
+      category: '',
       assignedFamilyMemberIds: [] as string[],
     };
   }

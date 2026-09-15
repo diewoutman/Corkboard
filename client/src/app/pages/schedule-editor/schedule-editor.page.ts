@@ -128,6 +128,7 @@ export class ScheduleEditorPage implements OnInit {
         assignedFamilyMemberIds: this.newEntry.assignedFamilyMemberIds,
         collectionId: this.scheduleId,
         priority: null,
+        category: null,
         location: this.newEntry.location || null,
         allDay: false,
         recurrenceRule: this.toRecurrenceRule(),

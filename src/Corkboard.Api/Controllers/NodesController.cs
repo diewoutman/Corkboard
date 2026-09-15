@@ -101,7 +101,7 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
         Node node = request.Type switch
         {
             ContractNodeType.Note => new Note { Title = request.Title, IsImportant = request.IsImportant ?? false },
-            ContractNodeType.Task => new TaskNode { Title = request.Title, Priority = request.Priority },
+            ContractNodeType.Task => new TaskNode { Title = request.Title, Priority = request.Priority, Category = NormalizeCategory(request.Category) },
             ContractNodeType.Appointment => new Appointment
             {
                 Title = request.Title,
@@ -183,6 +183,7 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
                     task.CompletedAt = isCompleted ? task.CompletedAt ?? DateTimeOffset.UtcNow : null;
                 }
                 task.Priority = request.Priority;
+                task.Category = NormalizeCategory(request.Category);
                 break;
             case Appointment appointment:
                 appointment.Location = request.Location;
@@ -276,6 +277,9 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
         detail: "A Contact requires a FirstName.",
         statusCode: StatusCodes.Status400BadRequest);
 
+    private static string? NormalizeCategory(string? category) =>
+        string.IsNullOrWhiteSpace(category) ? null : category.Trim();
+
     private static string BuildContactTitle(string firstName, string? lastName) =>
         string.IsNullOrWhiteSpace(lastName) ? firstName.Trim() : $"{firstName.Trim()} {lastName.Trim()}";
 
@@ -289,7 +293,7 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
                 task.Id, ContractNodeType.Task, task.Title, task.Description, task.From, task.Until,
                 task.CreatedAt, task.UpdatedAt, task.CreatedByUserId, assignedIds, task.CollectionId,
                 IsImportant: null,
-                task.IsCompleted, task.CompletedAt, task.Priority,
+                task.IsCompleted, task.CompletedAt, task.Priority, task.Category,
                 Location: null, AllDay: null, RecurrenceRule: null,
                 FirstName: null, LastName: null, DateOfBirth: null,
                 Street: null, City: null, PostalCode: null, Country: null,
@@ -298,7 +302,7 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
                 appointment.Id, ContractNodeType.Appointment, appointment.Title, appointment.Description, appointment.From, appointment.Until,
                 appointment.CreatedAt, appointment.UpdatedAt, appointment.CreatedByUserId, assignedIds, appointment.CollectionId,
                 IsImportant: null,
-                IsCompleted: null, CompletedAt: null, Priority: null,
+                IsCompleted: null, CompletedAt: null, Priority: null, Category: null,
                 appointment.Location, appointment.AllDay, appointment.RecurrenceRule,
                 FirstName: null, LastName: null, DateOfBirth: null,
                 Street: null, City: null, PostalCode: null, Country: null,
@@ -307,7 +311,7 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
                 contact.Id, ContractNodeType.Contact, contact.Title, contact.Description, contact.From, contact.Until,
                 contact.CreatedAt, contact.UpdatedAt, contact.CreatedByUserId, assignedIds, contact.CollectionId,
                 IsImportant: null,
-                IsCompleted: null, CompletedAt: null, Priority: null,
+                IsCompleted: null, CompletedAt: null, Priority: null, Category: null,
                 Location: null, AllDay: null, RecurrenceRule: null,
                 contact.FirstName, contact.LastName, contact.DateOfBirth,
                 contact.Street, contact.City, contact.PostalCode, contact.Country,
@@ -317,7 +321,7 @@ public class NodesController(CorkboardDbContext db) : FamilyScopedControllerBase
                 note.Id, ContractNodeType.Note, note.Title, note.Description, note.From, note.Until,
                 note.CreatedAt, note.UpdatedAt, note.CreatedByUserId, assignedIds, note.CollectionId,
                 note.IsImportant,
-                IsCompleted: null, CompletedAt: null, Priority: null,
+                IsCompleted: null, CompletedAt: null, Priority: null, Category: null,
                 Location: null, AllDay: null, RecurrenceRule: null,
                 FirstName: null, LastName: null, DateOfBirth: null,
                 Street: null, City: null, PostalCode: null, Country: null,

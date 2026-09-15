@@ -92,6 +92,7 @@ export interface CreateNodeRequest {
   // Note-only
   isImportant: boolean | null;
   priority: number | null;
+  category: string | null;
   location: string | null;
   allDay: boolean | null;
   recurrenceRule: string | null;
@@ -118,6 +119,7 @@ export interface UpdateNodeRequest {
   isImportant: boolean | null;
   isCompleted: boolean | null;
   priority: number | null;
+  category: string | null;
   location: string | null;
   allDay: boolean | null;
   recurrenceRule: string | null;
@@ -150,6 +152,7 @@ export interface NodeResponse {
   isCompleted: boolean | null;
   completedAt: string | null;
   priority: number | null;
+  category: string | null;
   location: string | null;
   allDay: boolean | null;
   recurrenceRule: string | null;
