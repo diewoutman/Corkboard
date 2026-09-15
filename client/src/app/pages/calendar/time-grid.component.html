@@ -51,7 +51,7 @@
         <div
           *ngFor="let laned of column.timed; trackBy: trackByOccurrenceKey"
           data-occurrence-block
-          class="group absolute z-20 cursor-grab overflow-hidden rounded-md px-1 py-0.5 text-[10px] font-bold leading-tight text-white shadow-sm active:cursor-grabbing"
+          class="group absolute z-20 cursor-grab overflow-hidden rounded-lg px-1 py-0.5 text-[10px] font-bold leading-tight text-white shadow-[0_2px_0_0_rgba(0,0,0,0.12)] active:cursor-grabbing"
           [style.background]="calendarColor(laned.occurrence.collectionId)"
           [style.top.px]="topPx(laned.startMinutes)"
           [style.height.px]="heightPx(laned.endMinutes - laned.startMinutes)"

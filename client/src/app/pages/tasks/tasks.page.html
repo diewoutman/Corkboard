@@ -28,9 +28,19 @@
     <span *ngIf="list.nodeCount === 0" class="text-sm font-extrabold" [class.opacity-90]="!isLightColor(list.color)" [class.opacity-70]="isLightColor(list.color)">Empty</span>
   </a>
 
-  <div *ngIf="lists.length === 0" class="col-span-full rounded-3xl border-2 border-dashed border-border-soft px-4 py-8 text-center text-sm font-semibold text-ink-muted">
+  <button
+    *ngIf="!showNewListForm"
+    type="button"
+    (click)="showNewListForm = true"
+    class="flex min-h-[92px] flex-col items-center justify-center gap-1 rounded-3xl border-4 border-dashed border-border-soft text-sm font-extrabold text-ink-muted hover:border-coral hover:text-coral"
+  >
+    <span class="text-2xl leading-none">+</span>
+    New list
+  </button>
+
+  <p *ngIf="lists.length === 0" class="col-span-full text-center text-sm font-semibold text-ink-muted">
     No lists yet — create one to start adding tasks.
-  </div>
+  </p>
 </div>
 
 <div *ngIf="showNewListForm" class="mt-4 rounded-3xl bg-white p-4 shadow-sticker">
@@ -55,11 +65,3 @@
     </button>
   </form>
 </div>
-
-<button
-  *ngIf="!showNewListForm"
-  type="button"
-  (click)="showNewListForm = true"
-  class="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-coral text-2xl text-white shadow-button hover:bg-coral-strong sm:bottom-6"
-  aria-label="Add list"
->+</button>

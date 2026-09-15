@@ -33,6 +33,7 @@
       <li
         *ngFor="let task of group.tasks"
         class="flex items-start gap-3 rounded-2xl bg-white px-4 py-3 shadow-sticker-sm"
+        [class.opacity-55]="task.isCompleted"
       >
         <input
           type="checkbox"

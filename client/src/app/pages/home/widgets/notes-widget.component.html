@@ -1,7 +1,7 @@
 <div *ngIf="loading" class="text-sm font-semibold text-ink-muted">Loading…</div>
 
 <ul *ngIf="!loading" class="space-y-2">
-  <li *ngFor="let note of notes; let i = index" [ngClass]="[noteColor(i), noteRotation(i)]" class="rounded-2xl px-2.5 py-1.5 shadow-sm">
+  <li *ngFor="let note of notes; let i = index" [ngClass]="[noteColor(i), noteRotation(i)]" class="rounded-2xl px-2.5 py-1.5">
     <p class="flex items-center gap-1 truncate text-sm font-bold text-ink">
       <span *ngIf="note.isImportant" class="text-coral">★</span>
       {{ note.title }}

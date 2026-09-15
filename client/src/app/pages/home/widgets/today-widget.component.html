@@ -20,7 +20,7 @@
         />
         <ng-template #eventDot><span class="h-2 w-2 shrink-0 rounded-full bg-wouter"></span></ng-template>
         <span class="truncate text-sm" [class.text-danger]="item.overdue" [class.font-extrabold]="item.overdue" [class.font-semibold]="!item.overdue" [class.text-ink]="!item.overdue">{{ item.title }}</span>
-        <span *ngIf="item.overdue" class="shrink-0 rounded-full bg-danger-bg px-2 py-0.5 text-xs font-extrabold text-danger-text">Overdue</span>
+        <span *ngIf="item.overdue" class="shrink-0 rounded-full bg-danger px-2 py-0.5 text-xs font-extrabold text-white">Overdue</span>
         <span *ngIf="item.time" class="ml-auto shrink-0 text-xs font-bold text-ink-muted">{{ item.time | date: 'shortTime' }}</span>
       </li>
     </ul>

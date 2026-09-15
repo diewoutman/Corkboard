@@ -16,8 +16,8 @@
       >{{ group.member.displayName.charAt(0).toUpperCase() }}</span>
       <h2 class="font-heading text-base font-bold text-ink">{{ group.member ? group.member.displayName : 'Unassigned' }}</h2>
     </div>
-    <ul class="space-y-1.5">
-      <li *ngFor="let item of group.items" class="flex items-center gap-2">
+    <ul>
+      <li *ngFor="let item of group.items" class="flex items-center gap-2 border-t-2 border-dashed border-cork py-1.5 first:border-t-0 first:pt-0">
         <input
           *ngIf="item.kind === 'task'; else eventDot"
           type="checkbox"
@@ -26,7 +26,7 @@
         />
         <ng-template #eventDot><span class="h-2.5 w-2.5 shrink-0 rounded-full bg-wouter"></span></ng-template>
         <span class="truncate text-sm" [class.text-danger]="item.overdue" [class.font-extrabold]="item.overdue" [class.font-semibold]="!item.overdue" [class.text-ink]="!item.overdue">{{ item.title }}</span>
-        <span *ngIf="item.overdue" class="shrink-0 rounded-full bg-danger-bg px-2 py-0.5 text-xs font-extrabold text-danger-text">Overdue</span>
+        <span *ngIf="item.overdue" class="shrink-0 rounded-full bg-danger px-2 py-0.5 text-xs font-extrabold text-white">Overdue</span>
         <span *ngIf="item.time" class="ml-auto shrink-0 text-xs font-bold text-ink-muted">{{ item.time | date: 'shortTime' }}</span>
       </li>
     </ul>
