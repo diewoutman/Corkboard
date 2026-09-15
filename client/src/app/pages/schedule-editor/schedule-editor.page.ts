@@ -86,21 +86,6 @@ export class ScheduleEditorPage implements OnInit {
       .sort((a, b) => (a.from ?? '').localeCompare(b.from ?? ''));
   }
 
-  isBiweekly(entry: NodeResponse): boolean {
-    return !!entry.recurrenceRule?.includes('INTERVAL=2');
-  }
-
-  endsOn(entry: NodeResponse): string | null {
-    const match = entry.recurrenceRule?.match(/UNTIL=(\d{8})/);
-    if (!match) return null;
-    const raw = match[1];
-    return `${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}`;
-  }
-
-  memberName(id: string): string {
-    return this.members.find((m) => m.id === id)?.displayName ?? '?';
-  }
-
   toggleAssignee(memberId: string) {
     const ids = this.newEntry.assignedFamilyMemberIds;
     this.newEntry.assignedFamilyMemberIds = ids.includes(memberId)

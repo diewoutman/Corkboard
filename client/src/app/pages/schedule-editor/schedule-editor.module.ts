@@ -5,9 +5,23 @@ import { FormsModule } from '@angular/forms';
 import { ScheduleEditorPageRoutingModule } from './schedule-editor-routing.module';
 
 import { ScheduleEditorPage } from './schedule-editor.page';
+import { ErrorBannerComponent } from '../../shared/components/error-banner/error-banner.component';
+import { LoadingIndicatorComponent } from '../../shared/components/loading-indicator/loading-indicator.component';
+import { ScheduleDayColumnComponent } from '../../shared/components/schedule-entry-row/schedule-day-column.component';
+import { FabButtonComponent } from '../../shared/components/fab-button/fab-button.component';
+import { AssigneeChipGroupComponent } from '../../shared/components/assignee-chip-group/assignee-chip-group.component';
 
 @NgModule({
-  imports: [CommonModule, FormsModule, ScheduleEditorPageRoutingModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ScheduleEditorPageRoutingModule,
+    ErrorBannerComponent,
+    LoadingIndicatorComponent,
+    ScheduleDayColumnComponent,
+    FabButtonComponent,
+    AssigneeChipGroupComponent,
+  ],
   declarations: [ScheduleEditorPage],
 })
 export class ScheduleEditorPageModule {}
