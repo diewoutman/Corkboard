@@ -14,6 +14,7 @@ import { NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
 export class ContactsPage implements OnInit {
   households: CollectionResponse[] = [];
   contacts: NodeResponse[] = [];
+  selectedContactId: string | null = null;
 
   loading = true;
   errorMessage: string | null = null;
@@ -48,6 +49,9 @@ export class ContactsPage implements OnInit {
       next: ({ households, contacts }) => {
         this.households = households.sort((a, b) => a.name.localeCompare(b.name));
         this.contacts = this.sortContacts(contacts);
+        if (!this.contacts.some((c) => c.id === this.selectedContactId)) {
+          this.selectedContactId = this.contacts[0]?.id ?? null;
+        }
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -57,6 +61,15 @@ export class ContactsPage implements OnInit {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  get selectedContact(): NodeResponse | null {
+    return this.contacts.find((c) => c.id === this.selectedContactId) ?? null;
+  }
+
+  selectContact(contact: NodeResponse) {
+    this.selectedContactId = contact.id;
+    this.cancelContactForm();
   }
 
   householdName(id: string | null): string | null {
@@ -158,6 +171,9 @@ export class ContactsPage implements OnInit {
     this.nodesApi.delete(contact.id).subscribe({
       next: () => {
         this.contacts = this.contacts.filter((c) => c.id !== contact.id);
+        if (this.selectedContactId === contact.id) {
+          this.selectedContactId = this.contacts[0]?.id ?? null;
+        }
         this.cdr.markForCheck();
       },
       error: () => {
@@ -175,6 +191,7 @@ export class ContactsPage implements OnInit {
 
   openEditContactForm(contact: NodeResponse) {
     this.editingContactId = contact.id;
+    this.selectedContactId = contact.id;
     this.contactForm = {
       firstName: contact.firstName ?? '',
       lastName: contact.lastName ?? '',
@@ -239,6 +256,7 @@ export class ContactsPage implements OnInit {
         this.contacts = this.sortContacts(
           this.editingContactId ? this.contacts.map((c) => (c.id === saved.id ? saved : c)) : [...this.contacts, saved],
         );
+        this.selectedContactId = saved.id;
         this.showContactForm = false;
         this.editingContactId = null;
         this.cdr.markForCheck();
