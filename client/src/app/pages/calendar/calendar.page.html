@@ -133,7 +133,11 @@
         </p>
         <p *ngIf="o.location" class="text-xs text-gray-500">📍 {{ o.location }}</p>
         <div class="mt-1 flex flex-wrap gap-1">
-          <span *ngFor="let memberId of o.assignedFamilyMemberIds" class="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-700">{{ memberName(memberId) }}</span>
+          <span
+            *ngFor="let memberId of o.assignedFamilyMemberIds"
+            class="rounded-full px-2 py-0.5 text-[10px] font-medium text-white"
+            [style.background]="memberColor(memberId)"
+          >{{ memberName(memberId) }}</span>
         </div>
       </div>
       <button type="button" (click)="deleteOccurrence(o)" class="shrink-0 text-gray-300 hover:text-red-600" aria-label="Delete">✕</button>

@@ -105,6 +105,10 @@ export class CalendarPage implements OnInit {
     return this.members.find((m) => m.id === id)?.displayName ?? '?';
   }
 
+  memberColor(id: string): string {
+    return this.members.find((m) => m.id === id)?.color ?? '#999';
+  }
+
   /** Both Calendars and Schedules are shown as togglable layers in the same grid — see CONCEPT.md. */
   loadCalendars() {
     forkJoin({

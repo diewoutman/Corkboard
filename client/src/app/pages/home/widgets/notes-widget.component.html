@@ -5,6 +5,7 @@
     <p class="flex items-center gap-1 truncate text-sm font-medium text-gray-900">
       <span *ngIf="note.isImportant" class="text-amber-500">★</span>
       {{ note.title }}
+      <app-member-avatars class="ml-auto shrink-0" [members]="members" [assignedIds]="note.assignedFamilyMemberIds"></app-member-avatars>
     </p>
     <p *ngIf="note.description" class="truncate text-xs text-gray-600">{{ note.description }}</p>
   </li>

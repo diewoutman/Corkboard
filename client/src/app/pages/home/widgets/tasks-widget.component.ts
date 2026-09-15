@@ -3,7 +3,7 @@ import { forkJoin, of, switchMap } from 'rxjs';
 import { Auth } from '../../../core/auth';
 import { Collections } from '../../../core/collections';
 import { FamilyMembers } from '../../../core/family-members';
-import { NodeResponse, UpdateNodeRequest } from '../../../core/models';
+import { FamilyMemberResponse, NodeResponse, UpdateNodeRequest } from '../../../core/models';
 import { Nodes } from '../../../core/nodes';
 
 const MAX_TASKS_SHOWN = 8;
@@ -18,6 +18,7 @@ export class TasksWidgetComponent implements OnInit {
   @Input() assignedToMeOnly: boolean | null = null;
 
   tasks: NodeResponse[] = [];
+  members: FamilyMemberResponse[] = [];
   listName: string | null = null;
   loading = true;
 
@@ -42,9 +43,10 @@ export class TasksWidgetComponent implements OnInit {
           )
         : of(null);
 
-    forkJoin({ list: listName$, assignedTo: assignedTo$ }).subscribe({
-      next: ({ list, assignedTo }) => {
+    forkJoin({ list: listName$, assignedTo: assignedTo$, members: this.familyMembersApi.list() }).subscribe({
+      next: ({ list, assignedTo, members }) => {
         this.listName = list?.name ?? null;
+        this.members = members;
         this.nodesApi
           .list({ type: 'Task', collectionId: this.collectionId ?? undefined, assignedTo: assignedTo ?? undefined })
           .subscribe({
