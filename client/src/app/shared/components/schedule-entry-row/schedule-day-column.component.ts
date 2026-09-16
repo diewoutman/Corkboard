@@ -10,7 +10,7 @@ import { ScheduleEntryRowComponent } from './schedule-entry-row.component';
   template: `
     <div class="rounded-2xl border-2 border-border-soft bg-white p-3 shadow-sticker-sm">
       <h2 class="text-sm font-bold text-ink">{{ label }}</h2>
-      <ul class="mt-2 space-y-2">
+      <ul class="mt-2 flex flex-col gap-2">
         @for (entry of entries; track entry.id) {
           <app-schedule-entry-row [entry]="entry" [members]="members" (delete)="deleteEntry.emit(entry)" />
         }

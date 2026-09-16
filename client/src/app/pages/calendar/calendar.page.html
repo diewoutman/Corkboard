@@ -202,7 +202,7 @@
         <h2 class="font-heading text-sm font-bold text-ink">Calendars</h2>
         <button type="button" (click)="openNewCalendarForm('Calendar')" class="text-xs font-extrabold text-coral hover:text-coral-strong">+ Add</button>
       </div>
-      <ul class="mt-2 space-y-2">
+      <ul class="mt-2 flex flex-col gap-2">
         <app-calendar-source-row
           *ngFor="let calendar of plainCalendars"
           [name]="calendar.name"
@@ -242,7 +242,7 @@
         <h2 class="font-heading text-sm font-bold text-ink">Schedules</h2>
         <button type="button" (click)="openNewCalendarForm('Schedule')" class="text-xs font-extrabold text-coral hover:text-coral-strong">+ Add</button>
       </div>
-      <ul class="mt-2 space-y-2">
+      <ul class="mt-2 flex flex-col gap-2">
         <app-calendar-source-row
           *ngFor="let schedule of schedules"
           [name]="schedule.name"

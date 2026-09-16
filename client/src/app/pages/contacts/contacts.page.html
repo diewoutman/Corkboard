@@ -9,7 +9,7 @@
 
 <!-- Households panel: shared addresses contacts can fall back to -->
 <div *ngIf="showHouseholdsPanel" class="mt-4 rounded-3xl bg-white p-4 shadow-sticker">
-  <ul class="space-y-2">
+  <ul class="flex flex-col gap-2">
     <app-household-row *ngFor="let household of households" [household]="household" (edit)="openEditHouseholdForm(household)" />
     <li *ngIf="households.length === 0" class="text-sm font-semibold text-ink-muted">No households yet.</li>
   </ul>

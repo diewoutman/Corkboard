@@ -9,7 +9,7 @@
 <div *ngIf="!loading" class="mt-4 space-y-4">
   <div *ngIf="overdue.length > 0" class="rounded-3xl bg-danger-bg p-4 shadow-[0_4px_0_0_var(--color-danger-shadow)]">
     <h2 class="mb-2 font-heading text-sm font-bold text-danger-text-strong">Overdue ⚠️</h2>
-    <ul class="space-y-1.5">
+    <ul class="flex flex-col gap-1.5">
       <app-agenda-list-item
         *ngFor="let item of overdue"
         [item]="item"
@@ -27,7 +27,7 @@
       {{ day.label }}
       <span class="text-xs font-bold text-ink-muted">{{ day.date | date: 'MMM d' }}</span>
     </h2>
-    <ul *ngIf="day.items.length > 0; else noItems" class="space-y-1.5">
+    <ul *ngIf="day.items.length > 0; else noItems" class="flex flex-col gap-1.5">
       <app-agenda-list-item
         *ngFor="let item of day.items"
         [item]="item"

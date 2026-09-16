@@ -23,7 +23,7 @@
     <h2 *ngIf="groupedTasks.length > 1" class="mb-1.5 text-xs font-extrabold uppercase tracking-wide text-ink-muted">
       {{ group.category ?? 'Other' }}
     </h2>
-    <ul class="space-y-2">
+    <ul class="flex flex-col gap-2">
       <app-task-row
         *ngFor="let task of group.tasks"
         [task]="task"
