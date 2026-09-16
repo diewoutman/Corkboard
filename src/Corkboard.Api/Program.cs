@@ -1,6 +1,12 @@
 using System.Text;
 using System.Text.Json.Serialization;
 using Corkboard.Api.Auth;
+using Corkboard.Application.Calendar;
+using Corkboard.Application.Collections;
+using Corkboard.Application.Dashboard;
+using Corkboard.Application.Families;
+using Corkboard.Application.FamilyMembers;
+using Corkboard.Application.Nodes;
 using Corkboard.Infrastructure.Ics;
 using Corkboard.Infrastructure.Identity;
 using Corkboard.Infrastructure.Persistence;
@@ -24,6 +30,11 @@ builder.Services.AddControllers()
     .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// Gives every error response — including an unhandled exception, via
+// UseExceptionHandler() below — a consistent RFC 7807 ProblemDetails body
+// instead of only the ones that already call Problem()/ValidationProblem().
+builder.Services.AddProblemDetails();
 
 builder.Services.AddDbContext<CorkboardDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
@@ -80,6 +91,12 @@ builder.Services.AddCors(options =>
 
 builder.Services.Configure<JwtOptions>(jwtSection);
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<INodeService, NodeService>();
+builder.Services.AddScoped<ICollectionService, CollectionService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<ICalendarService, CalendarService>();
+builder.Services.AddScoped<IFamilyService, FamilyService>();
+builder.Services.AddScoped<IFamilyMemberService, FamilyMemberService>();
 
 builder.Services.AddSingleton<RecurrenceExpansionService>();
 builder.Services.AddSingleton<IcsExportService>();
@@ -103,6 +120,12 @@ builder.Services.AddTickerQ(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
+// No custom IExceptionHandler registered, so this falls back to writing a
+// ProblemDetails response (via AddProblemDetails() above) for any exception
+// that reaches here — first in the pipeline so it covers everything downstream.
+app.UseExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

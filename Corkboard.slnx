@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Corkboard.Api/Corkboard.Api.csproj" />
+    <Project Path="src/Corkboard.Application/Corkboard.Application.csproj" />
     <Project Path="src/Corkboard.Contracts/Corkboard.Contracts.csproj" />
     <Project Path="src/Corkboard.Domain/Corkboard.Domain.csproj" />
     <Project Path="src/Corkboard.Infrastructure/Corkboard.Infrastructure.csproj" />
