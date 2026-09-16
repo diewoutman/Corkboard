@@ -23,6 +23,7 @@ import { FamilyMembers } from '../../core/family-members';
 import { CollectionResponse, FamilyMemberResponse, OccurrenceResponse } from '../../core/models';
 import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
 import { parseQuickAdd } from '../../core/quick-add';
+import { SegmentedControlOption } from '../../shared/components/segmented-control/segmented-control.component';
 
 interface DayCell {
   date: Date;
@@ -42,6 +43,12 @@ type ViewMode = 'month' | 'week' | 'day';
   standalone: false,
 })
 export class CalendarPage implements OnInit {
+  readonly viewModeOptions: SegmentedControlOption[] = [
+    { value: 'month', label: 'Month' },
+    { value: 'week', label: 'Week' },
+    { value: 'day', label: 'Day' },
+  ];
+
   viewMode: ViewMode = 'month';
   viewDate = startOfDay(new Date());
   weeks: DayCell[][] = [];
@@ -55,7 +62,6 @@ export class CalendarPage implements OnInit {
   errorMessage: string | null = null;
 
   selectedDayKey: string | null = null;
-  quickAddText = '';
 
   showNewCalendarForm = false;
   newCalendarName = '';
@@ -419,13 +425,13 @@ export class CalendarPage implements OnInit {
   }
 
   /** Todoist/Google-Calendar-style fast capture: "Dentist tomorrow 3pm" — parsed client-side, same create call as the full form. */
-  submitQuickAdd() {
-    const parsed = parseQuickAdd(this.quickAddText);
+  submitQuickAdd(text: string) {
+    const parsed = parseQuickAdd(text);
     const calendarId = this.eventableCalendars[0]?.id;
     if (!parsed.title || !calendarId) return;
 
     if (!parsed.start) {
-      this.errorMessage = `Couldn't find a date/time in "${this.quickAddText}" — try e.g. "tomorrow 5pm".`;
+      this.errorMessage = `Couldn't find a date/time in "${text}" — try e.g. "tomorrow 5pm".`;
       this.cdr.markForCheck();
       return;
     }
@@ -449,7 +455,6 @@ export class CalendarPage implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.quickAddText = '';
           this.loadOccurrences();
         },
         error: (err) => {

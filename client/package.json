@@ -7,7 +7,9 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "storybook": "ng run app:storybook",
+    "build-storybook": "ng run app:build-storybook"
   },
   "private": true,
   "dependencies": {
@@ -39,7 +41,25 @@
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.0",
     "typescript-eslint": "^8.61.0",
-    "vitest": "^4.0.8"
+    "vitest": "^4.0.8",
+    "storybook": "^10.6.0",
+    "@storybook/angular-vite": "^10.6.0",
+    "@chromatic-com/storybook": "latest",
+    "@storybook/addon-vitest": "^10.6.0",
+    "@storybook/addon-a11y": "^10.6.0",
+    "@storybook/addon-docs": "^10.6.0",
+    "@storybook/addon-onboarding": "^10.6.0",
+    "@types/node": "^20",
+    "@angular-devkit/build-angular": "22.0.1",
+    "@angular-devkit/architect": "0.2200.1",
+    "@angular-devkit/core": "22.0.1",
+    "@angular/animations": "22.0.1",
+    "@analogjs/vite-plugin-angular": "^2.5.2",
+    "vite": "latest",
+    "eslint-plugin-storybook": "^10.6.0",
+    "@vitest/browser-playwright": "4.1.11",
+    "@vitest/coverage-v8": "4.1.11",
+    "playwright": "latest"
   },
   "description": "Corkboard's Angular + Tailwind PWA client"
 }

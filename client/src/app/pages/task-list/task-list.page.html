@@ -8,64 +8,33 @@
   </label>
 </div>
 
-<p *ngIf="errorMessage" class="mt-4 rounded-2xl bg-danger-bg px-3 py-2 text-sm font-semibold text-danger-text">{{ errorMessage }}</p>
+<app-error-banner [message]="errorMessage" />
 
-<form (ngSubmit)="submitQuickAdd()" class="mt-4 flex gap-2">
-  <input
-    name="quickAddText"
-    [(ngModel)]="quickAddText"
-    placeholder="Add a task… try &quot;Buy milk tomorrow 5pm #Groceries&quot; or &quot;Boodschappen morgen 17:00&quot;"
-    class="block w-full rounded-full border-2 border-border-soft bg-white px-4 py-2 text-sm font-semibold shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-  />
-  <button type="submit" [disabled]="!quickAddText.trim()" class="shrink-0 rounded-full bg-coral px-5 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
-    Add
-  </button>
-</form>
+<app-quick-add-bar
+  class="mt-4 block"
+  placeholder="Add a task… try &quot;Buy milk tomorrow 5pm #Groceries&quot; or &quot;Boodschappen morgen 17:00&quot;"
+  (submitted)="submitQuickAdd($event)"
+/>
 
-<div *ngIf="loading" class="mt-8 text-center text-sm font-semibold text-ink-muted">Loading…</div>
+<app-loading-indicator *ngIf="loading" class="mt-8" />
 
 <div *ngIf="!loading" class="mt-4 space-y-4">
   <div *ngFor="let group of groupedTasks">
     <h2 *ngIf="groupedTasks.length > 1" class="mb-1.5 text-xs font-extrabold uppercase tracking-wide text-ink-muted">
       {{ group.category ?? 'Other' }}
     </h2>
-    <ul class="space-y-2">
-      <li
+    <ul class="flex flex-col gap-2">
+      <app-task-row
         *ngFor="let task of group.tasks"
-        class="flex items-start gap-3 rounded-2xl bg-white px-4 py-3 shadow-sticker-sm"
-        [class.opacity-55]="task.isCompleted"
-      >
-        <input
-          type="checkbox"
-          [checked]="!!task.isCompleted"
-          (change)="toggleDone(task)"
-          class="mt-1 h-5 w-5 shrink-0 rounded-md accent-coral"
-        />
-        <div class="min-w-0 flex-1">
-          <p class="truncate font-bold text-ink" [class.line-through]="task.isCompleted" [class.text-ink-muted]="task.isCompleted">
-            {{ task.title }}
-          </p>
-          <p *ngIf="task.description" class="mt-0.5 text-sm font-semibold text-ink-muted">{{ task.description }}</p>
-          <div class="mt-1 flex flex-wrap items-center gap-2">
-            <span *ngIf="task.until" class="text-xs" [ngClass]="dueClass(task)">
-              Due {{ task.until | date: 'mediumDate' }}
-            </span>
-            <span *ngIf="task.recurrenceRule" class="text-xs text-ink-muted" title="Repeats — completing it rolls the due date forward">🔁</span>
-            <span
-              *ngFor="let memberId of task.assignedFamilyMemberIds"
-              class="rounded-full px-2 py-0.5 text-xs font-extrabold text-white"
-              [style.background]="memberColor(memberId)"
-            >{{ memberName(memberId) }}</span>
-          </div>
-        </div>
-        <button type="button" (click)="deleteTask(task)" class="shrink-0 text-ink-muted hover:text-danger" aria-label="Delete">✕</button>
-      </li>
+        [task]="task"
+        [members]="members"
+        (toggleDone)="toggleDone(task)"
+        (delete)="deleteTask(task)"
+      />
     </ul>
   </div>
 
-  <p *ngIf="visibleTasks.length === 0" class="rounded-3xl border-2 border-dashed border-border-soft px-4 py-8 text-center text-sm font-semibold text-ink-muted">
-    No tasks here yet.
-  </p>
+  <app-empty-state *ngIf="visibleTasks.length === 0">No tasks here yet.</app-empty-state>
 </div>
 
 <div *ngIf="showNewTaskForm" class="mt-4 rounded-3xl bg-white p-4 shadow-sticker">
@@ -144,20 +113,7 @@
         <option value="monthly">Monthly</option>
       </select>
     </div>
-    <div>
-      <label class="block text-sm font-bold text-ink">Assigned to</label>
-      <div class="mt-1 flex flex-wrap gap-2">
-        <label *ngFor="let member of members" class="flex items-center gap-1.5 rounded-full border-2 border-border-soft px-2.5 py-1 text-xs font-bold text-ink has-checked:border-coral has-checked:bg-pastel-coral">
-          <input
-            type="checkbox"
-            [checked]="newTask.assignedFamilyMemberIds.includes(member.id)"
-            (change)="toggleAssignee(member.id)"
-            class="h-3.5 w-3.5 rounded-md accent-coral"
-          />
-          {{ member.displayName }}
-        </label>
-      </div>
-    </div>
+    <app-assignee-chip-group [members]="members" [selectedIds]="newTask.assignedFamilyMemberIds" (toggled)="toggleAssignee($event)" />
 
     <div class="flex gap-2 pt-1">
       <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
@@ -170,10 +126,4 @@
   </form>
 </div>
 
-<button
-  *ngIf="!showNewTaskForm"
-  type="button"
-  (click)="showNewTaskForm = true"
-  class="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-coral text-2xl text-white shadow-button hover:bg-coral-strong sm:bottom-6"
-  aria-label="Add task"
->+</button>
+<app-fab-button *ngIf="!showNewTaskForm" label="Add task" (clicked)="showNewTaskForm = true" />

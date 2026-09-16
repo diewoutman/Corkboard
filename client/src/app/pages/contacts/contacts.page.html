@@ -5,20 +5,12 @@
   </button>
 </div>
 
-<p *ngIf="errorMessage" class="mt-4 rounded-2xl bg-danger-bg px-3 py-2 text-sm font-semibold text-danger-text">{{ errorMessage }}</p>
+<app-error-banner [message]="errorMessage" />
 
 <!-- Households panel: shared addresses contacts can fall back to -->
 <div *ngIf="showHouseholdsPanel" class="mt-4 rounded-3xl bg-white p-4 shadow-sticker">
-  <ul class="space-y-2">
-    <li *ngFor="let household of households" class="flex items-start justify-between gap-2 rounded-2xl bg-cork px-3 py-2">
-      <div>
-        <p class="text-sm font-bold text-ink">{{ household.name }}</p>
-        <p *ngIf="household.street || household.city" class="text-xs font-semibold text-ink-muted">
-          {{ household.street }}<ng-container *ngIf="household.street && (household.city || household.postalCode)">, </ng-container>{{ household.postalCode }} {{ household.city }}<ng-container *ngIf="household.country">, {{ household.country }}</ng-container>
-        </p>
-      </div>
-      <button type="button" (click)="openEditHouseholdForm(household)" class="shrink-0 text-xs font-extrabold text-coral hover:text-coral-strong">Edit</button>
-    </li>
+  <ul class="flex flex-col gap-2">
+    <app-household-row *ngFor="let household of households" [household]="household" (edit)="openEditHouseholdForm(household)" />
     <li *ngIf="households.length === 0" class="text-sm font-semibold text-ink-muted">No households yet.</li>
   </ul>
 
@@ -86,30 +78,21 @@
   </button>
 </div>
 
-<div *ngIf="loading" class="mt-8 text-center text-sm font-semibold text-ink-muted">Loading…</div>
+<app-loading-indicator *ngIf="loading" class="mt-8" />
 
 <div *ngIf="!loading" class="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
   <!-- Scrollable contact list -->
   <div class="overflow-hidden rounded-3xl bg-white shadow-sticker lg:max-h-[calc(100vh-11rem)] lg:overflow-y-auto">
     <ul class="divide-y divide-cork">
       <li *ngFor="let contact of contacts">
-        <button
-          type="button"
-          (click)="selectContact(contact)"
-          class="flex w-full items-center gap-2.5 px-3 py-2.5 text-left hover:bg-pastel-coral"
-          [class.bg-pastel-coral]="contact.id === selectedContactId"
-        >
-          <span
-            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold text-white"
-            [style.background]="contactColor(contact)"
-          >{{ contactInitial(contact) }}</span>
-          <span class="min-w-0 flex-1 truncate text-sm font-bold text-ink">
-            {{ contact.firstName }}<ng-container *ngIf="contact.lastName"> {{ contact.lastName }}</ng-container>
-          </span>
-          <span *ngIf="contact.collectionId" class="shrink-0 rounded-full bg-badge-bg px-2 py-0.5 text-[10px] font-extrabold text-badge-text">
-            {{ householdName(contact.collectionId) }}
-          </span>
-        </button>
+        <app-contact-list-row
+          [firstName]="contact.firstName ?? ''"
+          [lastName]="contact.lastName"
+          [color]="contactColor(contact)"
+          [householdName]="contact.collectionId ? householdName(contact.collectionId) : null"
+          [selected]="contact.id === selectedContactId"
+          (rowSelected)="selectContact(contact)"
+        />
       </li>
     </ul>
 
@@ -259,21 +242,13 @@
 
     <ng-template #detail>
       <ng-container *ngIf="selectedContact as contact; else noSelection">
-        <div class="flex items-start justify-between gap-2">
-          <div class="flex items-center gap-3">
-            <span
-              class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-extrabold text-white"
-              [style.background]="contactColor(contact)"
-            >{{ contactInitial(contact) }}</span>
-            <h2 class="font-heading text-lg font-bold text-ink">
-              {{ contact.firstName }}<ng-container *ngIf="contact.lastName"> {{ contact.lastName }}</ng-container>
-            </h2>
-          </div>
-          <div class="flex shrink-0 items-center gap-3">
-            <button type="button" (click)="openEditContactForm(contact)" class="text-xs font-extrabold text-coral hover:text-coral-strong">Edit</button>
-            <button type="button" (click)="deleteContact(contact)" class="text-ink-muted hover:text-danger" aria-label="Delete">✕</button>
-          </div>
-        </div>
+        <app-entity-detail-header
+          [avatarName]="contact.firstName ?? '?'"
+          [displayName]="contact.firstName + (contact.lastName ? ' ' + contact.lastName : '')"
+          [color]="contactColor(contact)"
+          (edit)="openEditContactForm(contact)"
+          (remove)="deleteContact(contact)"
+        />
 
         <span *ngIf="contact.collectionId" class="mt-2 inline-block rounded-full bg-badge-bg px-2 py-0.5 text-[10px] font-extrabold text-badge-text">
           {{ householdName(contact.collectionId) }}
@@ -302,10 +277,4 @@
   </div>
 </div>
 
-<button
-  *ngIf="!showContactForm"
-  type="button"
-  (click)="openNewContactForm()"
-  class="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-coral text-2xl text-white shadow-button hover:bg-coral-strong sm:bottom-6"
-  aria-label="Add contact"
->+</button>
+<app-fab-button *ngIf="!showContactForm" label="Add contact" (clicked)="openNewContactForm()" />

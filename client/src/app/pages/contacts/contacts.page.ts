@@ -4,9 +4,7 @@ import { Collections } from '../../core/collections';
 import { extractErrorMessage } from '../../core/http-error';
 import { CollectionResponse, NodeResponse } from '../../core/models';
 import { NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
-
-/** Contacts have no color of their own (unlike FamilyMembers/Collections) — cycle the design system's vivid palette by list position instead. */
-const CONTACT_COLORS = ['#ec5542', '#2a80e2', '#1eab53', '#bc9c00', '#b45bc8'];
+import { PALETTE } from '../../core/colors';
 
 @Component({
   selector: 'app-contacts',
@@ -82,11 +80,7 @@ export class ContactsPage implements OnInit {
 
   contactColor(contact: NodeResponse): string {
     const index = this.contacts.findIndex((c) => c.id === contact.id);
-    return CONTACT_COLORS[Math.max(index, 0) % CONTACT_COLORS.length];
-  }
-
-  contactInitial(contact: NodeResponse): string {
-    return (contact.firstName ?? '?').trim().charAt(0).toUpperCase();
+    return PALETTE[Math.max(index, 0) % PALETTE.length];
   }
 
   /** A Contact's own address if set, else its Household's — see CONCEPT.md on Household. */

@@ -1,31 +1,12 @@
 <h1 class="text-2xl font-extrabold text-ink">Lists 📋</h1>
 
-<p *ngIf="errorMessage" class="mt-4 rounded-2xl bg-danger-bg px-3 py-2 text-sm font-semibold text-danger-text">{{ errorMessage }}</p>
+<app-error-banner [message]="errorMessage" />
 
-<div *ngIf="loading" class="mt-8 text-center text-sm font-semibold text-ink-muted">Loading…</div>
+<app-loading-indicator *ngIf="loading" class="mt-8" />
 
 <div *ngIf="!loading" class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-  <a
-    *ngFor="let list of lists"
-    [routerLink]="['/tasks', list.id]"
-    [style.background]="list.color"
-    [class.text-white]="!isLightColor(list.color)"
-    [class.text-ink]="isLightColor(list.color)"
-    class="flex min-h-[92px] flex-col justify-between gap-2 rounded-3xl p-5 shadow-sticker transition hover:brightness-105"
-  >
-    <span class="font-heading text-lg font-bold">{{ list.name }}</span>
-    <div *ngIf="list.nodeCount > 0">
-      <span class="text-sm font-extrabold" [class.opacity-95]="!isLightColor(list.color)" [class.opacity-80]="isLightColor(list.color)">{{ list.incompleteCount }} of {{ list.nodeCount }} left</span>
-      <div class="mt-1.5 h-1.5 overflow-hidden rounded-full" [class.bg-white/30]="!isLightColor(list.color)" [class.bg-ink/15]="isLightColor(list.color)">
-        <div
-          class="h-full rounded-full"
-          [class.bg-white]="!isLightColor(list.color)"
-          [class.bg-ink]="isLightColor(list.color)"
-          [style.width.%]="((list.nodeCount - (list.incompleteCount ?? 0)) / list.nodeCount) * 100"
-        ></div>
-      </div>
-    </div>
-    <span *ngIf="list.nodeCount === 0" class="text-sm font-extrabold" [class.opacity-90]="!isLightColor(list.color)" [class.opacity-70]="isLightColor(list.color)">Empty</span>
+  <a *ngFor="let list of lists" [routerLink]="['/tasks', list.id]" class="contents">
+    <app-list-card [name]="list.name" [color]="list.color" [nodeCount]="list.nodeCount" [incompleteCount]="list.incompleteCount" />
   </a>
 
   <button
@@ -56,7 +37,7 @@
         class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       />
     </div>
-    <input type="color" name="newListColor" [(ngModel)]="newListColor" class="h-10 w-12 shrink-0 rounded-xl border-2 border-border-soft" title="List color" />
+    <app-color-picker-field label="List color" [(value)]="newListColor" />
     <button type="submit" [disabled]="form.invalid || submitting" class="rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
       Create
     </button>

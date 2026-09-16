@@ -7,103 +7,77 @@
   Only the <span class="font-extrabold text-ink">Owner</span> can create logins and manage members; Adult and Member accounts otherwise have the same access.
 </p>
 
-<p *ngIf="errorMessage" class="mt-4 rounded-2xl bg-danger-bg px-3 py-2 text-sm font-semibold text-danger-text">{{ errorMessage }}</p>
+<app-error-banner [message]="errorMessage" />
 
-<div *ngIf="loading" class="mt-8 text-center text-sm font-semibold text-ink-muted">Loading…</div>
+<app-loading-indicator *ngIf="loading" class="mt-8" />
 
-<div *ngIf="!loading" class="mt-4 space-y-3">
-  <div *ngFor="let member of members" class="rounded-3xl bg-white p-4 shadow-sticker">
-    <div class="flex items-start justify-between gap-2">
-      <div class="flex items-center gap-3">
-        <span
-          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-extrabold text-white"
-          [style.background]="member.color"
-        >{{ member.displayName.charAt(0).toUpperCase() }}</span>
-        <p class="font-heading font-bold text-ink">{{ member.displayName }}</p>
+<div *ngIf="!loading" class="mt-4 flex flex-col gap-3">
+  <app-family-member-card
+    *ngFor="let member of members"
+    [member]="member"
+    (edit)="openEditMemberForm(member)"
+    (remove)="deleteMember(member)"
+  >
+    <p *ngIf="!isOwner()" class="mt-1.5 text-xs font-semibold text-ink-muted">No login yet — only the Owner can create one.</p>
+
+    <button
+      *ngIf="isOwner() && accountFormForId !== member.id"
+      type="button"
+      (click)="openAccountForm(member)"
+      class="mt-1.5 text-xs font-extrabold text-coral hover:text-coral-strong"
+    >
+      + Create login
+    </button>
+
+    <form *ngIf="accountFormForId === member.id" (ngSubmit)="submitAccountForm()" #accountFormRef="ngForm" class="mt-2 space-y-2 rounded-2xl bg-cork p-3">
+      <div>
+        <label for="accountEmail" class="block text-xs font-bold text-ink">Email</label>
+        <input
+          id="accountEmail"
+          name="accountEmail"
+          type="email"
+          [(ngModel)]="accountForm.email"
+          required
+          class="mt-1 block w-full rounded-xl border-2 border-border-soft bg-white px-3 py-1.5 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
+        />
       </div>
-      <div class="flex items-center gap-3">
-        <button type="button" (click)="openEditMemberForm(member)" class="text-xs font-extrabold text-coral hover:text-coral-strong">✏️ Edit</button>
-        <button type="button" (click)="deleteMember(member)" class="text-ink-muted hover:text-danger" aria-label="Delete">✕</button>
+      <div>
+        <label for="accountPassword" class="block text-xs font-bold text-ink">Password</label>
+        <input
+          id="accountPassword"
+          name="accountPassword"
+          type="text"
+          [(ngModel)]="accountForm.password"
+          required
+          minlength="6"
+          class="mt-1 block w-full rounded-xl border-2 border-border-soft bg-white px-3 py-1.5 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
+        />
+        <p class="mt-0.5 text-[11px] font-semibold text-ink-muted">Share this with them yourself — they can change it after logging in.</p>
       </div>
-    </div>
+      <div>
+        <label for="accountRole" class="block text-xs font-bold text-ink">Role</label>
+        <select
+          id="accountRole"
+          name="accountRole"
+          [(ngModel)]="accountForm.role"
+          class="mt-1 block w-full rounded-xl border-2 border-border-soft bg-white px-3 py-1.5 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
+        >
+          <option value="Adult">Adult</option>
+          <option value="Member">Member</option>
+        </select>
+      </div>
+      <div class="flex gap-2 pt-1">
+        <button type="submit" [disabled]="accountFormRef.invalid" class="flex-1 rounded-full bg-coral px-3 py-1.5 text-xs font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
+          Create login
+        </button>
+        <button type="button" (click)="cancelAccountForm()" class="rounded-full px-3 py-1.5 text-xs font-bold text-ink-muted hover:bg-white">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </app-family-member-card>
 
-    <p *ngIf="member.dateOfBirth" class="mt-2 text-xs font-semibold text-ink-muted">🎂 {{ member.dateOfBirth | date: 'longDate' }}</p>
-
-    <p *ngIf="member.linkedUserEmail" class="mt-1.5 flex items-center gap-2 text-xs font-semibold text-ink-muted">
-      Has a login: {{ member.linkedUserEmail }}
-      <span
-        class="rounded-full px-2 py-0.5 text-[10px] font-extrabold"
-        [class.bg-owner-bg]="member.linkedUserRole === 'Owner'"
-        [class.text-owner-text]="member.linkedUserRole === 'Owner'"
-        [class.bg-adult-bg]="member.linkedUserRole !== 'Owner'"
-        [class.text-adult-text]="member.linkedUserRole !== 'Owner'"
-      >{{ member.linkedUserRole }}</span>
-    </p>
-
-    <ng-container *ngIf="!member.linkedUserEmail">
-      <p *ngIf="!isOwner()" class="mt-1.5 text-xs font-semibold text-ink-muted">No login yet — only the Owner can create one.</p>
-
-      <button
-        *ngIf="isOwner() && accountFormForId !== member.id"
-        type="button"
-        (click)="openAccountForm(member)"
-        class="mt-1.5 text-xs font-extrabold text-coral hover:text-coral-strong"
-      >
-        + Create login
-      </button>
-
-      <form *ngIf="accountFormForId === member.id" (ngSubmit)="submitAccountForm()" #accountFormRef="ngForm" class="mt-2 space-y-2 rounded-2xl bg-cork p-3">
-        <div>
-          <label for="accountEmail" class="block text-xs font-bold text-ink">Email</label>
-          <input
-            id="accountEmail"
-            name="accountEmail"
-            type="email"
-            [(ngModel)]="accountForm.email"
-            required
-            class="mt-1 block w-full rounded-xl border-2 border-border-soft bg-white px-3 py-1.5 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-          />
-        </div>
-        <div>
-          <label for="accountPassword" class="block text-xs font-bold text-ink">Password</label>
-          <input
-            id="accountPassword"
-            name="accountPassword"
-            type="text"
-            [(ngModel)]="accountForm.password"
-            required
-            minlength="6"
-            class="mt-1 block w-full rounded-xl border-2 border-border-soft bg-white px-3 py-1.5 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-          />
-          <p class="mt-0.5 text-[11px] font-semibold text-ink-muted">Share this with them yourself — they can change it after logging in.</p>
-        </div>
-        <div>
-          <label for="accountRole" class="block text-xs font-bold text-ink">Role</label>
-          <select
-            id="accountRole"
-            name="accountRole"
-            [(ngModel)]="accountForm.role"
-            class="mt-1 block w-full rounded-xl border-2 border-border-soft bg-white px-3 py-1.5 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-          >
-            <option value="Adult">Adult</option>
-            <option value="Member">Member</option>
-          </select>
-        </div>
-        <div class="flex gap-2 pt-1">
-          <button type="submit" [disabled]="accountFormRef.invalid" class="flex-1 rounded-full bg-coral px-3 py-1.5 text-xs font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
-            Create login
-          </button>
-          <button type="button" (click)="cancelAccountForm()" class="rounded-full px-3 py-1.5 text-xs font-bold text-ink-muted hover:bg-white">
-            Cancel
-          </button>
-        </div>
-      </form>
-    </ng-container>
-  </div>
-
-  <div *ngIf="members.length === 0" class="rounded-3xl border-2 border-dashed border-border-soft px-4 py-8 text-center text-sm font-semibold text-ink-muted">
-    No family members yet.
-  </div>
+  <app-empty-state *ngIf="members.length === 0">No family members yet.</app-empty-state>
 </div>
 
 <div *ngIf="showMemberForm" class="mt-4 rounded-3xl bg-white p-4 shadow-sticker">
@@ -118,10 +92,7 @@
         class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       />
     </div>
-    <div>
-      <label for="color" class="block text-sm font-bold text-ink">Color</label>
-      <input type="color" id="color" name="color" [(ngModel)]="memberForm.color" class="mt-1 h-10 w-16 rounded-xl border-2 border-border-soft" />
-    </div>
+    <app-color-picker-field label="Color" [(value)]="memberForm.color" />
     <div>
       <label for="dateOfBirth" class="block text-sm font-bold text-ink">Birthday <span class="font-semibold text-ink-muted">(optional)</span></label>
       <input
@@ -143,10 +114,4 @@
   </form>
 </div>
 
-<button
-  *ngIf="!showMemberForm"
-  type="button"
-  (click)="openNewMemberForm()"
-  class="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-coral text-2xl text-white shadow-button hover:bg-coral-strong sm:bottom-6"
-  aria-label="Add family member"
->+</button>
+<app-fab-button *ngIf="!showMemberForm" label="Add family member" (clicked)="openNewMemberForm()" />

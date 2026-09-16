@@ -1,4 +1,5 @@
 using Corkboard.Api.Auth;
+using Corkboard.Api.Common;
 using Corkboard.Contracts.Auth;
 using Corkboard.Infrastructure.Identity;
 using Corkboard.Infrastructure.Persistence;
@@ -40,15 +41,7 @@ public class AuthController(
         };
 
         var result = await userManager.CreateAsync(user, request.Password);
-        if (!result.Succeeded)
-        {
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError(error.Code, error.Description);
-            }
-
-            return ValidationProblem(ModelState);
-        }
+        if (!result.Succeeded) return result.ToValidationProblem(this);
 
         var response = await tokenService.CreateTokenAsync(user, cancellationToken);
         return CreatedAtAction(nameof(Register), response);

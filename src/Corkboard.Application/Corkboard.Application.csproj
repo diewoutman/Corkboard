@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Corkboard.Domain\Corkboard.Domain.csproj" />
+    <ProjectReference Include="..\Corkboard.Infrastructure\Corkboard.Infrastructure.csproj" />
+    <ProjectReference Include="..\Corkboard.Contracts\Corkboard.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

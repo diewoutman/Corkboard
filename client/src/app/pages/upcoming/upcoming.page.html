@@ -4,18 +4,21 @@
 </div>
 <p class="mt-1 text-sm font-bold text-ink-muted">The next 7 days.</p>
 
-<div *ngIf="loading" class="mt-8 text-center text-sm font-semibold text-ink-muted">Loading…</div>
+<app-loading-indicator *ngIf="loading" class="mt-8" />
 
 <div *ngIf="!loading" class="mt-4 space-y-4">
   <div *ngIf="overdue.length > 0" class="rounded-3xl bg-danger-bg p-4 shadow-[0_4px_0_0_var(--color-danger-shadow)]">
     <h2 class="mb-2 font-heading text-sm font-bold text-danger-text-strong">Overdue ⚠️</h2>
-    <ul class="space-y-1.5">
-      <li *ngFor="let item of overdue" class="flex items-center gap-2">
-        <input type="checkbox" (change)="toggleDone(item.task!)" class="h-5 w-5 shrink-0 rounded-md accent-coral" />
-        <span class="truncate text-sm font-extrabold text-danger-text-strong">{{ item.title }}</span>
-        <app-member-avatars class="ml-auto shrink-0" [members]="members" [assignedIds]="item.assignedFamilyMemberIds"></app-member-avatars>
-        <span *ngIf="item.time" class="shrink-0 text-xs font-bold text-danger-text">{{ item.time | date: 'mediumDate' }}</span>
-      </li>
+    <ul class="flex flex-col gap-1.5">
+      <app-agenda-list-item
+        *ngFor="let item of overdue"
+        [item]="item"
+        [members]="members"
+        [showAvatars]="true"
+        titleMode="danger"
+        timeFormat="mediumDate"
+        (toggleDone)="toggleDone(item.task!)"
+      />
     </ul>
   </div>
 
@@ -24,19 +27,16 @@
       {{ day.label }}
       <span class="text-xs font-bold text-ink-muted">{{ day.date | date: 'MMM d' }}</span>
     </h2>
-    <ul *ngIf="day.items.length > 0; else noItems" class="space-y-1.5">
-      <li *ngFor="let item of day.items" class="flex items-center gap-2">
-        <input
-          *ngIf="item.kind === 'task'; else eventDot"
-          type="checkbox"
-          (change)="toggleDone(item.task!)"
-          class="h-4 w-4 shrink-0 rounded-md accent-coral"
-        />
-        <ng-template #eventDot><span class="h-2 w-2 shrink-0 rounded-full bg-wouter"></span></ng-template>
-        <span class="truncate text-sm font-semibold text-ink">{{ item.title }}</span>
-        <app-member-avatars class="ml-auto shrink-0" [members]="members" [assignedIds]="item.assignedFamilyMemberIds"></app-member-avatars>
-        <span *ngIf="item.time" class="shrink-0 text-xs font-bold text-ink-muted">{{ item.time | date: 'shortTime' }}</span>
-      </li>
+    <ul *ngIf="day.items.length > 0; else noItems" class="flex flex-col gap-1.5">
+      <app-agenda-list-item
+        *ngFor="let item of day.items"
+        [item]="item"
+        [members]="members"
+        [showAvatars]="true"
+        titleMode="normal"
+        size="sm"
+        (toggleDone)="toggleDone(item.task!)"
+      />
     </ul>
     <ng-template #noItems>
       <p class="text-sm font-semibold text-ink-muted">Nothing planned.</p>

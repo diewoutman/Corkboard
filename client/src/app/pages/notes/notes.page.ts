@@ -5,9 +5,6 @@ import { extractErrorMessage } from '../../core/http-error';
 import { FamilyMemberResponse, NodeResponse, UpdateNodeRequest } from '../../core/models';
 import { NULL_CONTACT_FIELDS, Nodes } from '../../core/nodes';
 
-const NOTE_COLORS = ['bg-pastel-amber', 'bg-pastel-teal', 'bg-pastel-green', 'bg-pastel-purple', 'bg-pastel-coral', 'bg-pastel-gold'];
-const NOTE_ROTATIONS = ['-rotate-1', 'rotate-1', '-rotate-[0.5deg]', 'rotate-[1.5deg]', 'rotate-0', 'rotate-[0.75deg]'];
-
 @Component({
   selector: 'app-notes',
   templateUrl: './notes.page.html',
@@ -52,22 +49,6 @@ export class NotesPage implements OnInit {
         this.cdr.markForCheck();
       },
     });
-  }
-
-  memberName(id: string): string {
-    return this.members.find((m) => m.id === id)?.displayName ?? '?';
-  }
-
-  memberColor(id: string): string {
-    return this.members.find((m) => m.id === id)?.color ?? '#999';
-  }
-
-  noteColor(index: number): string {
-    return NOTE_COLORS[index % NOTE_COLORS.length];
-  }
-
-  noteRotation(index: number): string {
-    return NOTE_ROTATIONS[index % NOTE_ROTATIONS.length];
   }
 
   toggleAssignee(memberId: string) {

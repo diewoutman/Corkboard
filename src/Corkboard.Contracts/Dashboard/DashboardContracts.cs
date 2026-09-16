@@ -35,7 +35,7 @@ public record UpdateDashboardWidgetRequest(
 /// <summary>Full replacement of the caller's widget order — SortOrder becomes each id's index in this list.</summary>
 public record ReorderDashboardWidgetsRequest(IReadOnlyList<Guid> OrderedWidgetIds);
 
-/// <summary>How many grid columns (1-DashboardController.ColumnCount) a widget's card should span.</summary>
+/// <summary>How many grid columns (1-DashboardService.ColumnCount) a widget's card should span.</summary>
 public record UpdateDashboardWidgetSpanRequest(int Span);
 
 public record DashboardWidgetResponse(
