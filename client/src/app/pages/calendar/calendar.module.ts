@@ -14,8 +14,9 @@ import { MonthDayCellComponent } from '../../shared/components/month-day-cell/mo
 import { CalendarEventBlockComponent } from '../../shared/components/calendar-event-block/calendar-event-block.component';
 import { MemberBadgeComponent } from '../../shared/components/member-badge/member-badge.component';
 import { AssigneeChipGroupComponent } from '../../shared/components/assignee-chip-group/assignee-chip-group.component';
-import { ColorPickerFieldComponent } from '../../shared/components/color-picker-field/color-picker-field.component';
 import { FabButtonComponent } from '../../shared/components/fab-button/fab-button.component';
+import { CalendarSourceRowComponent } from '../../shared/components/calendar-source-row/calendar-source-row.component';
+import { CalendarSourceFormComponent } from '../../shared/components/calendar-source-form/calendar-source-form.component';
 
 @NgModule({
   imports: [
@@ -30,8 +31,9 @@ import { FabButtonComponent } from '../../shared/components/fab-button/fab-butto
     CalendarEventBlockComponent,
     MemberBadgeComponent,
     AssigneeChipGroupComponent,
-    ColorPickerFieldComponent,
     FabButtonComponent,
+    CalendarSourceRowComponent,
+    CalendarSourceFormComponent,
   ],
   declarations: [CalendarPage, TimeGridComponent],
 })

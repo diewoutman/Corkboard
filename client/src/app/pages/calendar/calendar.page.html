@@ -203,18 +203,16 @@
         <button type="button" (click)="openNewCalendarForm('Calendar')" class="text-xs font-extrabold text-coral hover:text-coral-strong">+ Add</button>
       </div>
       <ul class="mt-2 space-y-2">
-        <li *ngFor="let calendar of plainCalendars" class="rounded-2xl bg-white p-2.5 shadow-sticker-sm">
-          <div class="flex flex-wrap items-center gap-2">
-            <label class="flex flex-1 items-center gap-2 text-sm font-bold text-ink">
-              <input type="checkbox" [checked]="!hiddenCalendarIds.has(calendar.id)" (change)="toggleCalendarVisibility(calendar.id)" class="rounded-md accent-coral" />
-              <span class="h-3 w-3 shrink-0 rounded-full" [style.background]="calendar.color"></span>
-              <span class="truncate">{{ calendar.name }}</span>
-            </label>
-          </div>
-          <div class="mt-1 flex flex-wrap gap-x-2 gap-y-1 pl-5 text-xs">
-            <button type="button" (click)="getFeedUrl(calendar)" class="font-extrabold text-coral hover:text-coral-strong">Subscribe link</button>
-            <button type="button" (click)="startImport(calendar.id)" class="font-extrabold text-coral hover:text-coral-strong">Import .ics</button>
-          </div>
+        <app-calendar-source-row
+          *ngFor="let calendar of plainCalendars"
+          [name]="calendar.name"
+          [color]="calendar.color"
+          [hidden]="hiddenCalendarIds.has(calendar.id)"
+          [feedUrl]="feedUrlByCalendarId[calendar.id]"
+          (visibilityToggled)="toggleCalendarVisibility(calendar.id)"
+        >
+          <button sourceRowActions type="button" (click)="getFeedUrl(calendar)" class="font-extrabold text-coral hover:text-coral-strong">Subscribe link</button>
+          <button sourceRowActions type="button" (click)="startImport(calendar.id)" class="font-extrabold text-coral hover:text-coral-strong">Import .ics</button>
           <input
             *ngIf="importingCalendarId === calendar.id"
             type="file"
@@ -222,41 +220,21 @@
             (change)="onImportFileSelected($event, calendar.id)"
             class="mt-1 ml-5 text-xs"
           />
-          <input
-            *ngIf="feedUrlByCalendarId[calendar.id]"
-            type="text"
-            readonly
-            [value]="feedUrlByCalendarId[calendar.id]"
-            onclick="this.select()"
-            class="mt-1 ml-5 w-[calc(100%-1.25rem)] rounded-lg border-2 border-border-soft px-2 py-1 text-xs font-semibold text-ink-muted"
-          />
-        </li>
+        </app-calendar-source-row>
 
         <li *ngIf="plainCalendars.length === 0" class="text-sm font-semibold text-ink-muted">No calendars yet.</li>
       </ul>
 
-      <form *ngIf="showNewCalendarForm && newCalendarType === 'Calendar'" (ngSubmit)="submitNewCalendar()" #calForm="ngForm" class="mt-2 space-y-2 rounded-2xl bg-white p-2.5 shadow-sticker-sm">
-        <div class="flex items-end gap-2">
-          <div class="flex-1">
-            <label for="calendarName" class="block text-xs font-bold text-ink">Name</label>
-            <input
-              id="calendarName"
-              name="calendarName"
-              placeholder="e.g. Family, Work…"
-              [(ngModel)]="newCalendarName"
-              required
-              class="mt-1 block w-full rounded-lg border-2 border-border-soft px-2 py-1.5 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-            />
-          </div>
-          <app-color-picker-field label="Calendar color" size="sm" [(value)]="newCalendarColor" />
-        </div>
-        <div class="flex gap-2">
-          <button type="submit" [disabled]="calForm.invalid" class="flex-1 rounded-full bg-coral px-3 py-1.5 text-xs font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
-            Add
-          </button>
-          <button type="button" (click)="showNewCalendarForm = false" class="rounded-full px-3 py-1.5 text-xs font-bold text-ink-muted hover:bg-cork">Cancel</button>
-        </div>
-      </form>
+      <app-calendar-source-form
+        *ngIf="showNewCalendarForm && newCalendarType === 'Calendar'"
+        class="mt-2"
+        namePlaceholder="e.g. Family, Work…"
+        colorLabel="Calendar color"
+        [(name)]="newCalendarName"
+        [(color)]="newCalendarColor"
+        (submitted)="submitNewCalendar()"
+        (cancelled)="showNewCalendarForm = false"
+      />
     </section>
 
     <section>
@@ -265,53 +243,31 @@
         <button type="button" (click)="openNewCalendarForm('Schedule')" class="text-xs font-extrabold text-coral hover:text-coral-strong">+ Add</button>
       </div>
       <ul class="mt-2 space-y-2">
-        <li *ngFor="let schedule of schedules" class="rounded-2xl bg-white p-2.5 shadow-sticker-sm">
-          <div class="flex flex-wrap items-center gap-2">
-            <label class="flex flex-1 items-center gap-2 text-sm font-bold text-ink">
-              <input type="checkbox" [checked]="!hiddenCalendarIds.has(schedule.id)" (change)="toggleCalendarVisibility(schedule.id)" class="rounded-md accent-coral" />
-              <span class="h-3 w-3 shrink-0 rounded-full" [style.background]="schedule.color"></span>
-              <span class="truncate">{{ schedule.name }}</span>
-            </label>
-          </div>
-          <div class="mt-1 flex flex-wrap gap-x-2 gap-y-1 pl-5 text-xs">
-            <a [routerLink]="['/calendar/schedules', schedule.id]" class="font-extrabold text-coral hover:text-coral-strong">Edit schedule</a>
-            <button type="button" (click)="getFeedUrl(schedule)" class="font-extrabold text-coral hover:text-coral-strong">Subscribe link</button>
-          </div>
-          <input
-            *ngIf="feedUrlByCalendarId[schedule.id]"
-            type="text"
-            readonly
-            [value]="feedUrlByCalendarId[schedule.id]"
-            onclick="this.select()"
-            class="mt-1 ml-5 w-[calc(100%-1.25rem)] rounded-lg border-2 border-border-soft px-2 py-1 text-xs font-semibold text-ink-muted"
-          />
-        </li>
+        <app-calendar-source-row
+          *ngFor="let schedule of schedules"
+          [name]="schedule.name"
+          [color]="schedule.color"
+          [hidden]="hiddenCalendarIds.has(schedule.id)"
+          [feedUrl]="feedUrlByCalendarId[schedule.id]"
+          (visibilityToggled)="toggleCalendarVisibility(schedule.id)"
+        >
+          <a sourceRowActions [routerLink]="['/calendar/schedules', schedule.id]" class="font-extrabold text-coral hover:text-coral-strong">Edit schedule</a>
+          <button sourceRowActions type="button" (click)="getFeedUrl(schedule)" class="font-extrabold text-coral hover:text-coral-strong">Subscribe link</button>
+        </app-calendar-source-row>
 
         <li *ngIf="schedules.length === 0" class="text-sm font-semibold text-ink-muted">No schedules yet.</li>
       </ul>
 
-      <form *ngIf="showNewCalendarForm && newCalendarType === 'Schedule'" (ngSubmit)="submitNewCalendar()" #schedForm="ngForm" class="mt-2 space-y-2 rounded-2xl bg-white p-2.5 shadow-sticker-sm">
-        <div class="flex items-end gap-2">
-          <div class="flex-1">
-            <label for="scheduleName" class="block text-xs font-bold text-ink">Name</label>
-            <input
-              id="scheduleName"
-              name="scheduleName"
-              placeholder="e.g. School schedule…"
-              [(ngModel)]="newCalendarName"
-              required
-              class="mt-1 block w-full rounded-lg border-2 border-border-soft px-2 py-1.5 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-            />
-          </div>
-          <app-color-picker-field label="Schedule color" size="sm" [(value)]="newCalendarColor" />
-        </div>
-        <div class="flex gap-2">
-          <button type="submit" [disabled]="schedForm.invalid" class="flex-1 rounded-full bg-coral px-3 py-1.5 text-xs font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
-            Add
-          </button>
-          <button type="button" (click)="showNewCalendarForm = false" class="rounded-full px-3 py-1.5 text-xs font-bold text-ink-muted hover:bg-cork">Cancel</button>
-        </div>
-      </form>
+      <app-calendar-source-form
+        *ngIf="showNewCalendarForm && newCalendarType === 'Schedule'"
+        class="mt-2"
+        namePlaceholder="e.g. School schedule…"
+        colorLabel="Schedule color"
+        [(name)]="newCalendarName"
+        [(color)]="newCalendarColor"
+        (submitted)="submitNewCalendar()"
+        (cancelled)="showNewCalendarForm = false"
+      />
     </section>
   </aside>
 </div>
