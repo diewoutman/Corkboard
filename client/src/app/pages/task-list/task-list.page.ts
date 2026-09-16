@@ -26,6 +26,7 @@ export class TaskListPage implements OnInit {
   errorMessage: string | null = null;
 
   showNewTaskForm = false;
+  editingTask: NodeResponse | null = null;
   newTask = this.emptyNewTask();
 
   constructor(
@@ -122,38 +123,79 @@ export class TaskListPage implements OnInit {
     });
   }
 
-  submitNewTask() {
+  openAddTaskForm() {
+    this.editingTask = null;
+    this.newTask = this.emptyNewTask();
+    this.showNewTaskForm = true;
+  }
+
+  openEditTaskForm(task: NodeResponse) {
+    this.editingTask = task;
+    this.newTask = {
+      title: task.title,
+      description: task.description ?? '',
+      dueDate: task.until ? task.until.slice(0, 10) : '',
+      priority: task.priority,
+      category: task.category ?? '',
+      repeat: this.repeatFromRule(task.recurrenceRule),
+      assignedFamilyMemberIds: [...task.assignedFamilyMemberIds],
+    };
+    this.showNewTaskForm = true;
+  }
+
+  closeTaskForm() {
+    this.showNewTaskForm = false;
+    this.editingTask = null;
+  }
+
+  submitTaskForm() {
     if (!this.newTask.title) return;
 
-    this.nodesApi
-      .create({
-        type: 'Task',
-        title: this.newTask.title,
-        description: this.newTask.description || null,
-        from: null,
-        until: this.newTask.dueDate ? new Date(this.newTask.dueDate).toISOString() : null,
-        assignedFamilyMemberIds: this.newTask.assignedFamilyMemberIds,
-        collectionId: this.listId,
-        priority: this.newTask.priority,
-        category: this.newTask.category || null,
-        location: null,
-        allDay: null,
-        recurrenceRule: this.toRecurrenceRule(this.newTask.repeat),
-        ...NULL_CONTACT_FIELDS,
-        ...NULL_NOTE_FIELDS,
-      })
-      .subscribe({
-        next: (created) => {
-          this.tasks = this.sortTasks([...this.tasks, created]);
-          this.newTask = this.emptyNewTask();
-          this.showNewTaskForm = false;
-          this.cdr.markForCheck();
-        },
-        error: (err) => {
-          this.errorMessage = extractErrorMessage(err, 'Could not create that task.');
-          this.cdr.markForCheck();
-        },
-      });
+    const until = this.newTask.dueDate ? new Date(this.newTask.dueDate).toISOString() : null;
+    const recurrenceRule = this.toRecurrenceRule(this.newTask.repeat);
+
+    const request$ = this.editingTask
+      ? this.nodesApi.update(
+          this.editingTask.id,
+          this.toUpdateRequest(this.editingTask, {
+            title: this.newTask.title,
+            description: this.newTask.description || null,
+            until,
+            assignedFamilyMemberIds: this.newTask.assignedFamilyMemberIds,
+            priority: this.newTask.priority,
+            category: this.newTask.category || null,
+            recurrenceRule,
+          }),
+        )
+      : this.nodesApi.create({
+          type: 'Task',
+          title: this.newTask.title,
+          description: this.newTask.description || null,
+          from: null,
+          until,
+          assignedFamilyMemberIds: this.newTask.assignedFamilyMemberIds,
+          collectionId: this.listId,
+          priority: this.newTask.priority,
+          category: this.newTask.category || null,
+          location: null,
+          allDay: null,
+          recurrenceRule,
+          ...NULL_CONTACT_FIELDS,
+          ...NULL_NOTE_FIELDS,
+        });
+
+    const wasEditing = !!this.editingTask;
+    request$.subscribe({
+      next: (saved) => {
+        this.tasks = this.sortTasks(wasEditing ? this.tasks.map((t) => (t.id === saved.id ? saved : t)) : [...this.tasks, saved]);
+        this.closeTaskForm();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.errorMessage = extractErrorMessage(err, wasEditing ? 'Could not save that task.' : 'Could not create that task.');
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   /** Todoist-style fast capture: "Buy milk tomorrow 5pm #Groceries" — parsed client-side, same create call as the full form. */
@@ -248,5 +290,12 @@ export class TaskListPage implements OnInit {
       default:
         return null;
     }
+  }
+
+  private repeatFromRule(rule: string | null): Repeat {
+    if (rule?.includes('FREQ=DAILY')) return 'daily';
+    if (rule?.includes('FREQ=WEEKLY')) return 'weekly';
+    if (rule?.includes('FREQ=MONTHLY')) return 'monthly';
+    return 'never';
   }
 }

@@ -28,6 +28,13 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       (pointerdown)="$event.stopPropagation()"
       (click)="deleteClick.emit($event)"
     >✕</button>
+    <button
+      type="button"
+      class="float-right ml-1 hidden shrink-0 leading-none opacity-80 hover:opacity-100 group-hover:inline"
+      aria-label="Edit"
+      (pointerdown)="$event.stopPropagation()"
+      (click)="editClick.emit($event)"
+    >✎</button>
     {{ title }}
   `,
 })
@@ -41,4 +48,5 @@ export class CalendarEventBlockComponent {
 
   @Output() blockPointerDown = new EventEmitter<PointerEvent>();
   @Output() deleteClick = new EventEmitter<MouseEvent>();
+  @Output() editClick = new EventEmitter<MouseEvent>();
 }

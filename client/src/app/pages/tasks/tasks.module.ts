@@ -9,6 +9,7 @@ import { ErrorBannerComponent } from '../../shared/components/error-banner/error
 import { LoadingIndicatorComponent } from '../../shared/components/loading-indicator/loading-indicator.component';
 import { ListCardComponent } from '../../shared/components/list-card/list-card.component';
 import { ColorPickerFieldComponent } from '../../shared/components/color-picker-field/color-picker-field.component';
+import { ModalSheetComponent } from '../../shared/components/modal-sheet/modal-sheet.component';
 
 @NgModule({
   imports: [
@@ -19,6 +20,7 @@ import { ColorPickerFieldComponent } from '../../shared/components/color-picker-
     LoadingIndicatorComponent,
     ListCardComponent,
     ColorPickerFieldComponent,
+    ModalSheetComponent,
   ],
   declarations: [TasksPage],
 })

@@ -18,22 +18,25 @@ import { MemberBadgeComponent } from '../member-badge/member-badge.component';
   template: `
     <li class="rounded-xl border-2 border-border-soft px-2 py-1.5">
       <div class="flex items-start justify-between gap-1">
-        <p class="text-sm font-bold text-ink">{{ entry.title }}</p>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-bold text-ink">{{ entry.title }}</p>
+          <p class="text-xs text-ink-muted">
+            {{ entry.from | date: 'shortTime' }}@if (entry.until) {<span> – {{ entry.until | date: 'shortTime' }}</span>}
+          </p>
+          @if (entry.location) {
+            <p class="text-xs text-ink-muted">📍 {{ entry.location }}</p>
+          }
+          @if (biweekly || until) {
+            <p class="text-xs text-ink-muted/80">
+              @if (biweekly) {<span>Every other week</span>}
+              @if (biweekly && until) {<span> · </span>}
+              @if (until) {<span>Ends {{ until }}</span>}
+            </p>
+          }
+        </div>
+        <button type="button" (click)="edit.emit()" class="shrink-0 text-ink-muted hover:text-coral" aria-label="Edit">✎</button>
         <button type="button" (click)="delete.emit()" class="shrink-0 text-ink-muted hover:text-danger" aria-label="Delete">✕</button>
       </div>
-      <p class="text-xs text-ink-muted">
-        {{ entry.from | date: 'shortTime' }}@if (entry.until) {<span> – {{ entry.until | date: 'shortTime' }}</span>}
-      </p>
-      @if (entry.location) {
-        <p class="text-xs text-ink-muted">📍 {{ entry.location }}</p>
-      }
-      @if (biweekly || until) {
-        <p class="text-xs text-ink-muted/80">
-          @if (biweekly) {<span>Every other week</span>}
-          @if (biweekly && until) {<span> · </span>}
-          @if (until) {<span>Ends {{ until }}</span>}
-        </p>
-      }
       <div class="mt-1 flex flex-wrap gap-1">
         @for (memberId of entry.assignedFamilyMemberIds; track memberId) {
           <app-member-badge [name]="memberName(members, memberId)" [color]="memberColor(members, memberId)" size="xs" />
@@ -46,6 +49,7 @@ export class ScheduleEntryRowComponent {
   @Input({ required: true }) entry!: NodeResponse;
   @Input() members: FamilyMemberResponse[] = [];
   @Output() delete = new EventEmitter<void>();
+  @Output() edit = new EventEmitter<void>();
 
   protected readonly memberName = memberName;
   protected readonly memberColor = memberColor;

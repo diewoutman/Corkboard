@@ -20,7 +20,7 @@ import { CalendarApi } from '../../core/calendar';
 import { Collections, NULL_HOUSEHOLD_FIELDS } from '../../core/collections';
 import { extractErrorMessage } from '../../core/http-error';
 import { FamilyMembers } from '../../core/family-members';
-import { CollectionResponse, FamilyMemberResponse, OccurrenceResponse } from '../../core/models';
+import { CollectionResponse, FamilyMemberResponse, NodeResponse, OccurrenceResponse } from '../../core/models';
 import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
 import { parseQuickAdd } from '../../core/quick-add';
 import { SegmentedControlOption } from '../../shared/components/segmented-control/segmented-control.component';
@@ -69,6 +69,7 @@ export class CalendarPage implements OnInit {
   newCalendarType: 'Calendar' | 'Schedule' = 'Calendar';
 
   showNewEventForm = false;
+  editingEvent: NodeResponse | null = null;
   newEvent = this.emptyNewEvent();
 
   importingCalendarId: string | null = null;
@@ -367,6 +368,7 @@ export class CalendarPage implements OnInit {
   }
 
   openNewEventForm(dayKey?: string) {
+    this.editingEvent = null;
     this.newEvent = this.emptyNewEvent();
     if (this.eventableCalendars.length > 0) this.newEvent.calendarId = this.eventableCalendars[0].id;
     if (dayKey) {
@@ -375,8 +377,40 @@ export class CalendarPage implements OnInit {
     this.showNewEventForm = true;
   }
 
+  /** Fetches the full Node (occurrences omit description/recurrence/etc.) then opens it in the same add/edit form. */
+  openEditEventForm(occurrence: OccurrenceResponse) {
+    this.nodesApi.get(occurrence.appointmentId).subscribe({
+      next: (node) => {
+        this.editingEvent = node;
+        this.newEvent = {
+          calendarId: node.collectionId ?? '',
+          title: node.title,
+          description: node.description ?? '',
+          location: node.location ?? '',
+          start: node.from ? (node.allDay ? node.from.slice(0, 10) : toDatetimeLocalValue(new Date(node.from))) : '',
+          end: node.until ? (node.allDay ? node.until.slice(0, 10) : toDatetimeLocalValue(new Date(node.until))) : '',
+          allDay: !!node.allDay,
+          repeat: this.repeatFromRule(node.recurrenceRule),
+          assignedFamilyMemberIds: [...node.assignedFamilyMemberIds],
+        };
+        this.showNewEventForm = true;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.errorMessage = 'Could not load that event.';
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  closeEventForm() {
+    this.showNewEventForm = false;
+    this.editingEvent = null;
+  }
+
   /** Click-drag on the Week/Day time grid to create an event — pre-fills the same form the "+ Add event" button opens. */
   onGridCreateRange({ start, end }: { date: Date; start: Date; end: Date }) {
+    this.editingEvent = null;
     this.newEvent = this.emptyNewEvent();
     if (this.eventableCalendars.length > 0) this.newEvent.calendarId = this.eventableCalendars[0].id;
     this.newEvent.start = toDatetimeLocalValue(start);
@@ -467,33 +501,55 @@ export class CalendarPage implements OnInit {
   submitNewEvent() {
     if (!this.newEvent.title || !this.newEvent.start || !this.newEvent.calendarId) return;
 
-    this.nodesApi
-      .create({
-        type: 'Appointment',
-        title: this.newEvent.title,
-        description: this.newEvent.description || null,
-        from: new Date(this.newEvent.start).toISOString(),
-        until: this.newEvent.end ? new Date(this.newEvent.end).toISOString() : null,
-        assignedFamilyMemberIds: this.newEvent.assignedFamilyMemberIds,
-        collectionId: this.newEvent.calendarId,
-        priority: null,
-        category: null,
-        location: this.newEvent.location || null,
-        allDay: this.newEvent.allDay,
-        recurrenceRule: this.toRecurrenceRule(this.newEvent.repeat),
-        ...NULL_CONTACT_FIELDS,
-        ...NULL_NOTE_FIELDS,
-      })
-      .subscribe({
-        next: () => {
-          this.showNewEventForm = false;
-          this.loadOccurrences();
-        },
-        error: (err) => {
-          this.errorMessage = extractErrorMessage(err, 'Could not create that event.');
-          this.cdr.markForCheck();
-        },
-      });
+    const from = new Date(this.newEvent.start).toISOString();
+    const until = this.newEvent.end ? new Date(this.newEvent.end).toISOString() : null;
+    const recurrenceRule = this.toRecurrenceRule(this.newEvent.repeat);
+
+    const request$ = this.editingEvent
+      ? this.nodesApi.update(this.editingEvent.id, {
+          title: this.newEvent.title,
+          description: this.newEvent.description || null,
+          from,
+          until,
+          assignedFamilyMemberIds: this.newEvent.assignedFamilyMemberIds,
+          collectionId: this.newEvent.calendarId,
+          isImportant: null,
+          isCompleted: null,
+          priority: null,
+          category: null,
+          location: this.newEvent.location || null,
+          allDay: this.newEvent.allDay,
+          recurrenceRule,
+          ...NULL_CONTACT_FIELDS,
+        })
+      : this.nodesApi.create({
+          type: 'Appointment',
+          title: this.newEvent.title,
+          description: this.newEvent.description || null,
+          from,
+          until,
+          assignedFamilyMemberIds: this.newEvent.assignedFamilyMemberIds,
+          collectionId: this.newEvent.calendarId,
+          priority: null,
+          category: null,
+          location: this.newEvent.location || null,
+          allDay: this.newEvent.allDay,
+          recurrenceRule,
+          ...NULL_CONTACT_FIELDS,
+          ...NULL_NOTE_FIELDS,
+        });
+
+    const wasEditing = !!this.editingEvent;
+    request$.subscribe({
+      next: () => {
+        this.closeEventForm();
+        this.loadOccurrences();
+      },
+      error: (err) => {
+        this.errorMessage = extractErrorMessage(err, wasEditing ? 'Could not save that event.' : 'Could not create that event.');
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   private toRecurrenceRule(repeat: Repeat): string | null {
@@ -507,6 +563,13 @@ export class CalendarPage implements OnInit {
       default:
         return null;
     }
+  }
+
+  private repeatFromRule(rule: string | null): Repeat {
+    if (rule?.includes('FREQ=DAILY')) return 'daily';
+    if (rule?.includes('FREQ=WEEKLY')) return 'weekly';
+    if (rule?.includes('FREQ=MONTHLY')) return 'monthly';
+    return 'never';
   }
 
   /**

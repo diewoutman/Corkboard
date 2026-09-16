@@ -46,6 +46,7 @@ import { MemberBadgeComponent } from '../member-badge/member-badge.component';
           }
         </div>
       </div>
+      <button type="button" (click)="edit.emit()" class="shrink-0 text-ink-muted hover:text-coral" aria-label="Edit">✎</button>
       <button type="button" (click)="delete.emit()" class="shrink-0 text-ink-muted hover:text-danger" aria-label="Delete">✕</button>
     </li>
   `,
@@ -55,6 +56,7 @@ export class TaskRowComponent {
   @Input() members: FamilyMemberResponse[] = [];
   @Output() toggleDone = new EventEmitter<void>();
   @Output() delete = new EventEmitter<void>();
+  @Output() edit = new EventEmitter<void>();
 
   protected readonly memberName = memberName;
   protected readonly memberColor = memberColor;

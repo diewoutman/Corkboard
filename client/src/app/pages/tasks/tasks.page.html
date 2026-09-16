@@ -6,13 +6,19 @@
 
 <div *ngIf="!loading" class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
   <a *ngFor="let list of lists" [routerLink]="['/tasks', list.id]" class="contents">
-    <app-list-card [name]="list.name" [color]="list.color" [nodeCount]="list.nodeCount" [incompleteCount]="list.incompleteCount" />
+    <app-list-card
+      [name]="list.name"
+      [color]="list.color"
+      [nodeCount]="list.nodeCount"
+      [incompleteCount]="list.incompleteCount"
+      (edit)="openEditListForm(list)"
+    />
   </a>
 
   <button
     *ngIf="!showNewListForm"
     type="button"
-    (click)="showNewListForm = true"
+    (click)="openAddListForm()"
     class="flex min-h-[92px] flex-col items-center justify-center gap-1 rounded-3xl border-4 border-dashed border-border-soft text-sm font-extrabold text-ink-muted hover:border-coral hover:text-coral"
   >
     <span class="text-2xl leading-none">+</span>
@@ -24,9 +30,10 @@
   </p>
 </div>
 
-<div *ngIf="showNewListForm" class="mt-4 rounded-3xl bg-white p-4 shadow-sticker">
-  <form (ngSubmit)="submitNewList()" #form="ngForm" class="flex items-end gap-2">
-    <div class="flex-1">
+<app-modal-sheet *ngIf="showNewListForm" (dismissed)="closeListForm()">
+  <form (ngSubmit)="submitListForm()" #form="ngForm" class="space-y-3">
+    <h2 class="font-heading text-lg font-bold text-ink">{{ editingList ? 'Edit list' : 'New list' }}</h2>
+    <div>
       <label for="listName" class="block text-sm font-bold text-ink">List name</label>
       <input
         id="listName"
@@ -38,11 +45,13 @@
       />
     </div>
     <app-color-picker-field label="List color" [(value)]="newListColor" />
-    <button type="submit" [disabled]="form.invalid || submitting" class="rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
-      Create
-    </button>
-    <button type="button" (click)="showNewListForm = false" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">
-      Cancel
-    </button>
+    <div class="flex gap-2 pt-1">
+      <button type="submit" [disabled]="form.invalid || submitting" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
+        {{ editingList ? 'Save changes' : 'Create' }}
+      </button>
+      <button type="button" (click)="closeListForm()" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">
+        Cancel
+      </button>
+    </div>
   </form>
-</div>
+</app-modal-sheet>

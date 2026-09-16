@@ -12,7 +12,7 @@ import { ScheduleEntryRowComponent } from './schedule-entry-row.component';
       <h2 class="text-sm font-bold text-ink">{{ label }}</h2>
       <ul class="mt-2 flex flex-col gap-2">
         @for (entry of entries; track entry.id) {
-          <app-schedule-entry-row [entry]="entry" [members]="members" (delete)="deleteEntry.emit(entry)" />
+          <app-schedule-entry-row [entry]="entry" [members]="members" (delete)="deleteEntry.emit(entry)" (edit)="editEntry.emit(entry)" />
         }
         @if (entries.length === 0) {
           <li class="text-xs text-ink-muted">Nothing yet.</li>
@@ -26,4 +26,5 @@ export class ScheduleDayColumnComponent {
   @Input() entries: NodeResponse[] = [];
   @Input() members: FamilyMemberResponse[] = [];
   @Output() deleteEntry = new EventEmitter<NodeResponse>();
+  @Output() editEntry = new EventEmitter<NodeResponse>();
 }

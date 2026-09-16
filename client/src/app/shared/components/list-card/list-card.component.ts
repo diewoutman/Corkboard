@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { isLightColor } from '../../../core/colors';
 
 /**
@@ -15,9 +15,15 @@ import { isLightColor } from '../../../core/colors';
       [style.background]="color"
       [class.text-white]="!isLight"
       [class.text-ink]="isLight"
-      class="flex min-h-[92px] flex-col justify-between gap-2 rounded-3xl p-5 shadow-sticker transition hover:brightness-105"
+      class="relative flex min-h-[92px] flex-col justify-between gap-2 rounded-3xl p-5 shadow-sticker transition hover:brightness-105"
     >
-      <span class="font-heading text-lg font-bold">{{ name }}</span>
+      <button
+        type="button"
+        (click)="$event.preventDefault(); $event.stopPropagation(); edit.emit()"
+        class="absolute right-3 top-3 opacity-60 hover:opacity-100"
+        aria-label="Edit list"
+      >✎</button>
+      <span class="pr-6 font-heading text-lg font-bold">{{ name }}</span>
       @if (nodeCount > 0) {
         <div>
           <span class="text-sm font-extrabold" [class.opacity-95]="!isLight" [class.opacity-80]="isLight">{{ incompleteCount ?? 0 }} of {{ nodeCount }} left</span>
@@ -41,6 +47,7 @@ export class ListCardComponent {
   @Input() color = '';
   @Input() nodeCount = 0;
   @Input() incompleteCount: number | null = 0;
+  @Output() edit = new EventEmitter<void>();
 
   get isLight(): boolean {
     return isLightColor(this.color);

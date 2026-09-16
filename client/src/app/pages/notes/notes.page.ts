@@ -18,6 +18,7 @@ export class NotesPage implements OnInit {
   errorMessage: string | null = null;
 
   showNewNoteForm = false;
+  editingNote: NodeResponse | null = null;
   newNote = this.emptyNewNote();
 
   constructor(
@@ -84,38 +85,70 @@ export class NotesPage implements OnInit {
     });
   }
 
-  submitNewNote() {
+  openAddNoteForm() {
+    this.editingNote = null;
+    this.newNote = this.emptyNewNote();
+    this.showNewNoteForm = true;
+  }
+
+  openEditNoteForm(note: NodeResponse) {
+    this.editingNote = note;
+    this.newNote = {
+      title: note.title,
+      description: note.description ?? '',
+      assignedFamilyMemberIds: [...note.assignedFamilyMemberIds],
+      isImportant: !!note.isImportant,
+    };
+    this.showNewNoteForm = true;
+  }
+
+  closeNoteForm() {
+    this.showNewNoteForm = false;
+    this.editingNote = null;
+  }
+
+  submitNoteForm() {
     if (!this.newNote.title) return;
 
-    this.nodesApi
-      .create({
-        type: 'Note',
-        title: this.newNote.title,
-        description: this.newNote.description || null,
-        from: null,
-        until: null,
-        assignedFamilyMemberIds: this.newNote.assignedFamilyMemberIds,
-        collectionId: null,
-        isImportant: this.newNote.isImportant,
-        priority: null,
-        category: null,
-        location: null,
-        allDay: null,
-        recurrenceRule: null,
-        ...NULL_CONTACT_FIELDS,
-      })
-      .subscribe({
-        next: (created) => {
-          this.notes = this.sortNotes([...this.notes, created]);
-          this.newNote = this.emptyNewNote();
-          this.showNewNoteForm = false;
-          this.cdr.markForCheck();
-        },
-        error: (err) => {
-          this.errorMessage = extractErrorMessage(err, 'Could not create that note.');
-          this.cdr.markForCheck();
-        },
-      });
+    const request$ = this.editingNote
+      ? this.nodesApi.update(
+          this.editingNote.id,
+          this.toUpdateRequest(this.editingNote, {
+            title: this.newNote.title,
+            description: this.newNote.description || null,
+            assignedFamilyMemberIds: this.newNote.assignedFamilyMemberIds,
+            isImportant: this.newNote.isImportant,
+          }),
+        )
+      : this.nodesApi.create({
+          type: 'Note',
+          title: this.newNote.title,
+          description: this.newNote.description || null,
+          from: null,
+          until: null,
+          assignedFamilyMemberIds: this.newNote.assignedFamilyMemberIds,
+          collectionId: null,
+          isImportant: this.newNote.isImportant,
+          priority: null,
+          category: null,
+          location: null,
+          allDay: null,
+          recurrenceRule: null,
+          ...NULL_CONTACT_FIELDS,
+        });
+
+    const wasEditing = !!this.editingNote;
+    request$.subscribe({
+      next: (saved) => {
+        this.notes = this.sortNotes(wasEditing ? this.notes.map((n) => (n.id === saved.id ? saved : n)) : [...this.notes, saved]);
+        this.closeNoteForm();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.errorMessage = extractErrorMessage(err, wasEditing ? 'Could not save that note.' : 'Could not create that note.');
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   private toUpdateRequest(note: NodeResponse, overrides: Partial<UpdateNodeRequest>): UpdateNodeRequest {

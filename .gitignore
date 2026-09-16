@@ -19,3 +19,7 @@ obj/
 Thumbs.db
 
 # The Angular/Ionic client has its own .gitignore (node_modules, dist, www, etc.)
+
+# graphify skill output
+graphify-out/
+.claude/*

@@ -10,6 +10,7 @@ import { LoadingIndicatorComponent } from '../../shared/components/loading-indic
 import { ScheduleDayColumnComponent } from '../../shared/components/schedule-entry-row/schedule-day-column.component';
 import { FabButtonComponent } from '../../shared/components/fab-button/fab-button.component';
 import { AssigneeChipGroupComponent } from '../../shared/components/assignee-chip-group/assignee-chip-group.component';
+import { ModalSheetComponent } from '../../shared/components/modal-sheet/modal-sheet.component';
 
 @NgModule({
   imports: [
@@ -21,6 +22,7 @@ import { AssigneeChipGroupComponent } from '../../shared/components/assignee-chi
     ScheduleDayColumnComponent,
     FabButtonComponent,
     AssigneeChipGroupComponent,
+    ModalSheetComponent,
   ],
   declarations: [ScheduleEditorPage],
 })

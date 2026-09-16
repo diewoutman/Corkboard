@@ -23,12 +23,15 @@ const NOTE_ROTATIONS = ['-rotate-1', 'rotate-1', '-rotate-[0.5deg]', 'rotate-[1.
           class="opacity-60 hover:text-coral hover:opacity-100"
           [attr.aria-label]="note.isImportant ? 'Unmark as important' : 'Mark as important'"
         >★</button>
+        <button type="button" (click)="edit.emit()" class="text-ink opacity-50 hover:text-coral hover:opacity-100" aria-label="Edit">✎</button>
         <button type="button" (click)="delete.emit()" class="text-ink opacity-50 hover:text-danger hover:opacity-100" aria-label="Delete">✕</button>
       </div>
-      <p class="pr-14 font-heading font-bold text-ink">{{ note.title }}</p>
-      @if (note.description) {
-        <p class="mt-1 whitespace-pre-line text-sm font-semibold text-ink/80">{{ note.description }}</p>
-      }
+      <div class="pr-20">
+        <p class="font-heading font-bold text-ink">{{ note.title }}</p>
+        @if (note.description) {
+          <p class="mt-1 whitespace-pre-line text-sm font-semibold text-ink/80">{{ note.description }}</p>
+        }
+      </div>
       <div class="mt-2 flex flex-wrap gap-2">
         @for (memberId of note.assignedFamilyMemberIds; track memberId) {
           <app-member-badge [name]="memberName(members, memberId)" [color]="memberColor(members, memberId)" />
@@ -43,6 +46,7 @@ export class StickyNoteCardComponent {
   @Input() index = 0;
   @Output() toggleImportant = new EventEmitter<void>();
   @Output() delete = new EventEmitter<void>();
+  @Output() edit = new EventEmitter<void>();
 
   protected readonly memberName = memberName;
   protected readonly memberColor = memberColor;

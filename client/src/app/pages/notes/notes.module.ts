@@ -11,6 +11,7 @@ import { StickyNoteCardComponent } from '../../shared/components/sticky-note-car
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { AssigneeChipGroupComponent } from '../../shared/components/assignee-chip-group/assignee-chip-group.component';
 import { FabButtonComponent } from '../../shared/components/fab-button/fab-button.component';
+import { ModalSheetComponent } from '../../shared/components/modal-sheet/modal-sheet.component';
 
 @NgModule({
   imports: [
@@ -23,6 +24,7 @@ import { FabButtonComponent } from '../../shared/components/fab-button/fab-butto
     EmptyStateComponent,
     AssigneeChipGroupComponent,
     FabButtonComponent,
+    ModalSheetComponent,
   ],
   declarations: [NotesPage],
 })

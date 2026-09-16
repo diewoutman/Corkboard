@@ -56,6 +56,7 @@ export class TimeGridComponent implements OnChanges {
   @Output() reschedule = new EventEmitter<{ occurrence: OccurrenceResponse; newStart: Date; newEnd: Date | null }>();
   @Output() selectDay = new EventEmitter<Date>();
   @Output() deleteOccurrence = new EventEmitter<OccurrenceResponse>();
+  @Output() editOccurrence = new EventEmitter<OccurrenceResponse>();
 
   readonly hours = Array.from({ length: 24 }, (_, i) => i);
   readonly hourHeight = HOUR_HEIGHT;
@@ -199,6 +200,11 @@ export class TimeGridComponent implements OnChanges {
         newEnd: atMinutes(column.date, drag.startMinutes + drag.durationMinutes),
       });
     }
+  }
+
+  onEditClick(event: MouseEvent, occurrence: OccurrenceResponse) {
+    event.stopPropagation();
+    this.editOccurrence.emit(occurrence);
   }
 
   private buildColumn(date: Date): DayColumn {

@@ -58,6 +58,7 @@
           [width]="'calc(' + (100 / laned.laneCount) + '% - 2px)'"
           (blockPointerDown)="onBlockPointerDown($event, laned, i)"
           (deleteClick)="onDeleteClick($event, laned.occurrence)"
+          (editClick)="onEditClick($event, laned.occurrence)"
         ></app-calendar-event-block>
 
         <div

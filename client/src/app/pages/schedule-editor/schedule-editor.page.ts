@@ -7,6 +7,7 @@ import { FamilyMembers } from '../../core/family-members';
 import { extractErrorMessage } from '../../core/http-error';
 import { CollectionResponse, FamilyMemberResponse, NodeResponse } from '../../core/models';
 import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
+import { endsOn, isBiweekly } from '../../core/recurrence';
 
 const WEEKDAYS: { label: string; byDay: string }[] = [
   { label: 'Monday', byDay: 'MO' },
@@ -22,6 +23,13 @@ const WEEKDAYS: { label: string; byDay: string }[] = [
 function weekdayIndexOf(date: Date): number {
   const dow = getDay(date);
   return dow === 0 ? 6 : dow - 1;
+}
+
+/** A Node's `from`/`until` as a `<input type="time">` value, in local time. */
+function toTimeInputValue(iso: string): string {
+  const date = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 @Component({
@@ -42,6 +50,7 @@ export class ScheduleEditorPage implements OnInit {
   errorMessage: string | null = null;
 
   showNewEntryForm = false;
+  editingEntry: NodeResponse | null = null;
   newEntry = this.emptyNewEntry();
 
   constructor(
@@ -93,7 +102,33 @@ export class ScheduleEditorPage implements OnInit {
       : [...ids, memberId];
   }
 
-  submitNewEntry() {
+  openAddEntryForm() {
+    this.editingEntry = null;
+    this.newEntry = this.emptyNewEntry();
+    this.showNewEntryForm = true;
+  }
+
+  openEditEntryForm(entry: NodeResponse) {
+    this.editingEntry = entry;
+    this.newEntry = {
+      dayIndex: entry.from ? weekdayIndexOf(new Date(entry.from)) : 0,
+      title: entry.title,
+      location: entry.location ?? '',
+      startTime: entry.from ? toTimeInputValue(entry.from) : '',
+      endTime: entry.until ? toTimeInputValue(entry.until) : '',
+      everyOtherWeek: isBiweekly(entry),
+      endsOn: endsOn(entry) ?? '',
+      assignedFamilyMemberIds: [...entry.assignedFamilyMemberIds],
+    };
+    this.showNewEntryForm = true;
+  }
+
+  closeEntryForm() {
+    this.showNewEntryForm = false;
+    this.editingEntry = null;
+  }
+
+  submitEntryForm() {
     if (!this.newEntry.title || !this.newEntry.startTime) return;
 
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -103,35 +138,50 @@ export class ScheduleEditorPage implements OnInit {
     const from = `${anchorKey}T${this.newEntry.startTime}`;
     const until = this.newEntry.endTime ? `${anchorKey}T${this.newEntry.endTime}` : null;
 
-    this.nodesApi
-      .create({
-        type: 'Appointment',
-        title: this.newEntry.title,
-        description: null,
-        from: new Date(from).toISOString(),
-        until: until ? new Date(until).toISOString() : null,
-        assignedFamilyMemberIds: this.newEntry.assignedFamilyMemberIds,
-        collectionId: this.scheduleId,
-        priority: null,
-        category: null,
-        location: this.newEntry.location || null,
-        allDay: false,
-        recurrenceRule: this.toRecurrenceRule(),
-        ...NULL_CONTACT_FIELDS,
-        ...NULL_NOTE_FIELDS,
-      })
-      .subscribe({
-        next: (created) => {
-          this.entries = [...this.entries, created];
-          this.newEntry = this.emptyNewEntry();
-          this.showNewEntryForm = false;
-          this.cdr.markForCheck();
-        },
-        error: (err) => {
-          this.errorMessage = extractErrorMessage(err, 'Could not add that entry.');
-          this.cdr.markForCheck();
-        },
-      });
+    const payload = {
+      title: this.newEntry.title,
+      description: null,
+      from: new Date(from).toISOString(),
+      until: until ? new Date(until).toISOString() : null,
+      assignedFamilyMemberIds: this.newEntry.assignedFamilyMemberIds,
+      location: this.newEntry.location || null,
+      recurrenceRule: this.toRecurrenceRule(),
+    };
+
+    const request$ = this.editingEntry
+      ? this.nodesApi.update(this.editingEntry.id, {
+          ...payload,
+          collectionId: this.scheduleId,
+          isImportant: null,
+          isCompleted: null,
+          priority: null,
+          category: null,
+          allDay: false,
+          ...NULL_CONTACT_FIELDS,
+        })
+      : this.nodesApi.create({
+          type: 'Appointment',
+          ...payload,
+          collectionId: this.scheduleId,
+          priority: null,
+          category: null,
+          allDay: false,
+          ...NULL_CONTACT_FIELDS,
+          ...NULL_NOTE_FIELDS,
+        });
+
+    const wasEditing = !!this.editingEntry;
+    request$.subscribe({
+      next: (saved) => {
+        this.entries = wasEditing ? this.entries.map((e) => (e.id === saved.id ? saved : e)) : [...this.entries, saved];
+        this.closeEntryForm();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.errorMessage = extractErrorMessage(err, wasEditing ? 'Could not save that entry.' : 'Could not add that entry.');
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   deleteEntry(entry: NodeResponse) {

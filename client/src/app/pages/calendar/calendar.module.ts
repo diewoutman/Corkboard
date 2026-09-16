@@ -17,6 +17,7 @@ import { AssigneeChipGroupComponent } from '../../shared/components/assignee-chi
 import { FabButtonComponent } from '../../shared/components/fab-button/fab-button.component';
 import { CalendarSourceRowComponent } from '../../shared/components/calendar-source-row/calendar-source-row.component';
 import { CalendarSourceFormComponent } from '../../shared/components/calendar-source-form/calendar-source-form.component';
+import { ModalSheetComponent } from '../../shared/components/modal-sheet/modal-sheet.component';
 
 @NgModule({
   imports: [
@@ -34,6 +35,7 @@ import { CalendarSourceFormComponent } from '../../shared/components/calendar-so
     FabButtonComponent,
     CalendarSourceRowComponent,
     CalendarSourceFormComponent,
+    ModalSheetComponent,
   ],
   declarations: [CalendarPage, TimeGridComponent],
 })
