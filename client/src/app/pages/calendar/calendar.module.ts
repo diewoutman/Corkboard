@@ -11,6 +11,7 @@ import { LoadingIndicatorComponent } from '../../shared/components/loading-indic
 import { QuickAddBarComponent } from '../../shared/components/quick-add-bar/quick-add-bar.component';
 import { SegmentedControlComponent } from '../../shared/components/segmented-control/segmented-control.component';
 import { MonthDayCellComponent } from '../../shared/components/month-day-cell/month-day-cell.component';
+import { CalendarEventBlockComponent } from '../../shared/components/calendar-event-block/calendar-event-block.component';
 import { MemberBadgeComponent } from '../../shared/components/member-badge/member-badge.component';
 import { AssigneeChipGroupComponent } from '../../shared/components/assignee-chip-group/assignee-chip-group.component';
 import { ColorPickerFieldComponent } from '../../shared/components/color-picker-field/color-picker-field.component';
@@ -26,6 +27,7 @@ import { FabButtonComponent } from '../../shared/components/fab-button/fab-butto
     QuickAddBarComponent,
     SegmentedControlComponent,
     MonthDayCellComponent,
+    CalendarEventBlockComponent,
     MemberBadgeComponent,
     AssigneeChipGroupComponent,
     ColorPickerFieldComponent,

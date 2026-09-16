@@ -11,6 +11,8 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
 import { FabButtonComponent } from '../../shared/components/fab-button/fab-button.component';
 import { MemberAvatarComponent } from '../../shared/components/member-avatar/member-avatar.component';
 import { AgendaListItemComponent } from '../../shared/components/agenda-list-item/agenda-list-item.component';
+import { WidgetCardComponent } from '../../shared/components/widget-card/widget-card.component';
+import { ModalSheetComponent } from '../../shared/components/modal-sheet/modal-sheet.component';
 
 import { HomePage } from './home.page';
 import { NavigationWidgetComponent } from './widgets/navigation-widget.component';
@@ -31,6 +33,8 @@ import { TodayWidgetComponent } from './widgets/today-widget.component';
     FabButtonComponent,
     MemberAvatarComponent,
     AgendaListItemComponent,
+    WidgetCardComponent,
+    ModalSheetComponent,
   ],
   declarations: [HomePage, NavigationWidgetComponent, NotesWidgetComponent, TasksWidgetComponent, TodayWidgetComponent],
 })

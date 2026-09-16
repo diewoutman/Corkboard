@@ -48,26 +48,17 @@
           [style.top.px]="nowOffsetPx()"
         ></div>
 
-        <div
+        <app-calendar-event-block
           *ngFor="let laned of column.timed; trackBy: trackByOccurrenceKey"
-          data-occurrence-block
-          class="group absolute z-20 cursor-grab overflow-hidden rounded-lg px-1 py-0.5 text-[10px] font-bold leading-tight text-white shadow-[0_2px_0_0_rgba(0,0,0,0.12)] active:cursor-grabbing"
-          [style.background]="calendarColor(laned.occurrence.collectionId)"
-          [style.top.px]="topPx(laned.startMinutes)"
-          [style.height.px]="heightPx(laned.endMinutes - laned.startMinutes)"
-          [style.left]="(laned.lane / laned.laneCount) * 100 + '%'"
-          [style.width]="'calc(' + (100 / laned.laneCount) + '% - 2px)'"
-          (pointerdown)="onBlockPointerDown($event, laned, i)"
-        >
-          <button
-            type="button"
-            class="float-right ml-1 hidden shrink-0 leading-none opacity-80 hover:opacity-100 group-hover:inline"
-            aria-label="Delete"
-            (pointerdown)="$event.stopPropagation()"
-            (click)="onDeleteClick($event, laned.occurrence)"
-          >✕</button>
-          {{ laned.occurrence.title }}
-        </div>
+          [title]="laned.occurrence.title"
+          [color]="calendarColor(laned.occurrence.collectionId)"
+          [top]="topPx(laned.startMinutes)"
+          [height]="heightPx(laned.endMinutes - laned.startMinutes)"
+          [left]="(laned.lane / laned.laneCount) * 100 + '%'"
+          [width]="'calc(' + (100 / laned.laneCount) + '% - 2px)'"
+          (blockPointerDown)="onBlockPointerDown($event, laned, i)"
+          (deleteClick)="onDeleteClick($event, laned.occurrence)"
+        ></app-calendar-event-block>
 
         <div
           *ngIf="ghostVisible && ghostDayIndex === i"
