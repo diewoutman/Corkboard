@@ -1,4 +1,5 @@
 using Corkboard.Api.Auth;
+using Corkboard.Api.Common;
 using Corkboard.Contracts.Auth;
 using Corkboard.Contracts.Setup;
 using Corkboard.Domain.Entities;
@@ -60,15 +61,7 @@ public class SetupController(
 
         var owner = new ApplicationUser { UserName = DevSeedEmail, Email = DevSeedEmail };
         var createResult = await userManager.CreateAsync(owner, DevSeedPassword);
-        if (!createResult.Succeeded)
-        {
-            foreach (var error in createResult.Errors)
-            {
-                ModelState.AddModelError(error.Code, error.Description);
-            }
-
-            return ValidationProblem(ModelState);
-        }
+        if (!createResult.Succeeded) return createResult.ToValidationProblem(this);
 
         var now = DateTimeOffset.UtcNow;
         var family = new Family

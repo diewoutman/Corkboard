@@ -22,7 +22,7 @@ public class DashboardWidget
     public int SortOrder { get; set; }
 
     /// <summary>
-    /// How many of the dashboard's fixed columns (see DashboardController.ColumnCount) this
+    /// How many of the dashboard's fixed columns (see DashboardService.ColumnCount) this
     /// widget's card spans, 1-ColumnCount. The grid auto-flows widgets in SortOrder, wrapping to
     /// a new row whenever a widget doesn't fit the remaining width — there's no separate row/column
     /// coordinate to maintain.
@@ -33,10 +33,9 @@ public class DashboardWidget
     /// Per-widget-type settings as JSON (jsonb column) — deliberately not
     /// columns on this entity: the shapes are heterogeneous (Navigation's is a
     /// tile-key array, Notes' and Tasks' are scalars) and there's no need to
-    /// ever query into it relationally, unlike e.g. Node's TPH fields. The API
-    /// layer (DashboardController) still exposes/accepts a flat typed shape —
-    /// see DashboardWidgetResponse — so nothing outside that controller deals
-    /// with raw JSON.
+    /// ever query into it relationally, unlike e.g. Node's TPH fields. DashboardService
+    /// still exposes/accepts a flat typed shape — see DashboardWidgetResponse —
+    /// so nothing outside that service deals with raw JSON.
     /// </summary>
     public string? Config { get; set; }
 
