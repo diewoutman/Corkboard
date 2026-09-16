@@ -1,11 +1,17 @@
 namespace Corkboard.Domain.Entities;
 
 /// <summary>
-/// One element on a User's customizable Home dashboard. Per-User (not per-
-/// FamilyMember — not every FamilyMember can log in) and scoped to a Family
-/// too, so per-widget settings that reference family data (e.g. a Task
-/// widget's CollectionId) stay meaningful if a User is ever in more than one
-/// Family (see UserFamily's own doc comment on that).
+/// One element on a Home dashboard. Scoped to a Family (FamilyId), so
+/// per-widget settings that reference family data (e.g. a Task widget's
+/// CollectionId) stay meaningful if a User is ever in more than one Family
+/// (see UserFamily's own doc comment on that).
+///
+/// Two dashboards share this one entity, discriminated by Scope: Personal is
+/// per-User (not per-FamilyMember — not every FamilyMember can log in) and
+/// UserId-filtered everywhere; Family is one shared layout per Family, UserId
+/// is only "who created this widget" and plays no part in querying/ownership,
+/// and mutating it requires an Owner/Adult role (enforced in
+/// DashboardController, not here).
 /// </summary>
 public class DashboardWidget
 {
@@ -17,6 +23,8 @@ public class DashboardWidget
     public Family Family { get; set; } = null!;
 
     public DashboardWidgetType Type { get; set; }
+
+    public DashboardWidgetScope Scope { get; set; } = DashboardWidgetScope.Personal;
 
     /// <summary>Ascending draw order — what the user reordered via drag-and-drop.</summary>
     public int SortOrder { get; set; }

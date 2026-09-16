@@ -1,13 +1,23 @@
-<div>
+<div class="grid grid-cols-1 items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
   <h1 class="text-2xl font-extrabold text-ink">{{ familyName ? familyName : 'Welcome' }} 👋</h1>
-  <p class="mt-1 text-sm font-semibold text-ink-muted">Drag widgets to reorder them, or use ↔ to resize.</p>
+  <app-segmented-control
+    class="justify-self-start sm:justify-self-center"
+    [options]="dashboardOptions"
+    [selected]="dashboardScope"
+    (selectedChange)="switchDashboard($event)"
+  />
 </div>
+<p class="mt-1 text-sm font-semibold text-ink-muted">
+  {{ editableDashboard ? 'Drag widgets to reorder them, or use ↔ to resize.' : 'Only family admins can edit the Family dashboard.' }}
+</p>
 
 <app-error-banner [message]="errorMessage" />
 
 <app-loading-indicator *ngIf="loading" class="mt-8" />
 
-<app-empty-state *ngIf="!loading && widgets.length === 0" class="mt-6">Your dashboard is empty — add a widget to get started.</app-empty-state>
+<app-empty-state *ngIf="!loading && widgets.length === 0" class="mt-6">
+  {{ editableDashboard ? 'Your dashboard is empty — add a widget to get started.' : 'No widgets yet — ask a family admin to set one up.' }}
+</app-empty-state>
 
 <div
   *ngIf="!loading && widgets.length > 0"
@@ -19,12 +29,19 @@
   <app-widget-card
     *ngFor="let widget of widgets"
     cdkDrag
+    [cdkDragDisabled]="!editableDashboard"
+    [editable]="editableDashboard"
     [ngClass]="widgetSpanClass(widget)"
     (resized)="cycleWidgetWidth(widget)"
     (configure)="openEditWidgetForm(widget)"
     (remove)="removeWidget(widget)"
   >
-    <h2 widgetCardTitle cdkDragHandle class="flex-1 cursor-grab font-heading text-base font-bold text-ink active:cursor-grabbing">{{ widgetTitle(widget) }}</h2>
+    <h2
+      widgetCardTitle
+      cdkDragHandle
+      [ngClass]="editableDashboard ? 'cursor-grab active:cursor-grabbing' : ''"
+      class="flex-1 font-heading text-base font-bold text-ink"
+    >{{ widgetTitle(widget) }}</h2>
 
     <app-navigation-widget *ngIf="widget.type === 'Navigation'" [tileOrder]="widget.tileOrder"></app-navigation-widget>
     <app-notes-widget *ngIf="widget.type === 'Notes'" [importantOnly]="widget.importantOnly"></app-notes-widget>
@@ -34,6 +51,7 @@
       [assignedToMeOnly]="widget.assignedToMeOnly"
     ></app-tasks-widget>
     <app-today-widget *ngIf="widget.type === 'Today'"></app-today-widget>
+    <app-upcoming-widget *ngIf="widget.type === 'Upcoming'"></app-upcoming-widget>
   </app-widget-card>
 </div>
 
@@ -53,6 +71,7 @@
         <option value="Notes">Notes</option>
         <option value="Tasks">Tasks</option>
         <option value="Today">Today</option>
+        <option value="Upcoming">Upcoming</option>
       </select>
     </div>
 
@@ -106,4 +125,4 @@
   </form>
 </app-modal-sheet>
 
-<app-fab-button *ngIf="!showWidgetForm" label="Add widget" (clicked)="openAddWidgetForm()" />
+<app-fab-button *ngIf="!showWidgetForm && editableDashboard" label="Add widget" (clicked)="openAddWidgetForm()" />

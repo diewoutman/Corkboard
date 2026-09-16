@@ -240,13 +240,16 @@ export interface ImportIcsResult {
   importedCount: number;
 }
 
-// Dashboard widgets are per-User, not per-Family — each logged-in User gets
-// their own layout. One flat shape covering every widget type's settings,
-// same convention as CreateNodeRequest — see CONCEPT.md.
-export type DashboardWidgetType = 'Navigation' | 'Notes' | 'Tasks' | 'Today';
+// Dashboard widgets belong to one of two dashboards (DashboardWidgetScope) —
+// Personal (per-User) or Family (one shared layout, admin-managed). One flat
+// shape covering every widget type's settings, same convention as
+// CreateNodeRequest — see CONCEPT.md.
+export type DashboardWidgetType = 'Navigation' | 'Notes' | 'Tasks' | 'Today' | 'Upcoming';
+export type DashboardWidgetScope = 'Personal' | 'Family';
 
 export interface CreateDashboardWidgetRequest {
   type: DashboardWidgetType;
+  scope: DashboardWidgetScope;
   // Navigation-only
   tileOrder: string[] | null;
   // Notes-only
@@ -274,6 +277,7 @@ export interface UpdateDashboardWidgetSpanRequest {
 export interface DashboardWidgetResponse {
   id: string;
   type: DashboardWidgetType;
+  scope: DashboardWidgetScope;
   sortOrder: number;
   /** How many of the dashboard's fixed columns (1-3) this widget's card spans. */
   span: number;

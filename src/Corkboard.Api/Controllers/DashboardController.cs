@@ -10,11 +10,11 @@ namespace Corkboard.Api.Controllers;
 public class DashboardController(IDashboardService dashboardService) : FamilyScopedControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<DashboardWidgetResponse>>> List(CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<DashboardWidgetResponse>>> List([FromQuery] DashboardWidgetScope scope, CancellationToken cancellationToken)
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        return Ok(await dashboardService.ListAsync(familyId, CurrentUserId, cancellationToken));
+        return Ok(await dashboardService.ListAsync(familyId, CurrentUserId, scope, cancellationToken));
     }
 
     [HttpPost]
@@ -22,7 +22,7 @@ public class DashboardController(IDashboardService dashboardService) : FamilySco
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var result = await dashboardService.CreateAsync(familyId, CurrentUserId, request, cancellationToken);
+        var result = await dashboardService.CreateAsync(familyId, CurrentUserId, CurrentUserIsAdmin, request, cancellationToken);
         return result.ToCreatedActionResult(this, nameof(List), _ => new { });
     }
 
@@ -31,7 +31,7 @@ public class DashboardController(IDashboardService dashboardService) : FamilySco
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var result = await dashboardService.UpdateAsync(familyId, CurrentUserId, id, request, cancellationToken);
+        var result = await dashboardService.UpdateAsync(familyId, CurrentUserId, CurrentUserIsAdmin, id, request, cancellationToken);
         return result.ToActionResult(this);
     }
 
@@ -40,16 +40,16 @@ public class DashboardController(IDashboardService dashboardService) : FamilySco
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var result = await dashboardService.UpdateSpanAsync(familyId, CurrentUserId, id, request, cancellationToken);
+        var result = await dashboardService.UpdateSpanAsync(familyId, CurrentUserId, CurrentUserIsAdmin, id, request, cancellationToken);
         return result.ToActionResult(this);
     }
 
     [HttpPut("reorder")]
-    public async Task<ActionResult<IReadOnlyList<DashboardWidgetResponse>>> Reorder(ReorderDashboardWidgetsRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<DashboardWidgetResponse>>> Reorder([FromQuery] DashboardWidgetScope scope, ReorderDashboardWidgetsRequest request, CancellationToken cancellationToken)
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var result = await dashboardService.ReorderAsync(familyId, CurrentUserId, request, cancellationToken);
+        var result = await dashboardService.ReorderAsync(familyId, CurrentUserId, scope, CurrentUserIsAdmin, request, cancellationToken);
         return result.ToActionResult(this);
     }
 
@@ -58,7 +58,7 @@ public class DashboardController(IDashboardService dashboardService) : FamilySco
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var result = await dashboardService.DeleteAsync(familyId, CurrentUserId, id, cancellationToken);
+        var result = await dashboardService.DeleteAsync(familyId, CurrentUserId, CurrentUserIsAdmin, id, cancellationToken);
         return result.ToActionResult(this);
     }
 }

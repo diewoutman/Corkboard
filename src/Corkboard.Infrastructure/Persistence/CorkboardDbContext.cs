@@ -144,7 +144,8 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
                 .WithMany()
                 .HasForeignKey(w => w.FamilyId)
                 .OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(w => new { w.UserId, w.FamilyId, w.SortOrder });
+            entity.HasIndex(w => new { w.UserId, w.FamilyId, w.Scope, w.SortOrder });
+            entity.HasIndex(w => new { w.FamilyId, w.Scope, w.SortOrder });
             entity.Property(w => w.Config).HasColumnType("jsonb");
         });
 

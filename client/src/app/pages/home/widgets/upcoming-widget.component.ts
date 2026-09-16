@@ -1,10 +1,10 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { forkJoin } from 'rxjs';
-import { AgendaItem, groupByDay, occurrenceToAgendaItem, taskToAgendaItem } from '../../core/agenda';
-import { CalendarApi } from '../../core/calendar';
-import { FamilyMembers } from '../../core/family-members';
-import { FamilyMemberResponse, NodeResponse } from '../../core/models';
-import { Nodes, toggleTaskCompletionRequest } from '../../core/nodes';
+import { AgendaItem, groupByDay, occurrenceToAgendaItem, taskToAgendaItem } from '../../../core/agenda';
+import { CalendarApi } from '../../../core/calendar';
+import { FamilyMembers } from '../../../core/family-members';
+import { FamilyMemberResponse, NodeResponse } from '../../../core/models';
+import { Nodes, toggleTaskCompletionRequest } from '../../../core/nodes';
 
 const DAYS_AHEAD = 7;
 
@@ -16,11 +16,11 @@ interface DayView {
 }
 
 @Component({
-  selector: 'app-upcoming',
-  templateUrl: './upcoming.page.html',
+  selector: 'app-upcoming-widget',
+  templateUrl: './upcoming-widget.component.html',
   standalone: false,
 })
-export class UpcomingPage implements OnInit {
+export class UpcomingWidgetComponent implements OnInit {
   loading = true;
   members: FamilyMemberResponse[] = [];
   overdue: AgendaItem[] = [];

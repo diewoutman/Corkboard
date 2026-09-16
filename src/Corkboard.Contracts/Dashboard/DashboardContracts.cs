@@ -7,6 +7,14 @@ public enum DashboardWidgetType
     Notes,
     Tasks,
     Today,
+    Upcoming,
+}
+
+/// <summary>Mirrors Corkboard.Domain.Entities.DashboardWidgetScope — kept in sync by hand.</summary>
+public enum DashboardWidgetScope
+{
+    Personal,
+    Family,
 }
 
 /// <summary>
@@ -18,6 +26,7 @@ public enum DashboardWidgetType
 /// </summary>
 public record CreateDashboardWidgetRequest(
     DashboardWidgetType Type,
+    DashboardWidgetScope Scope,
     // Navigation-only — which tiles to show, and in what order. Null/omitted means "all, default order".
     IReadOnlyList<string>? TileOrder,
     // Notes-only
@@ -41,6 +50,7 @@ public record UpdateDashboardWidgetSpanRequest(int Span);
 public record DashboardWidgetResponse(
     Guid Id,
     DashboardWidgetType Type,
+    DashboardWidgetScope Scope,
     int SortOrder,
     int Span,
     IReadOnlyList<string>? TileOrder,

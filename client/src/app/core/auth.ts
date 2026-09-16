@@ -16,6 +16,8 @@ export class Auth {
   readonly isAuthenticated = computed(() => this.state() !== null);
   readonly hasFamily = computed(() => this.state()?.familyId != null);
   readonly isOwner = computed(() => this.state()?.role === 'Owner');
+  /** Owner or Adult — who's allowed to manage the shared Family dashboard. */
+  readonly isAdmin = computed(() => this.state()?.role === 'Owner' || this.state()?.role === 'Adult');
   readonly role = computed(() => this.state()?.role ?? null);
 
   register(request: RegisterRequest) {

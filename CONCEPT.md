@@ -209,19 +209,28 @@ domain model supports it (`ParentCollectionId`) but neither `/tasks` nor
 
 ### 2.4 DashboardWidget — the customizable Home page
 
-`/home` is a grid of widgets the User arranges themselves, rather than a fixed
-page. `DashboardWidget` is deliberately **per-User, not per-FamilyMember** — a
-FamilyMember isn't necessarily login-capable (§2.1), and a dashboard layout is a
-personal login-time preference, not family-shared data. It's also scoped to a
-Family (`FamilyId`, alongside `UserId`) so a widget's settings that reference
-family data (e.g. a Task widget's `CollectionId`) stay meaningful if a User is
-ever in more than one Family.
+`/home` is a grid of widgets, arranged into two dashboards distinguished by
+`Scope` (`DashboardWidgetScope`):
+
+- **Personal** — per-User, not per-FamilyMember (a FamilyMember isn't
+  necessarily login-capable, §2.1), since a dashboard layout is a personal
+  login-time preference, not family-shared data. This is `/home`'s original
+  and default behavior.
+- **Family** — one shared layout per Family, visible to every FamilyMember
+  with a login but only editable by an Owner or Adult (`FamilyRole`, §2.1) —
+  `UserId` on a Family-scope widget just records who created it and plays no
+  part in querying or authorization.
+
+Every widget is also scoped to a Family (`FamilyId`, alongside `UserId`) so a
+widget's settings that reference family data (e.g. a Task widget's
+`CollectionId`) stay meaningful if a User is ever in more than one Family.
 
 | Field | Notes |
 |---|---|
 | Id, UserId, FamilyId | |
-| Type | `DashboardWidgetType` — `Navigation`, `Notes`, or `Tasks` |
-| SortOrder | the User's drag-and-drop order — an int, not a 2D position; layout itself is always a responsive CSS grid, never freeform placement |
+| Type | `DashboardWidgetType` — `Navigation`, `Notes`, `Tasks`, `Today`, or `Upcoming` |
+| Scope | `DashboardWidgetScope` — `Personal` or `Family`, see above |
+| SortOrder | the drag-and-drop order within one dashboard — an int, not a 2D position; layout itself is always a responsive CSS grid, never freeform placement |
 | Config | nullable `jsonb` column holding per-type settings (see below) |
 
 **Why `Config` is JSONB and not columns, unlike Node's TPH fields (§2.2):** the
@@ -246,12 +255,18 @@ controller and the DB; nothing else in the codebase touches raw JSON.
   User — resolved client-side via `FamilyMembers.list().find(m => m.linkedUserId
   === current user)`, no new backend lookup needed). Mutually exclusive in the UI's
   form (a radio choice), though the API doesn't enforce that.
+- **Today** — today's due Tasks and Calendar occurrences, grouped by FamilyMember.
+  No per-widget config.
+- **Upcoming** — the next 7 days' Tasks and Calendar occurrences (plus an overdue
+  section), grouped by day. No per-widget config.
 
-A User can add any number of widgets, including several of the same type (e.g.
-two Task widgets pointed at different lists) — nothing about the model is
-one-per-type. First visit seeds one Navigation widget (what every earlier version
-of this page always showed) so `/home` never starts blank; after that it's
-entirely user-driven, including removing that seeded widget.
+A dashboard can have any number of widgets, including several of the same type
+(e.g. two Task widgets pointed at different lists) — nothing about the model is
+one-per-type. A Personal dashboard's first visit seeds one Navigation widget
+(what every earlier version of this page always showed) so it never starts
+blank; after that it's entirely user-driven, including removing that seeded
+widget. A Family dashboard has no seeding — it starts empty until an admin adds
+something, matching "managed by family admins."
 
 ## 3. Backend
 
@@ -371,13 +386,25 @@ targets one family for now.
   under the hood (see `core/nodes.ts`).
 - **`/home` is the application's entry point** — `/` redirects there, and it's
   where login/registration and the setup wizard land once a family exists. It's
-  now a customizable widget dashboard (`DashboardWidget`, §2.4) rather than a
-  fixed page: `HomePage` loads the caller's widgets and renders one of three small
-  components per row (`NavigationWidgetComponent`/`NotesWidgetComponent`/
-  `TasksWidgetComponent`, under `pages/home/widgets/`), each just taking its
-  widget's already-flat config as `@Input()`s — no widget component talks to
-  `DashboardWidgetResponse`'s JSON-backed shape directly, or even needs to know
-  it's JSON-backed at all.
+  a customizable widget dashboard (`DashboardWidget`, §2.4) rather than a fixed
+  page: `HomePage` loads the current dashboard's widgets and renders one small
+  component per row (`NavigationWidgetComponent`/`NotesWidgetComponent`/
+  `TasksWidgetComponent`/`TodayWidgetComponent`/`UpcomingWidgetComponent`, under
+  `pages/home/widgets/`), each just taking its widget's already-flat config as
+  `@Input()`s — no widget component talks to `DashboardWidgetResponse`'s
+  JSON-backed shape directly, or even needs to know it's JSON-backed at all.
+  Today and Upcoming used to be their own routed pages (`/today`, `/upcoming`);
+  they were folded into widget-only form once the dashboard could show the same
+  content inline, and the routes were removed.
+  - **Two dashboards, one segmented control**: a `<app-segmented-control>`
+    (same component as Calendar's Month/Week/Day switch) at the top of `/home`
+    picks `DashboardWidgetScope` — `Personal` (default, per-User, exactly the
+    behavior above) or `Family` (one shared layout per Family, `Scope=Family`
+    widgets ignore `UserId` entirely). Only Owner/Adult roles
+    (`Auth.isAdmin`/`FamilyScopedControllerBase.CurrentUserIsAdmin`) can
+    add/remove/reorder/resize/configure Family widgets — everyone in the Family
+    can view it. `WidgetCardComponent`'s `[editable]` input is the one place
+    that hides the resize/configure/remove chrome for a non-admin viewer.
   - **Drag-and-drop** via `@angular/cdk` (`DragDropModule`) — added specifically
     for this, no prior use of CDK in the app. One `cdkDropList` for widget order
     on the page itself, and a second, independent one inside the Navigation
@@ -496,8 +523,8 @@ client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no
 | `GET /api/calendar/occurrences` | Expanded Appointment occurrences for a date range (`?from=&until=&calendarId=`) — what the month grid renders |
 | `PUT`/`DELETE /api/calendar/appointments/{id}/occurrences/{date}` | Override or skip one occurrence of a recurring Appointment |
 | `POST /api/calendar/collections/{id}/import` | Multipart `.ics` upload → creates Appointments in that Calendar |
-| `GET/POST /api/dashboard`, `PUT/DELETE /api/dashboard/{id}` | DashboardWidget CRUD, scoped to the caller (User × Family), not the whole Family — `GET` seeds one Navigation widget on a caller's very first request |
-| `PUT /api/dashboard/reorder` | Full replacement of the caller's widget order in one call — `SortOrder` becomes each id's index in the given list |
+| `GET/POST /api/dashboard`, `PUT/DELETE /api/dashboard/{id}` | DashboardWidget CRUD. `GET`/`POST` take a `scope` query param / body field (`Personal`\|`Family`, defaults `Personal`); `Personal` is scoped to the caller (User × Family) and `GET` seeds one Navigation widget on a caller's very first request, `Family` is shared by the whole Family and requires an Owner/Adult role to mutate (403 otherwise) — `PUT`/`DELETE /{id}` infer scope from the widget itself |
+| `PUT /api/dashboard/reorder?scope=...` | Full replacement of one dashboard's widget order in one call — `SortOrder` becomes each id's index in the given list |
 
 **First-run setup wizard**: the client doesn't have a separate `/setup` route —
 instead `/login` checks `GET /api/setup/status` on load, and when no Family exists

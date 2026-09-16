@@ -13,12 +13,14 @@ import { MemberAvatarComponent } from '../../shared/components/member-avatar/mem
 import { AgendaListItemComponent } from '../../shared/components/agenda-list-item/agenda-list-item.component';
 import { WidgetCardComponent } from '../../shared/components/widget-card/widget-card.component';
 import { ModalSheetComponent } from '../../shared/components/modal-sheet/modal-sheet.component';
+import { SegmentedControlComponent } from '../../shared/components/segmented-control/segmented-control.component';
 
 import { HomePage } from './home.page';
 import { NavigationWidgetComponent } from './widgets/navigation-widget.component';
 import { NotesWidgetComponent } from './widgets/notes-widget.component';
 import { TasksWidgetComponent } from './widgets/tasks-widget.component';
 import { TodayWidgetComponent } from './widgets/today-widget.component';
+import { UpcomingWidgetComponent } from './widgets/upcoming-widget.component';
 
 @NgModule({
   imports: [
@@ -35,7 +37,15 @@ import { TodayWidgetComponent } from './widgets/today-widget.component';
     AgendaListItemComponent,
     WidgetCardComponent,
     ModalSheetComponent,
+    SegmentedControlComponent,
   ],
-  declarations: [HomePage, NavigationWidgetComponent, NotesWidgetComponent, TasksWidgetComponent, TodayWidgetComponent],
+  declarations: [
+    HomePage,
+    NavigationWidgetComponent,
+    NotesWidgetComponent,
+    TasksWidgetComponent,
+    TodayWidgetComponent,
+    UpcomingWidgetComponent,
+  ],
 })
 export class HomePageModule {}

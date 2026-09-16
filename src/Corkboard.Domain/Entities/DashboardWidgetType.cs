@@ -9,4 +9,7 @@ public enum DashboardWidgetType
 
     /// <summary>Today's due Tasks and Calendar occurrences, grouped by FamilyMember. No per-widget config.</summary>
     Today,
+
+    /// <summary>The next 7 days' Tasks and Calendar occurrences, grouped by day. No per-widget config.</summary>
+    Upcoming,
 }

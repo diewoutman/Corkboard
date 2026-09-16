@@ -4,6 +4,7 @@ import { environment } from '../../environments/environment';
 import {
   CreateDashboardWidgetRequest,
   DashboardWidgetResponse,
+  DashboardWidgetScope,
   ReorderDashboardWidgetsRequest,
   UpdateDashboardWidgetRequest,
   UpdateDashboardWidgetSpanRequest,
@@ -13,8 +14,8 @@ import {
 export class Dashboard {
   private readonly http = inject(HttpClient);
 
-  list() {
-    return this.http.get<DashboardWidgetResponse[]>(`${environment.apiUrl}/dashboard`);
+  list(scope: DashboardWidgetScope) {
+    return this.http.get<DashboardWidgetResponse[]>(`${environment.apiUrl}/dashboard`, { params: { scope } });
   }
 
   create(request: CreateDashboardWidgetRequest) {
@@ -29,9 +30,9 @@ export class Dashboard {
     return this.http.put<DashboardWidgetResponse>(`${environment.apiUrl}/dashboard/${id}/span`, request);
   }
 
-  /** Full replacement of the caller's widget order. */
-  reorder(request: ReorderDashboardWidgetsRequest) {
-    return this.http.put<DashboardWidgetResponse[]>(`${environment.apiUrl}/dashboard/reorder`, request);
+  /** Full replacement of one dashboard's widget order. */
+  reorder(scope: DashboardWidgetScope, request: ReorderDashboardWidgetsRequest) {
+    return this.http.put<DashboardWidgetResponse[]>(`${environment.apiUrl}/dashboard/reorder`, request, { params: { scope } });
   }
 
   delete(id: string) {

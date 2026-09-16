@@ -15,21 +15,11 @@
           routerLink="/home"
           routerLinkActive="text-coral"
           [routerLinkActiveOptions]="{ exact: true }"
-          class="rounded-md px-1 py-1.5 hover:text-coral"
-        >Home</a>
-        <a
-          routerLink="/today"
-          routerLinkActive="text-coral"
           class="relative rounded-md px-1 py-1.5 hover:text-coral"
         >
-          Today
+          Home
           <span *ngIf="dueTodayCount > 0" class="ml-1 rounded-full bg-danger px-1.5 py-0.5 text-[10px] font-extrabold text-white">{{ dueTodayCount }}</span>
         </a>
-        <a
-          routerLink="/upcoming"
-          routerLinkActive="text-coral"
-          class="rounded-md px-1 py-1.5 hover:text-coral"
-        >Upcoming</a>
         <a
           routerLink="/tasks"
           routerLinkActive="text-coral"
@@ -76,25 +66,15 @@
       routerLink="/home"
       routerLinkActive="text-coral"
       [routerLinkActiveOptions]="{ exact: true }"
-      class="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs font-bold text-ink-muted"
-    >
-      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10" />
-      </svg>
-      Home
-    </a>
-    <a
-      routerLink="/today"
-      routerLinkActive="text-coral"
       class="relative flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs font-bold text-ink-muted"
     >
       <span class="relative">
         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10" />
         </svg>
         <span *ngIf="dueTodayCount > 0" class="absolute -right-1.5 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-danger text-[9px] font-extrabold text-white">{{ dueTodayCount > 9 ? '9+' : dueTodayCount }}</span>
       </span>
-      Today
+      Home
     </a>
     <a
       routerLink="/tasks"

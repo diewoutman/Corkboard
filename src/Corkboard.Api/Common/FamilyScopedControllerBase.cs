@@ -18,6 +18,9 @@ public abstract class FamilyScopedControllerBase : ControllerBase
 
     protected bool CurrentUserIsOwner => User.GetFamilyRole() == nameof(Domain.Entities.FamilyRole.Owner);
 
+    /// <summary>Owner or Adult — who's allowed to manage the shared Family dashboard (see DashboardController).</summary>
+    protected bool CurrentUserIsAdmin => User.GetFamilyRole() is nameof(Domain.Entities.FamilyRole.Owner) or nameof(Domain.Entities.FamilyRole.Adult);
+
     protected ObjectResult NoFamilyProblem() => Problem(
         title: "No family set up yet",
         detail: "Call POST /api/families first, then use the token it returns.",

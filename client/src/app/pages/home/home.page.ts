@@ -1,11 +1,13 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { forkJoin } from 'rxjs';
+import { Auth } from '../../core/auth';
 import { Collections } from '../../core/collections';
 import { Dashboard } from '../../core/dashboard';
 import { Families } from '../../core/families';
 import { extractErrorMessage } from '../../core/http-error';
-import { CollectionResponse, DashboardWidgetResponse, DashboardWidgetType } from '../../core/models';
+import { CollectionResponse, DashboardWidgetResponse, DashboardWidgetScope, DashboardWidgetType } from '../../core/models';
+import { SegmentedControlOption } from '../../shared/components/segmented-control/segmented-control.component';
 import { TILE_DEFS } from './tile-defs';
 
 interface WidgetFormState {
@@ -26,8 +28,14 @@ export class HomePage implements OnInit {
   /** Fixed number of grid columns the dashboard lays widgets out in — mirrors DashboardController.ColumnCount. */
   static readonly COLUMN_COUNT = 3;
 
+  readonly dashboardOptions: SegmentedControlOption[] = [
+    { value: 'Family', label: 'Family' },
+    { value: 'Personal', label: 'Personal' },
+  ];
+
   familyName: string | null = null;
 
+  dashboardScope: DashboardWidgetScope = 'Personal';
   widgets: DashboardWidgetResponse[] = [];
   taskLists: CollectionResponse[] = [];
   loading = true;
@@ -38,11 +46,22 @@ export class HomePage implements OnInit {
   widgetForm = this.emptyWidgetForm();
 
   constructor(
+    readonly auth: Auth,
     private readonly familiesApi: Families,
     private readonly dashboardApi: Dashboard,
     private readonly collectionsApi: Collections,
     private readonly cdr: ChangeDetectorRef,
   ) {}
+
+  /** Personal is always editable by its owner; Family only by an Owner/Adult admin. */
+  get editableDashboard(): boolean {
+    return this.dashboardScope === 'Personal' || this.auth.isAdmin();
+  }
+
+  switchDashboard(scope: string) {
+    this.dashboardScope = scope as DashboardWidgetScope;
+    this.reload();
+  }
 
   ngOnInit() {
     this.familiesApi.mine().subscribe({
@@ -60,7 +79,7 @@ export class HomePage implements OnInit {
     this.loading = true;
     this.errorMessage = null;
     forkJoin({
-      widgets: this.dashboardApi.list(),
+      widgets: this.dashboardApi.list(this.dashboardScope),
       taskLists: this.collectionsApi.list({ type: 'TaskList' }),
     }).subscribe({
       next: ({ widgets, taskLists }) => {
@@ -91,12 +110,14 @@ export class HomePage implements OnInit {
         return widget.collectionId ? this.taskLists.find((l) => l.id === widget.collectionId)?.name ?? 'Tasks' : 'My tasks';
       case 'Today':
         return 'Today';
+      case 'Upcoming':
+        return 'Upcoming';
     }
   }
 
   drop(event: CdkDragDrop<DashboardWidgetResponse[]>) {
     moveItemInArray(this.widgets, event.previousIndex, event.currentIndex);
-    this.dashboardApi.reorder({ orderedWidgetIds: this.widgets.map((w) => w.id) }).subscribe({
+    this.dashboardApi.reorder(this.dashboardScope, { orderedWidgetIds: this.widgets.map((w) => w.id) }).subscribe({
       error: () => {
         this.errorMessage = 'Could not save the new widget order.';
         this.reload();
@@ -169,7 +190,7 @@ export class HomePage implements OnInit {
 
     const request$ = this.editingWidgetId
       ? this.dashboardApi.update(this.editingWidgetId, config)
-      : this.dashboardApi.create({ type: this.widgetForm.type, ...config });
+      : this.dashboardApi.create({ type: this.widgetForm.type, scope: this.dashboardScope, ...config });
 
     request$.subscribe({
       next: (saved) => {

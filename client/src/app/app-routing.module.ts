@@ -28,16 +28,6 @@ const routes: Routes = [
     loadChildren: () => import('./pages/add-members/add-members.module').then((m) => m.AddMembersPageModule),
   },
   {
-    path: 'today',
-    canActivate: [familyGuard],
-    loadChildren: () => import('./pages/today/today.module').then((m) => m.TodayPageModule),
-  },
-  {
-    path: 'upcoming',
-    canActivate: [familyGuard],
-    loadChildren: () => import('./pages/upcoming/upcoming.module').then((m) => m.UpcomingPageModule),
-  },
-  {
     path: 'tasks',
     canActivate: [familyGuard],
     loadChildren: () => import('./pages/tasks/tasks.module').then((m) => m.TasksPageModule),
