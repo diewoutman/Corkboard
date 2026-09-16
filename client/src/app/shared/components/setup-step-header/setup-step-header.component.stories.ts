@@ -13,7 +13,7 @@ export const Step1: Story = {
   args: {
     step: 1,
     title: "Welcome! Let's create your account",
-    description: "Nobody's set up this Corkboard yet. Create your account first — you'll set up your family next.",
+    description: "Nobody's set up this Qorkboard yet. Create your account first — you'll set up your family next.",
   },
 };
 

@@ -1,8 +1,8 @@
-# Corkboard — Concept Document
+# Qorkboard — Concept Document
 
 ## 1. Vision
 
-Corkboard is a family coordination app built for one family (yours), not a generic
+Qorkboard is a family coordination app built for one family (yours), not a generic
 multi-tenant SaaS product aimed at the broadest possible audience like FamilyWall or
 OpenFamily. The goal is a small, focused tool that keeps everyone in the household
 aligned on what needs to happen — appointments, tasks, notes — without the bloat of
@@ -353,10 +353,10 @@ go through `Ical.Net`, not hand-rolled `.ics` text:
   skipped rather than mapped to `AppointmentException` rows — a reasonable v1
   limitation given how rarely real-world exports actually contain them.
 - **Not built**: CalDAV (true two-way sync, where editing an event in Apple/Google
-  Calendar updates Corkboard). That's a much bigger undertaking — implementing a
+  Calendar updates Qorkboard). That's a much bigger undertaking — implementing a
   CalDAV server — than anything else in this app so far, and probably isn't worth
   it for a personal family app; one-way export already covers "family member sees
-  Corkboard events in their own phone calendar," which is the realistic use case.
+  Qorkboard events in their own phone calendar," which is the realistic use case.
 
 ### 3.4 Auth
 

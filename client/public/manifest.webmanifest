@@ -1,9 +1,9 @@
 {
-  "name": "Corkboard",
-  "short_name": "Corkboard",
+  "name": "Qorkboard",
+  "short_name": "Qorkboard",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
+  "background_color": "#f6f2e3",
+  "theme_color": "#ec5542",
   "scope": "./",
   "start_url": "./",
   "icons": [
