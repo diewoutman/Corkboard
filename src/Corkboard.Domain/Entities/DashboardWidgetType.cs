@@ -12,4 +12,7 @@ public enum DashboardWidgetType
 
     /// <summary>The next 7 days' Tasks and Calendar occurrences, grouped by day. No per-widget config.</summary>
     Upcoming,
+
+    /// <summary>A single navigation tile (see Navigation), standalone instead of grouped in a tile grid.</summary>
+    Shortcut,
 }

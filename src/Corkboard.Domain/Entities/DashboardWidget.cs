@@ -37,6 +37,9 @@ public class DashboardWidget
     /// </summary>
     public int Span { get; set; } = 1;
 
+    /// <summary>Whether this widget renders inside the card chrome (WidgetCardComponent) or bare, on the board directly.</summary>
+    public bool ShowPanel { get; set; } = true;
+
     /// <summary>
     /// Per-widget-type settings as JSON (jsonb column) — deliberately not
     /// columns on this entity: the shapes are heterogeneous (Navigation's is a

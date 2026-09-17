@@ -12,7 +12,9 @@ import { TILE_DEFS } from './tile-defs';
 
 interface WidgetFormState {
   type: DashboardWidgetType;
+  showPanel: boolean;
   tileOrder: string[];
+  tileKey: string;
   importantOnly: boolean;
   taskMode: 'list' | 'assignedToMe';
   collectionId: string;
@@ -27,6 +29,8 @@ interface WidgetFormState {
 export class HomePage implements OnInit {
   /** Fixed number of grid columns the dashboard lays widgets out in — mirrors DashboardController.ColumnCount. */
   static readonly COLUMN_COUNT = 3;
+
+  readonly tileDefs = TILE_DEFS;
 
   readonly dashboardOptions: SegmentedControlOption[] = [
     { value: 'Family', label: 'Family' },
@@ -112,6 +116,8 @@ export class HomePage implements OnInit {
         return 'Today';
       case 'Upcoming':
         return 'Upcoming';
+      case 'Shortcut':
+        return this.tileTitle(widget.tileKey ?? '');
     }
   }
 
@@ -125,16 +131,29 @@ export class HomePage implements OnInit {
     });
   }
 
-  /** Tailwind's grid column-span scale is fixed at build time, so spell each step out literally for the content scanner to find. */
+  /**
+   * The grid is 12 columns wide (finer than the 3 logical columns Span is expressed in) so a
+   * Shortcut's small fixed span can sit next to another one on the same row instead of claiming a
+   * full 1/3-width track. Tailwind's grid column-span scale is fixed at build time, so spell each
+   * step out literally for the content scanner to find.
+   */
   widgetSpanClass(widget: DashboardWidgetResponse): string {
+    if (widget.type === 'Shortcut') {
+      return 'col-span-6 sm:col-span-4 lg:col-span-2';
+    }
     switch (widget.span) {
       case 3:
-        return 'col-span-1 sm:col-span-3';
+        return 'col-span-12';
       case 2:
-        return 'col-span-1 sm:col-span-2';
+        return 'col-span-12 lg:col-span-8';
       default:
-        return 'col-span-1';
+        return 'col-span-12 sm:col-span-6 lg:col-span-4';
     }
+  }
+
+  /** Resize (↔) only makes sense for span-driven widgets — a Shortcut's size is fixed. */
+  isResizable(widget: DashboardWidgetResponse): boolean {
+    return widget.type !== 'Shortcut';
   }
 
   /** Cycles a widget's width: 1/3 → 2/3 → full width → back to 1/3. */
@@ -165,7 +184,9 @@ export class HomePage implements OnInit {
     this.editingWidgetId = widget.id;
     this.widgetForm = {
       type: widget.type,
+      showPanel: widget.showPanel,
       tileOrder: widget.tileOrder && widget.tileOrder.length > 0 ? widget.tileOrder : TILE_DEFS.map((t) => t.key),
+      tileKey: widget.tileKey ?? TILE_DEFS[0].key,
       importantOnly: widget.importantOnly ?? false,
       taskMode: widget.collectionId ? 'list' : 'assignedToMe',
       collectionId: widget.collectionId ?? '',
@@ -182,7 +203,9 @@ export class HomePage implements OnInit {
     const isTasksList = this.widgetForm.type === 'Tasks' && this.widgetForm.taskMode === 'list';
 
     const config = {
+      showPanel: this.widgetForm.showPanel,
       tileOrder: this.widgetForm.type === 'Navigation' ? this.widgetForm.tileOrder : null,
+      tileKey: this.widgetForm.type === 'Shortcut' ? this.widgetForm.tileKey : null,
       importantOnly: this.widgetForm.type === 'Notes' ? this.widgetForm.importantOnly : null,
       collectionId: isTasksList ? this.widgetForm.collectionId || null : null,
       assignedToMeOnly: this.widgetForm.type === 'Tasks' ? !isTasksList : null,
@@ -224,7 +247,9 @@ export class HomePage implements OnInit {
   private emptyWidgetForm(): WidgetFormState {
     return {
       type: 'Notes',
+      showPanel: true,
       tileOrder: TILE_DEFS.map((t) => t.key),
+      tileKey: TILE_DEFS[0].key,
       importantOnly: false,
       taskMode: 'assignedToMe',
       collectionId: '',

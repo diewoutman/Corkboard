@@ -245,14 +245,18 @@ export interface ImportIcsResult {
 // Personal (per-User) or Family (one shared layout, admin-managed). One flat
 // shape covering every widget type's settings, same convention as
 // CreateNodeRequest — see CONCEPT.md.
-export type DashboardWidgetType = 'Navigation' | 'Notes' | 'Tasks' | 'Today' | 'Upcoming';
+export type DashboardWidgetType = 'Navigation' | 'Notes' | 'Tasks' | 'Today' | 'Upcoming' | 'Shortcut';
 export type DashboardWidgetScope = 'Personal' | 'Family';
 
 export interface CreateDashboardWidgetRequest {
   type: DashboardWidgetType;
   scope: DashboardWidgetScope;
+  // Applies to every type — whether the widget renders inside the card chrome or bare on the board.
+  showPanel: boolean;
   // Navigation-only
   tileOrder: string[] | null;
+  // Shortcut-only — which single TILE_DEFS entry this button points to.
+  tileKey: string | null;
   // Notes-only
   importantOnly: boolean | null;
   // Tasks-only
@@ -261,7 +265,9 @@ export interface CreateDashboardWidgetRequest {
 }
 
 export interface UpdateDashboardWidgetRequest {
+  showPanel: boolean;
   tileOrder: string[] | null;
+  tileKey: string | null;
   importantOnly: boolean | null;
   collectionId: string | null;
   assignedToMeOnly: boolean | null;
@@ -282,7 +288,10 @@ export interface DashboardWidgetResponse {
   sortOrder: number;
   /** How many of the dashboard's fixed columns (1-3) this widget's card spans. */
   span: number;
+  /** Whether this widget renders inside the card chrome (WidgetCardComponent) or bare, on the board directly. */
+  showPanel: boolean;
   tileOrder: string[] | null;
+  tileKey: string | null;
   importantOnly: boolean | null;
   collectionId: string | null;
   assignedToMeOnly: boolean | null;

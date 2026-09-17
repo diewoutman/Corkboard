@@ -24,19 +24,22 @@
   cdkDropList
   [cdkDropListData]="widgets"
   (cdkDropListDropped)="drop($event)"
-  class="mt-6 grid grid-cols-1 items-start gap-4 sm:grid-cols-3"
+  class="mt-6 grid grid-cols-12 items-start gap-4"
 >
   <app-widget-card
     *ngFor="let widget of widgets"
     cdkDrag
     [cdkDragDisabled]="!editableDashboard"
     [editable]="editableDashboard"
+    [showPanel]="widget.showPanel"
+    [resizable]="isResizable(widget)"
     [ngClass]="widgetSpanClass(widget)"
     (resized)="cycleWidgetWidth(widget)"
     (configure)="openEditWidgetForm(widget)"
     (remove)="removeWidget(widget)"
   >
     <h2
+      *ngIf="widget.type !== 'Shortcut'"
       widgetCardTitle
       cdkDragHandle
       [ngClass]="editableDashboard ? 'cursor-grab active:cursor-grabbing' : ''"
@@ -52,6 +55,12 @@
     ></app-tasks-widget>
     <app-today-widget *ngIf="widget.type === 'Today'"></app-today-widget>
     <app-upcoming-widget *ngIf="widget.type === 'Upcoming'"></app-upcoming-widget>
+    <app-shortcut-widget
+      *ngIf="widget.type === 'Shortcut'"
+      cdkDragHandle
+      class="inline-block"
+      [tileKey]="widget.tileKey"
+    ></app-shortcut-widget>
   </app-widget-card>
 </div>
 
@@ -72,6 +81,19 @@
         <option value="Tasks">Tasks</option>
         <option value="Today">Today</option>
         <option value="Upcoming">Upcoming</option>
+        <option value="Shortcut">Shortcut</option>
+      </select>
+    </div>
+
+    <div *ngIf="widgetForm.type === 'Shortcut'">
+      <label for="shortcutTile" class="block text-sm font-bold text-ink">Destination</label>
+      <select
+        id="shortcutTile"
+        name="shortcutTile"
+        [(ngModel)]="widgetForm.tileKey"
+        class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
+      >
+        <option *ngFor="let tile of tileDefs" [value]="tile.key">{{ tile.title }}</option>
       </select>
     </div>
 
@@ -113,6 +135,11 @@
         <option *ngFor="let list of taskLists" [value]="list.id">{{ list.name }}</option>
       </select>
     </div>
+
+    <label class="flex items-center gap-2 text-sm font-semibold text-ink-muted">
+      <input type="checkbox" name="showPanel" [(ngModel)]="widgetForm.showPanel" class="rounded-md accent-coral" />
+      Show panel
+    </label>
 
     <div class="flex gap-2 pt-1">
       <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
