@@ -38,6 +38,9 @@ public class AuthController(
         {
             UserName = request.Email,
             Email = request.Email,
+            // This is checked above (`!Families.AnyAsync()`) to be the very first
+            // user on this instance — grant them the system-owner flag once, here.
+            IsSystemOwner = true,
         };
 
         var result = await userManager.CreateAsync(user, request.Password);

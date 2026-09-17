@@ -1,6 +1,7 @@
 using Corkboard.Api.Auth;
 using Corkboard.Api.Common;
 using Corkboard.Application.Families;
+using Corkboard.Contracts.ApiClients;
 using Corkboard.Contracts.Auth;
 using Corkboard.Contracts.Families;
 using Corkboard.Infrastructure.Identity;
@@ -11,6 +12,7 @@ namespace Corkboard.Api.Controllers;
 
 [ApiController]
 [Route("api/families")]
+[RequireScope(ApiScopes.Family)]
 public class FamiliesController(
     IFamilyService familyService,
     UserManager<ApplicationUser> userManager,

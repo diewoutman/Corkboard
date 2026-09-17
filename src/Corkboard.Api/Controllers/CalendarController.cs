@@ -1,5 +1,6 @@
 using Corkboard.Api.Common;
 using Corkboard.Application.Calendar;
+using Corkboard.Contracts.ApiClients;
 using Corkboard.Contracts.Collections;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,6 +8,7 @@ namespace Corkboard.Api.Controllers;
 
 [ApiController]
 [Route("api/calendar")]
+[RequireScope(ApiScopes.Calendar)]
 public class CalendarController(ICalendarService calendarService) : FamilyScopedControllerBase
 {
     [HttpGet("occurrences")]

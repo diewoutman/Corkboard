@@ -1,5 +1,5 @@
-<div class="flex min-h-screen flex-col bg-cork">
-  <header class="sticky top-0 z-10 bg-white">
+<div class="flex min-h-screen flex-col" [class.bg-cork]="!isAdminRoute">
+  <header *ngIf="!isAdminRoute" class="sticky top-0 z-20 bg-white">
     <div class="mx-auto flex max-w-screen-2xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
       <div class="flex items-center gap-2">
         <a routerLink="/home" class="flex items-center gap-2 font-heading text-xl font-extrabold text-coral">
@@ -13,131 +13,75 @@
         >{{ auth.role() }}</span>
       </div>
 
-      <nav *ngIf="auth.hasFamily()" class="hidden items-center gap-4 text-sm font-bold text-ink-muted sm:flex">
+      <div *ngIf="auth.hasFamily()" class="flex items-center gap-4">
+        <nav class="hidden items-center gap-4 text-sm font-bold text-ink-muted sm:flex">
+          <a
+            *ngFor="let group of navGroups"
+            [routerLink]="group.route"
+            class="rounded-md px-1 py-1.5 hover:text-coral"
+            [class.text-coral]="isGroupActive(group)"
+          >{{ group.label }}</a>
+        </nav>
+
+        <div class="relative">
+          <button
+            type="button"
+            (click)="toggleAccountMenu()"
+            class="flex h-8 w-8 items-center justify-center rounded-full bg-badge-bg text-ink-muted hover:text-coral"
+            aria-label="Account menu"
+          >
+            <app-icon [path]="accountIcon" sizeClass="h-5 w-5" />
+          </button>
+          <div
+            *ngIf="accountMenuOpen"
+            class="absolute right-0 top-full mt-2 min-w-[8rem] rounded-xl border border-border-soft bg-white py-1 shadow-sticker-sm"
+          >
+            <a
+              *ngIf="auth.isSystemOwner()"
+              routerLink="/admin"
+              class="block w-full px-4 py-2 text-left text-sm font-bold text-ink-muted hover:text-coral"
+            >Admin console</a>
+            <button
+              type="button"
+              (click)="logout()"
+              class="block w-full px-4 py-2 text-left text-sm font-bold text-ink-muted hover:text-coral"
+            >Log out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="auth.hasFamily() && inDailyGroup" class="border-t border-border-soft">
+      <div class="mx-auto flex max-w-screen-2xl gap-2 px-4 py-2 sm:px-6 lg:px-8">
         <a
-          routerLink="/home"
-          routerLinkActive="text-coral"
-          [routerLinkActiveOptions]="{ exact: true }"
-          class="relative rounded-md px-1 py-1.5 hover:text-coral"
-        >
-          Home
-          <span *ngIf="dueTodayCount > 0" class="ml-1 rounded-full bg-danger px-1.5 py-0.5 text-[10px] font-extrabold text-white">{{ dueTodayCount }}</span>
-        </a>
-        <a
-          routerLink="/tasks"
-          routerLinkActive="text-coral"
-          class="rounded-md px-1 py-1.5 hover:text-coral"
-        >Tasks</a>
-        <a
-          routerLink="/notes"
-          routerLinkActive="text-coral"
-          class="rounded-md px-1 py-1.5 hover:text-coral"
-        >Notes</a>
-        <a
-          routerLink="/calendar"
-          routerLinkActive="text-coral"
-          class="rounded-md px-1 py-1.5 hover:text-coral"
-        >Calendar</a>
-        <a
-          routerLink="/contacts"
-          routerLinkActive="text-coral"
-          class="rounded-md px-1 py-1.5 hover:text-coral"
-        >Contacts</a>
-        <a
-          routerLink="/family"
-          routerLinkActive="text-coral"
-          class="rounded-md px-1 py-1.5 hover:text-coral"
-        >Family</a>
-        <button
-          type="button"
-          (click)="logout()"
-          class="ml-2 rounded-md px-1 py-1.5 text-ink-muted hover:text-coral"
-        >Log out</button>
-      </nav>
+          *ngFor="let child of dailyChildren"
+          [routerLink]="child.route"
+          routerLinkActive="bg-coral text-white"
+          class="rounded-full px-3 py-1 text-xs font-extrabold text-ink-muted"
+        >{{ child.label }}</a>
+      </div>
     </div>
   </header>
 
-  <main class="mx-auto w-full max-w-screen-2xl flex-1 px-4 py-6 sm:px-6 lg:px-8" [class.pb-20]="auth.hasFamily()">
+  <main [class]="isAdminRoute ? 'flex-1' : 'mx-auto w-full max-w-screen-2xl flex-1 px-4 py-6 sm:px-6 lg:px-8'" [class.pb-20]="!isAdminRoute && auth.hasFamily()">
     <router-outlet></router-outlet>
   </main>
 
   <nav
-    *ngIf="auth.hasFamily()"
+    *ngIf="!isAdminRoute && auth.hasFamily()"
     class="fixed inset-x-0 bottom-0 z-10 flex border-t border-border-soft bg-white sm:hidden"
   >
     <a
-      routerLink="/home"
-      routerLinkActive="text-coral"
-      [routerLinkActiveOptions]="{ exact: true }"
+      *ngFor="let group of navGroups"
+      [routerLink]="group.route"
       class="relative flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs font-bold text-ink-muted"
+      [class.text-coral]="isGroupActive(group)"
     >
       <span class="relative">
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10" />
-        </svg>
-        <span *ngIf="dueTodayCount > 0" class="absolute -right-1.5 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-danger text-[9px] font-extrabold text-white">{{ dueTodayCount > 9 ? '9+' : dueTodayCount }}</span>
+        <app-icon [path]="group.icon" sizeClass="h-5 w-5" />
+        <span *ngIf="group.key === 'home' && dueTodayCount > 0" class="absolute -right-1.5 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-danger text-[9px] font-extrabold text-white">{{ dueTodayCount > 9 ? '9+' : dueTodayCount }}</span>
       </span>
-      Home
+      {{ group.label }}
     </a>
-    <a
-      routerLink="/tasks"
-      routerLinkActive="text-coral"
-      class="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs font-bold text-ink-muted"
-    >
-      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      Tasks
-    </a>
-    <a
-      routerLink="/notes"
-      routerLinkActive="text-coral"
-      class="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs font-bold text-ink-muted"
-    >
-      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-      Notes
-    </a>
-    <a
-      routerLink="/calendar"
-      routerLinkActive="text-coral"
-      class="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs font-bold text-ink-muted"
-    >
-      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-      Calendar
-    </a>
-    <a
-      routerLink="/contacts"
-      routerLinkActive="text-coral"
-      class="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs font-bold text-ink-muted"
-    >
-      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-      </svg>
-      Contacts
-    </a>
-    <a
-      routerLink="/family"
-      routerLinkActive="text-coral"
-      class="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs font-bold text-ink-muted"
-    >
-      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6 0a4 4 0 10-4-4" />
-      </svg>
-      Family
-    </a>
-    <button
-      type="button"
-      (click)="logout()"
-      class="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs font-bold text-ink-muted"
-    >
-      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-      </svg>
-      Log out
-    </button>
   </nav>
 </div>

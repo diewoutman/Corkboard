@@ -57,4 +57,16 @@ public class FamilyService(CorkboardDbContext db) : IFamilyService
 
         return family is null ? Result<FamilyResponse>.Failure(Error.NotFound()) : Result<FamilyResponse>.Success(family);
     }
+
+    public async Task<Result<FamilyResponse>> UpdateAsync(Guid familyId, UpdateFamilyRequest request, CancellationToken cancellationToken)
+    {
+        var family = await db.Families.FirstOrDefaultAsync(f => f.Id == familyId, cancellationToken);
+        if (family is null) return Result<FamilyResponse>.Failure(Error.NotFound());
+
+        family.Name = request.Name;
+        family.TimeZone = request.TimeZone;
+        await db.SaveChangesAsync(cancellationToken);
+
+        return Result<FamilyResponse>.Success(new FamilyResponse(family.Id, family.Name, family.TimeZone, family.CreatedAt));
+    }
 }

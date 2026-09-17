@@ -11,4 +11,5 @@ public record AuthResponse(
     Guid UserId,
     string Email,
     Guid? FamilyId,
-    string? Role);
+    string? Role,
+    bool IsSystemOwner);

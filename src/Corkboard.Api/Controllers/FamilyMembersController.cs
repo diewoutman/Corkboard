@@ -1,5 +1,6 @@
 using Corkboard.Api.Common;
 using Corkboard.Application.FamilyMembers;
+using Corkboard.Contracts.ApiClients;
 using Corkboard.Contracts.FamilyMembers;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,6 +8,7 @@ namespace Corkboard.Api.Controllers;
 
 [ApiController]
 [Route("api/family-members")]
+[RequireScope(ApiScopes.Family)]
 public class FamilyMembersController(IFamilyMemberService familyMemberService) : FamilyScopedControllerBase
 {
     [HttpGet]

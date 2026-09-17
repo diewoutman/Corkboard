@@ -1,0 +1,157 @@
+<a routerLink="/admin/families" class="text-xs font-semibold text-slate-400 hover:text-white">&larr; Families</a>
+
+<p *ngIf="errorMessage" class="mt-4 rounded-lg bg-rose-950 px-3 py-2 text-sm font-semibold text-rose-300">{{ errorMessage }}</p>
+
+<p *ngIf="loading" class="mt-6 text-sm font-semibold text-slate-400">Loading…</p>
+
+<div *ngIf="!loading" class="mt-4 flex flex-col gap-6">
+  <section class="rounded-lg border border-slate-700 bg-slate-800 p-4">
+    <h1 class="text-lg font-bold text-white">Family info</h1>
+    <form (ngSubmit)="submitFamilyForm()" #familyFormRef="ngForm" class="mt-3 flex flex-wrap items-end gap-3">
+      <div>
+        <label for="familyName" class="block text-xs font-semibold text-slate-400">Name</label>
+        <input
+          id="familyName"
+          name="familyName"
+          [(ngModel)]="familyForm.name"
+          required
+          class="mt-1 rounded-md border border-slate-600 bg-slate-900 px-2.5 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none"
+        />
+      </div>
+      <div>
+        <label for="familyTimeZone" class="block text-xs font-semibold text-slate-400">Time zone</label>
+        <input
+          id="familyTimeZone"
+          name="familyTimeZone"
+          [(ngModel)]="familyForm.timeZone"
+          required
+          class="mt-1 rounded-md border border-slate-600 bg-slate-900 px-2.5 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none"
+        />
+      </div>
+      <button type="submit" [disabled]="familyFormRef.invalid" class="rounded-md bg-indigo-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50">
+        Save
+      </button>
+    </form>
+  </section>
+
+  <section>
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-bold text-white">Members</h2>
+      <button type="button" (click)="openNewMemberForm()" class="rounded-md bg-indigo-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-400">
+        + Add member
+      </button>
+    </div>
+
+    <p *ngIf="members.length === 0" class="mt-3 text-sm font-semibold text-slate-400">No members yet.</p>
+
+    <div *ngIf="members.length > 0" class="mt-3 flex flex-col gap-2">
+      <div *ngFor="let member of members" class="rounded-lg border border-slate-700 bg-slate-800 p-3">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <p class="font-semibold text-white">{{ member.displayName }}</p>
+            <p class="text-xs text-slate-400">
+              {{ member.linkedUserEmail ?? 'No login' }}
+              <span *ngIf="member.linkedUserRole">· {{ member.linkedUserRole }}</span>
+            </p>
+          </div>
+          <div class="flex shrink-0 gap-2 text-xs font-semibold">
+            <button type="button" (click)="openEditMemberForm(member)" class="text-slate-300 hover:text-white">Edit</button>
+            <button *ngIf="!member.linkedUserEmail && accountFormForId !== member.id" type="button" (click)="openAccountForm(member)" class="text-indigo-400 hover:text-indigo-300">
+              + Create login
+            </button>
+            <button type="button" (click)="deleteMember(member)" class="text-rose-400 hover:text-rose-300">Delete</button>
+          </div>
+        </div>
+
+        <form *ngIf="accountFormForId === member.id" (ngSubmit)="submitAccountForm()" #accountFormRef="ngForm" class="mt-2 space-y-2 rounded-md bg-slate-900 p-3">
+          <div>
+            <label for="accountEmail" class="block text-xs font-semibold text-slate-400">Email</label>
+            <input
+              id="accountEmail"
+              name="accountEmail"
+              type="email"
+              [(ngModel)]="accountForm.email"
+              required
+              class="mt-1 block w-full rounded-md border border-slate-600 bg-slate-800 px-2.5 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label for="accountPassword" class="block text-xs font-semibold text-slate-400">Password</label>
+            <input
+              id="accountPassword"
+              name="accountPassword"
+              type="text"
+              [(ngModel)]="accountForm.password"
+              required
+              minlength="6"
+              class="mt-1 block w-full rounded-md border border-slate-600 bg-slate-800 px-2.5 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label for="accountRole" class="block text-xs font-semibold text-slate-400">Role</label>
+            <select
+              id="accountRole"
+              name="accountRole"
+              [(ngModel)]="accountForm.role"
+              class="mt-1 block w-full rounded-md border border-slate-600 bg-slate-800 px-2.5 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none"
+            >
+              <option value="Adult">Adult</option>
+              <option value="Member">Member</option>
+            </select>
+          </div>
+          <div class="flex gap-2 pt-1">
+            <button type="submit" [disabled]="accountFormRef.invalid" class="flex-1 rounded-md bg-indigo-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50">
+              Create login
+            </button>
+            <button type="button" (click)="cancelAccountForm()" class="rounded-md px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section *ngIf="showMemberForm" class="rounded-lg border border-slate-700 bg-slate-800 p-4">
+    <form (ngSubmit)="submitMemberForm()" #memberFormRef="ngForm" class="space-y-3">
+      <div>
+        <label for="memberDisplayName" class="block text-xs font-semibold text-slate-400">Name</label>
+        <input
+          id="memberDisplayName"
+          name="memberDisplayName"
+          [(ngModel)]="memberForm.displayName"
+          required
+          class="mt-1 block w-full rounded-md border border-slate-600 bg-slate-900 px-2.5 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none"
+        />
+      </div>
+      <div>
+        <label for="memberColor" class="block text-xs font-semibold text-slate-400">Color</label>
+        <input
+          id="memberColor"
+          name="memberColor"
+          type="color"
+          [(ngModel)]="memberForm.color"
+          class="mt-1 block h-9 w-16 rounded-md border border-slate-600 bg-slate-900"
+        />
+      </div>
+      <div>
+        <label for="memberDateOfBirth" class="block text-xs font-semibold text-slate-400">Birthday</label>
+        <input
+          id="memberDateOfBirth"
+          type="date"
+          name="memberDateOfBirth"
+          [(ngModel)]="memberForm.dateOfBirth"
+          class="mt-1 block w-full rounded-md border border-slate-600 bg-slate-900 px-2.5 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none"
+        />
+      </div>
+      <div class="flex gap-2 pt-1">
+        <button type="submit" [disabled]="memberFormRef.invalid" class="flex-1 rounded-md bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50">
+          {{ editingMemberId ? 'Save changes' : 'Add member' }}
+        </button>
+        <button type="button" (click)="cancelMemberForm()" class="rounded-md px-4 py-2 text-sm font-semibold text-slate-400 hover:text-white">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

@@ -16,3 +16,5 @@ public record FamilyResponse(
     string Name,
     string TimeZone,
     DateTimeOffset CreatedAt);
+
+public record UpdateFamilyRequest(string Name, string TimeZone);

@@ -19,6 +19,8 @@ export class Auth {
   /** Owner or Adult — who's allowed to manage the shared Family dashboard. */
   readonly isAdmin = computed(() => this.state()?.role === 'Owner' || this.state()?.role === 'Adult');
   readonly role = computed(() => this.state()?.role ?? null);
+  /** This app's instance-level administrator — independent of Family role, see API clients admin area. */
+  readonly isSystemOwner = computed(() => this.state()?.isSystemOwner ?? false);
 
   register(request: RegisterRequest) {
     return this.http

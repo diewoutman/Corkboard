@@ -1,5 +1,6 @@
 using Corkboard.Api.Common;
 using Corkboard.Application.Dashboard;
+using Corkboard.Contracts.ApiClients;
 using Corkboard.Contracts.Dashboard;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,6 +8,7 @@ namespace Corkboard.Api.Controllers;
 
 [ApiController]
 [Route("api/dashboard")]
+[RequireScope(ApiScopes.Dashboard)]
 public class DashboardController(IDashboardService dashboardService) : FamilyScopedControllerBase
 {
     [HttpGet]

@@ -18,6 +18,7 @@ export interface AuthResponse {
   email: string;
   familyId: string | null;
   role: string | null;
+  isSystemOwner: boolean;
 }
 
 export interface CreateFamilyRequest {
@@ -285,4 +286,61 @@ export interface DashboardWidgetResponse {
   importantOnly: boolean | null;
   collectionId: string | null;
   assignedToMeOnly: boolean | null;
+}
+
+/** Mirrors Corkboard.Contracts.ApiClients.ApiScopes.Areas on the backend. */
+export const API_SCOPE_AREAS = ['nodes', 'calendar', 'collections', 'dashboard', 'family'] as const;
+
+export interface CreateApiClientRequest {
+  name: string;
+  scopes: string[];
+}
+
+export interface ApiClientResponse {
+  id: string;
+  name: string;
+  clientId: string;
+  scopes: string[];
+  isRevoked: boolean;
+  createdAt: string;
+  lastUsedAt: string | null;
+  /** True for exactly one row — the Angular GUI itself. Has full access via each caller's own Family role, not scopes; can't be revoked. */
+  isFirstParty: boolean;
+}
+
+/** Only returned once, right after creation — the only time the plaintext secret is shown. */
+export interface CreatedApiClientResponse {
+  client: ApiClientResponse;
+  clientSecret: string;
+}
+
+export interface ApiCallLogEntryResponse {
+  method: string;
+  path: string;
+  statusCode: number;
+  durationMs: number;
+  timestamp: string;
+}
+
+export interface UpdateFamilyRequest {
+  name: string;
+  timeZone: string;
+}
+
+export interface AdminStatsResponse {
+  familyCount: number;
+  userCount: number;
+  apiClientCount: number;
+  activeApiClientCount: number;
+  familyMemberCount: number;
+  nodeCount: number;
+}
+
+export interface AdminFamilySummaryResponse {
+  id: string;
+  name: string;
+  timeZone: string;
+  createdAt: string;
+  memberCount: number;
+  nodeCount: number;
 }

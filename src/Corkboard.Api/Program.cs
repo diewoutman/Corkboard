@@ -1,12 +1,17 @@
 using System.Text;
 using System.Text.Json.Serialization;
 using Corkboard.Api.Auth;
+using Corkboard.Api.Common;
+using Corkboard.Api.Jobs;
+using Corkboard.Application.Admin;
+using Corkboard.Application.ApiClients;
 using Corkboard.Application.Calendar;
 using Corkboard.Application.Collections;
 using Corkboard.Application.Dashboard;
 using Corkboard.Application.Families;
 using Corkboard.Application.FamilyMembers;
 using Corkboard.Application.Nodes;
+using Corkboard.Domain.Entities;
 using Corkboard.Infrastructure.Ics;
 using Corkboard.Infrastructure.Identity;
 using Corkboard.Infrastructure.Persistence;
@@ -97,6 +102,9 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ICalendarService, CalendarService>();
 builder.Services.AddScoped<IFamilyService, FamilyService>();
 builder.Services.AddScoped<IFamilyMemberService, FamilyMemberService>();
+builder.Services.AddScoped<IApiClientService, ApiClientService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<ApiCallLogCleanupJob>();
 
 builder.Services.AddSingleton<RecurrenceExpansionService>();
 builder.Services.AddSingleton<IcsExportService>();
@@ -119,6 +127,31 @@ builder.Services.AddTickerQ(options =>
 
 var app = builder.Build();
 
+// Ensures the Angular GUI's own first-party ApiClient row exists — every human
+// login (TokenService.CreateTokenAsync) attaches its id as a ClientId claim so
+// the GUI's own traffic shows up in the API-clients call log too. Idempotent;
+// assumes migrations have already been applied (this only queries/inserts,
+// never migrates).
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<CorkboardDbContext>();
+    if (!await db.ApiClients.AnyAsync(c => c.IsFirstParty))
+    {
+        db.ApiClients.Add(new ApiClient
+        {
+            Id = Guid.NewGuid(),
+            Name = "Corkboard Web",
+            ClientId = "corkboard-web",
+            ClientSecretHash = string.Empty,
+            Scopes = string.Empty,
+            IsFirstParty = true,
+            CreatedAt = DateTimeOffset.UtcNow,
+            CreatedByUserId = Guid.Empty,
+        });
+        await db.SaveChangesAsync();
+    }
+}
+
 // Configure the HTTP request pipeline.
 
 // No custom IExceptionHandler registered, so this falls back to writing a
@@ -137,6 +170,8 @@ app.UseCors(ClientCorsPolicy);
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<ApiCallLoggingMiddleware>();
 
 app.MapControllers();
 

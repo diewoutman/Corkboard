@@ -17,3 +17,12 @@ export const familyGuard: CanActivateFn = () => {
   if (!auth.hasFamily()) return router.createUrlTree(['/family-setup']);
   return true;
 };
+
+/** Requires the instance's system owner (see Auth.isSystemOwner) — independent of Family membership. */
+export const systemOwnerGuard: CanActivateFn = () => {
+  const auth = inject(Auth);
+  const router = inject(Router);
+  if (!auth.isAuthenticated()) return router.createUrlTree(['/login']);
+  if (!auth.isSystemOwner()) return router.createUrlTree(['/home']);
+  return true;
+};

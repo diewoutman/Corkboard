@@ -1,5 +1,6 @@
 using Corkboard.Api.Common;
 using Corkboard.Application.Nodes;
+using Corkboard.Contracts.ApiClients;
 using Corkboard.Contracts.Nodes;
 using Microsoft.AspNetCore.Mvc;
 using ContractNodeType = Corkboard.Contracts.Nodes.NodeType;
@@ -8,6 +9,7 @@ namespace Corkboard.Api.Controllers;
 
 [ApiController]
 [Route("api/nodes")]
+[RequireScope(ApiScopes.Nodes)]
 public class NodesController(INodeService nodeService) : FamilyScopedControllerBase
 {
     /// <summary>

@@ -1,5 +1,6 @@
 using Corkboard.Api.Common;
 using Corkboard.Application.Collections;
+using Corkboard.Contracts.ApiClients;
 using Corkboard.Contracts.Collections;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,6 +8,7 @@ namespace Corkboard.Api.Controllers;
 
 [ApiController]
 [Route("api/collections")]
+[RequireScope(ApiScopes.Collections)]
 public class CollectionsController(ICollectionService collectionService) : FamilyScopedControllerBase
 {
     /// <summary>Lists Collections in the caller's Family, optionally filtered by type or parent.</summary>
