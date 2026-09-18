@@ -22,6 +22,7 @@ import { NotesWidgetComponent } from './widgets/notes-widget.component';
 import { ShortcutWidgetComponent } from './widgets/shortcut-widget.component';
 import { TilePillComponent } from './widgets/tile-pill.component';
 import { TasksWidgetComponent } from './widgets/tasks-widget.component';
+import { TimelineWidgetComponent } from './widgets/timeline-widget.component';
 import { TodayWidgetComponent } from './widgets/today-widget.component';
 import { UpcomingWidgetComponent } from './widgets/upcoming-widget.component';
 
@@ -50,6 +51,7 @@ import { UpcomingWidgetComponent } from './widgets/upcoming-widget.component';
     NotesWidgetComponent,
     ShortcutWidgetComponent,
     TasksWidgetComponent,
+    TimelineWidgetComponent,
     TodayWidgetComponent,
     UpcomingWidgetComponent,
   ],

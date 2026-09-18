@@ -1,6 +1,10 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Corkboard.Contracts.ApiClients;
 
-public record CreateApiClientRequest(string Name, IReadOnlyList<string> Scopes);
+public record CreateApiClientRequest(
+    [Required, StringLength(200, MinimumLength = 1)] string Name,
+    [Required] IReadOnlyList<string> Scopes);
 
 public record ApiClientResponse(
     Guid Id,
@@ -24,6 +28,8 @@ public record ApiCallLogEntryResponse(
     DateTimeOffset Timestamp);
 
 /// <summary>client_id/client_secret grant — named after OAuth2's client-credentials grant even though this isn't full OAuth2.</summary>
-public record ApiClientTokenRequest(string ClientId, string ClientSecret);
+public record ApiClientTokenRequest(
+    [Required, StringLength(256, MinimumLength = 1)] string ClientId,
+    [Required, StringLength(256, MinimumLength = 1)] string ClientSecret);
 
 public record ApiClientTokenResponse(string Token, DateTimeOffset ExpiresAt, IReadOnlyList<string> Scopes);

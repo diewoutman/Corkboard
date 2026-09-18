@@ -18,6 +18,8 @@ interface WidgetFormState {
   importantOnly: boolean;
   taskMode: 'list' | 'assignedToMe';
   collectionId: string;
+  timelineScope: 'family' | 'assignedToMe';
+  timelineLayout: 'segments' | 'hourly';
 }
 
 @Component({
@@ -118,6 +120,8 @@ export class HomePage implements OnInit {
         return 'Upcoming';
       case 'Shortcut':
         return this.tileTitle(widget.tileKey ?? '');
+      case 'Timeline':
+        return 'Timeline';
     }
   }
 
@@ -190,6 +194,8 @@ export class HomePage implements OnInit {
       importantOnly: widget.importantOnly ?? false,
       taskMode: widget.collectionId ? 'list' : 'assignedToMe',
       collectionId: widget.collectionId ?? '',
+      timelineScope: widget.assignedToMeOnly ? 'assignedToMe' : 'family',
+      timelineLayout: widget.hourlyLayout ? 'hourly' : 'segments',
     };
     this.showWidgetForm = true;
   }
@@ -208,7 +214,13 @@ export class HomePage implements OnInit {
       tileKey: this.widgetForm.type === 'Shortcut' ? this.widgetForm.tileKey : null,
       importantOnly: this.widgetForm.type === 'Notes' ? this.widgetForm.importantOnly : null,
       collectionId: isTasksList ? this.widgetForm.collectionId || null : null,
-      assignedToMeOnly: this.widgetForm.type === 'Tasks' ? !isTasksList : null,
+      assignedToMeOnly:
+        this.widgetForm.type === 'Tasks'
+          ? !isTasksList
+          : this.widgetForm.type === 'Timeline'
+            ? this.widgetForm.timelineScope === 'assignedToMe'
+            : null,
+      hourlyLayout: this.widgetForm.type === 'Timeline' ? this.widgetForm.timelineLayout === 'hourly' : null,
     };
 
     const request$ = this.editingWidgetId
@@ -253,6 +265,8 @@ export class HomePage implements OnInit {
       importantOnly: false,
       taskMode: 'assignedToMe',
       collectionId: '',
+      timelineScope: 'family',
+      timelineLayout: 'segments',
     };
   }
 }

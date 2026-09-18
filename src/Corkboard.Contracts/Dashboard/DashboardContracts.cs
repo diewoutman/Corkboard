@@ -9,6 +9,7 @@ public enum DashboardWidgetType
     Today,
     Upcoming,
     Shortcut,
+    Timeline,
 }
 
 /// <summary>Mirrors Corkboard.Domain.Entities.DashboardWidgetScope — kept in sync by hand.</summary>
@@ -36,9 +37,14 @@ public record CreateDashboardWidgetRequest(
     string? TileKey,
     // Notes-only
     bool? ImportantOnly,
-    // Tasks-only — a specific list, or all Tasks assigned to the caller when both are unset
+    // Tasks-only — a specific list, or all Tasks assigned to the caller when both are unset.
+    // Timeline-only too — restricts it to Tasks/Calendar occurrences assigned to the caller
+    // instead of the whole Family.
     Guid? CollectionId,
-    bool? AssignedToMeOnly);
+    bool? AssignedToMeOnly,
+    // Timeline-only — true for an hour-by-hour grid, false/null (default) for the dayparts
+    // (night/morning/afternoon/evening) layout.
+    bool? HourlyLayout);
 
 public record UpdateDashboardWidgetRequest(
     bool ShowPanel,
@@ -46,7 +52,8 @@ public record UpdateDashboardWidgetRequest(
     string? TileKey,
     bool? ImportantOnly,
     Guid? CollectionId,
-    bool? AssignedToMeOnly);
+    bool? AssignedToMeOnly,
+    bool? HourlyLayout);
 
 /// <summary>Full replacement of the caller's widget order — SortOrder becomes each id's index in this list.</summary>
 public record ReorderDashboardWidgetsRequest(IReadOnlyList<Guid> OrderedWidgetIds);
@@ -65,4 +72,5 @@ public record DashboardWidgetResponse(
     string? TileKey,
     bool? ImportantOnly,
     Guid? CollectionId,
-    bool? AssignedToMeOnly);
+    bool? AssignedToMeOnly,
+    bool? HourlyLayout);

@@ -100,3 +100,84 @@ export function groupByDay(items: AgendaItem[], days: Date[]): DayGroup[] {
     return { dayKey: key, date, items: (byDayKey.get(key) ?? []).sort(byTime) };
   });
 }
+
+/** A quarter of the day the Timeline widget buckets items into, instead of an hour-by-hour grid. */
+export interface TimelineSegment {
+  key: string;
+  label: string;
+  items: AgendaItem[];
+}
+
+/** Chronological from midnight, covering the full day — end hours are exclusive. */
+const DAY_SEGMENTS: { key: string; label: string; startHour: number; endHour: number }[] = [
+  { key: 'night', label: 'Night', startHour: 0, endHour: 6 },
+  { key: 'morning', label: 'Morning', startHour: 6, endHour: 12 },
+  { key: 'afternoon', label: 'Afternoon', startHour: 12, endHour: 18 },
+  { key: 'evening', label: 'Evening', startHour: 18, endHour: 24 },
+];
+
+function segmentKeyForHour(hour: number): string {
+  return DAY_SEGMENTS.find((s) => hour >= s.startHour && hour < s.endHour)!.key;
+}
+
+/** Which DAY_SEGMENTS key `date`'s hour falls into — used to scroll/highlight the Timeline widget's current segment. */
+export function currentSegmentKeyFor(date: Date): string {
+  return segmentKeyForHour(date.getHours());
+}
+
+/**
+ * Buckets items into the four dayparts, in chronological order, each always present (even empty)
+ * so the widget shows the day's full shape. Items with no specific time (all-day events; a task
+ * always has one, via its due date) get a leading "All day" bucket instead, shown only if non-empty.
+ */
+export function groupBySegment(items: AgendaItem[]): TimelineSegment[] {
+  const anytime: AgendaItem[] = [];
+  const byKey = new Map(DAY_SEGMENTS.map((s) => [s.key, [] as AgendaItem[]]));
+
+  for (const item of items) {
+    if (!item.time) {
+      anytime.push(item);
+      continue;
+    }
+    byKey.get(segmentKeyForHour(new Date(item.time).getHours()))!.push(item);
+  }
+
+  const segments: TimelineSegment[] = DAY_SEGMENTS.map((s) => ({ key: s.key, label: s.label, items: byKey.get(s.key)!.sort(byTime) }));
+  if (anytime.length > 0) segments.unshift({ key: 'anytime', label: 'All day', items: anytime.sort(byTime) });
+  return segments;
+}
+
+function hourLabel(hour: number): string {
+  return new Date(2020, 0, 1, hour).toLocaleTimeString([], { hour: 'numeric' });
+}
+
+/** Which hour-of-day slot key `date` falls into — used to scroll/highlight the Timeline widget's current hour. */
+export function currentHourKeyFor(date: Date): string {
+  return `hour-${date.getHours()}`;
+}
+
+/**
+ * Same shape as groupBySegment, but one slot per hour (0-23) instead of one per daypart — the
+ * Timeline widget's alternate "hour by hour" layout. Items with no specific time get the same
+ * leading "All day" bucket.
+ */
+export function groupByHour(items: AgendaItem[]): TimelineSegment[] {
+  const anytime: AgendaItem[] = [];
+  const byHour = new Map<number, AgendaItem[]>(Array.from({ length: 24 }, (_, h) => [h, []]));
+
+  for (const item of items) {
+    if (!item.time) {
+      anytime.push(item);
+      continue;
+    }
+    byHour.get(new Date(item.time).getHours())!.push(item);
+  }
+
+  const slots: TimelineSegment[] = Array.from({ length: 24 }, (_, h) => ({
+    key: `hour-${h}`,
+    label: hourLabel(h),
+    items: byHour.get(h)!.sort(byTime),
+  }));
+  if (anytime.length > 0) slots.unshift({ key: 'anytime', label: 'All day', items: anytime.sort(byTime) });
+  return slots;
+}

@@ -1,18 +1,22 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Corkboard.Contracts.Nodes;
 
-public record ContactPhoneNumberDto(string Number, string? Label);
+public record ContactPhoneNumberDto([Required, StringLength(50, MinimumLength = 1)] string Number, [StringLength(50)] string? Label);
 
-public record ContactEmailDto(string Email, string? Label);
+public record ContactEmailDto([Required, EmailAddress, StringLength(256)] string Email, [StringLength(50)] string? Label);
 
 /// <summary>
 /// One shape for all four node types — fields that don't apply to the given
 /// Type (e.g. Location on a Note) are ignored server-side rather than rejected,
-/// keeping the client's create/edit form simple to reuse across types.
+/// keeping the client's create/edit form simple to reuse across types. Only
+/// Title is unconditionally required; other free-text fields are capped in
+/// length (rather than required) since they're only meaningful for some Types.
 /// </summary>
 public record CreateNodeRequest(
     NodeType Type,
-    string Title,
-    string? Description,
+    [Required, StringLength(500, MinimumLength = 1)] string Title,
+    [StringLength(10_000)] string? Description,
     DateTimeOffset? From,
     DateTimeOffset? Until,
     IReadOnlyList<Guid> AssignedFamilyMemberIds,
@@ -23,26 +27,26 @@ public record CreateNodeRequest(
     // Task-only
     int? Priority,
     /// <summary>Free-text grouping label (e.g. "Produce") — lets a TaskList double as a categorized shopping list.</summary>
-    string? Category,
+    [StringLength(200)] string? Category,
     // Appointment-only
-    string? Location,
+    [StringLength(500)] string? Location,
     bool? AllDay,
-    string? RecurrenceRule,
+    [StringLength(2000)] string? RecurrenceRule,
     // Contact-only — FirstName/LastName required, at least one phone number required
-    string? FirstName,
-    string? LastName,
+    [StringLength(200)] string? FirstName,
+    [StringLength(200)] string? LastName,
     DateOnly? DateOfBirth,
-    string? Street,
-    string? City,
-    string? PostalCode,
-    string? Country,
+    [StringLength(200)] string? Street,
+    [StringLength(100)] string? City,
+    [StringLength(20)] string? PostalCode,
+    [StringLength(100)] string? Country,
     IReadOnlyList<ContactPhoneNumberDto>? PhoneNumbers,
     IReadOnlyList<ContactEmailDto>? Emails);
 
 /// <summary>Type is immutable after creation — not included here.</summary>
 public record UpdateNodeRequest(
-    string Title,
-    string? Description,
+    [Required, StringLength(500, MinimumLength = 1)] string Title,
+    [StringLength(10_000)] string? Description,
     DateTimeOffset? From,
     DateTimeOffset? Until,
     IReadOnlyList<Guid> AssignedFamilyMemberIds,
@@ -52,19 +56,19 @@ public record UpdateNodeRequest(
     // Task-only
     bool? IsCompleted,
     int? Priority,
-    string? Category,
+    [StringLength(200)] string? Category,
     // Appointment-only
-    string? Location,
+    [StringLength(500)] string? Location,
     bool? AllDay,
-    string? RecurrenceRule,
+    [StringLength(2000)] string? RecurrenceRule,
     // Contact-only
-    string? FirstName,
-    string? LastName,
+    [StringLength(200)] string? FirstName,
+    [StringLength(200)] string? LastName,
     DateOnly? DateOfBirth,
-    string? Street,
-    string? City,
-    string? PostalCode,
-    string? Country,
+    [StringLength(200)] string? Street,
+    [StringLength(100)] string? City,
+    [StringLength(20)] string? PostalCode,
+    [StringLength(100)] string? Country,
     IReadOnlyList<ContactPhoneNumberDto>? PhoneNumbers,
     IReadOnlyList<ContactEmailDto>? Emails);
 

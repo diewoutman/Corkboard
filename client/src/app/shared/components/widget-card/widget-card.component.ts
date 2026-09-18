@@ -8,6 +8,10 @@ import { Component, EventEmitter, HostBinding, Input, Output } from '@angular/co
  * `ListCardComponent` staying router-agnostic and letting the page supply the interactive
  * wrapper: this component has no CDK dependency of its own and renders fine in Storybook alone.
  *
+ * The resize/configure/remove buttons only reveal on hover (`group`/`group-hover`, same pattern as
+ * CalendarEventBlockComponent's hover-reveal edit/delete) — kept out of the way until the widget is
+ * actually being interacted with.
+ *
  * When `showPanel` is false, the card chrome (background/padding/shadow) drops away — the widget
  * sits bare on the board — but the title row and resize/configure/remove buttons stay, just
  * without the card styling around them, so those affordances survive without a panel to live in.
@@ -25,7 +29,7 @@ import { Component, EventEmitter, HostBinding, Input, Output } from '@angular/co
     <div [class]="showPanel ? 'mb-2 flex items-center justify-between gap-2' : 'mb-1 flex items-center gap-2'">
       <ng-content select="[widgetCardTitle]"></ng-content>
       @if (editable) {
-        <div [class]="showPanel ? 'flex items-center gap-2.5' : 'ml-auto flex items-center gap-2.5'">
+        <div [class]="showPanel ? 'hidden items-center gap-2.5 group-hover:flex' : 'ml-auto hidden items-center gap-2.5 group-hover:flex'">
           @if (resizable) {
             <button type="button" (click)="resized.emit()" class="text-ink-muted hover:text-coral" aria-label="Resize widget" title="Resize widget">↔</button>
           }
@@ -50,7 +54,7 @@ export class WidgetCardComponent {
 
   @HostBinding('class') get hostClass(): string {
     return this.showPanel
-      ? 'block rounded-3xl bg-white p-4 shadow-sticker'
+      ? 'group block rounded-3xl bg-white p-4 shadow-sticker'
       : 'group relative block';
   }
 }

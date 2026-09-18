@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using Corkboard.Api.Auth;
 using Corkboard.Api.Common;
 using Corkboard.Api.Jobs;
@@ -18,6 +19,8 @@ using Corkboard.Infrastructure.Persistence;
 using Corkboard.Infrastructure.Recurrence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using TickerQ.Dashboard.DependencyInjection;
@@ -56,12 +59,46 @@ builder.Services
         options.Password.RequireUppercase = false;
         options.Password.RequireNonAlphanumeric = false;
         options.Password.RequiredLength = 6;
+
+        // Brute-force protection: after repeated wrong passwords, lock the account
+        // out for a while rather than letting an attacker keep guessing forever.
+        // Enforced manually in AuthController.Login (this app mints its own JWTs
+        // via UserManager directly rather than going through SignInManager).
+        options.Lockout.AllowedForNewUsers = true;
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
     })
     .AddRoles<IdentityRole<Guid>>()
     .AddEntityFrameworkStores<CorkboardDbContext>()
     .AddDefaultTokenProviders();
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
+
+// Fail fast on a signing key that's missing, too short for HMAC-SHA256 (< 32
+// bytes/256 bits), or still the placeholder checked into appsettings.json — any
+// of those means every JWT this instance issues is forgeable. Only a hard
+// failure outside Development: the repo ships the placeholder as-is (no
+// appsettings.Development.json override), so failing here too would break
+// `dev.sh`/Playwright out of the box.
+const string PlaceholderSigningKey = "REPLACE_WITH_A_GENERATED_SECRET_AT_LEAST_32_BYTES_LONG";
+var jwtSigningKey = jwtSection["SigningKey"] ?? throw new InvalidOperationException("Jwt:SigningKey is not configured.");
+if (jwtSigningKey == PlaceholderSigningKey || Encoding.UTF8.GetByteCount(jwtSigningKey) < 32)
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        Console.Error.WriteLine(
+            "WARNING: Jwt:SigningKey is the placeholder/default value — fine for local development, " +
+            "but every token this instance issues is forgeable. Set a real generated secret (32+ bytes, " +
+            "e.g. `dotnet user-secrets set Jwt:SigningKey <value> --project src/Corkboard.Api`) before " +
+            "deploying anywhere else.");
+    }
+    else
+    {
+        throw new InvalidOperationException(
+            "Jwt:SigningKey must be overridden with a generated secret at least 32 bytes long outside Development.");
+    }
+}
+
 builder.Services
     .AddAuthentication(options =>
     {
@@ -78,13 +115,40 @@ builder.Services
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtSection["Issuer"],
             ValidAudience = jwtSection["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSection["SigningKey"]
-                    ?? throw new InvalidOperationException("Jwt:SigningKey is not configured."))),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSigningKey)),
         };
     });
 
 builder.Services.AddAuthorization();
+
+// Slows down brute-force/credential-stuffing against the credential-checking
+// endpoints (login, client-credentials token, account creation) — a per-IP cap
+// independent of, and in addition to, AuthController's own per-account lockout.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.ContentType = "application/problem+json";
+        return new ValueTask(context.HttpContext.Response.WriteAsJsonAsync(
+            new ProblemDetails
+            {
+                Title = "Too many requests",
+                Detail = "Too many attempts — please wait a moment and try again.",
+                Status = StatusCodes.Status429TooManyRequests,
+            },
+            cancellationToken));
+    };
+
+    options.AddPolicy(RateLimiterPolicies.Auth, httpContext => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+            Window = TimeSpan.FromMinutes(1),
+            PermitLimit = 10,
+            QueueLimit = 0,
+        }));
+});
 
 const string ClientCorsPolicy = "Client";
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
@@ -167,6 +231,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors(ClientCorsPolicy);
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();

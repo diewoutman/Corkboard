@@ -8,6 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "e2e": "playwright test",
+    "screenshots": "playwright test --config=playwright.screenshots.config.ts",
     "lint": "ng lint",
     "storybook": "ng run app:storybook",
     "build-storybook": "ng run app:build-storybook"

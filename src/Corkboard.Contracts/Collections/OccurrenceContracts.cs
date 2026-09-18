@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Corkboard.Contracts.Collections;
 
 /// <summary>One expanded instance of a (possibly recurring) Appointment, for calendar-grid display.</summary>
@@ -18,8 +20,8 @@ public record OccurrenceResponse(
 /// <summary>Skip (IsSkipped=true) or override a single occurrence of a recurring Appointment.</summary>
 public record SetOccurrenceExceptionRequest(
     bool IsSkipped,
-    string? OverrideTitle,
-    string? OverrideLocation,
+    [StringLength(500)] string? OverrideTitle,
+    [StringLength(500)] string? OverrideLocation,
     DateTimeOffset? OverrideFrom,
     DateTimeOffset? OverrideUntil);
 

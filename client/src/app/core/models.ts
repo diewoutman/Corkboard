@@ -245,7 +245,7 @@ export interface ImportIcsResult {
 // Personal (per-User) or Family (one shared layout, admin-managed). One flat
 // shape covering every widget type's settings, same convention as
 // CreateNodeRequest — see CONCEPT.md.
-export type DashboardWidgetType = 'Navigation' | 'Notes' | 'Tasks' | 'Today' | 'Upcoming' | 'Shortcut';
+export type DashboardWidgetType = 'Navigation' | 'Notes' | 'Tasks' | 'Today' | 'Upcoming' | 'Shortcut' | 'Timeline';
 export type DashboardWidgetScope = 'Personal' | 'Family';
 
 export interface CreateDashboardWidgetRequest {
@@ -259,9 +259,13 @@ export interface CreateDashboardWidgetRequest {
   tileKey: string | null;
   // Notes-only
   importantOnly: boolean | null;
-  // Tasks-only
+  // Tasks-only — a specific list, or all Tasks assigned to the caller when both are unset.
+  // Timeline-only too — restricts it to Tasks/Calendar occurrences assigned to the caller
+  // instead of the whole Family.
   collectionId: string | null;
   assignedToMeOnly: boolean | null;
+  // Timeline-only — true for an hour-by-hour grid, false/null (default) for the dayparts layout.
+  hourlyLayout: boolean | null;
 }
 
 export interface UpdateDashboardWidgetRequest {
@@ -271,6 +275,7 @@ export interface UpdateDashboardWidgetRequest {
   importantOnly: boolean | null;
   collectionId: string | null;
   assignedToMeOnly: boolean | null;
+  hourlyLayout: boolean | null;
 }
 
 export interface ReorderDashboardWidgetsRequest {
@@ -295,6 +300,7 @@ export interface DashboardWidgetResponse {
   importantOnly: boolean | null;
   collectionId: string | null;
   assignedToMeOnly: boolean | null;
+  hourlyLayout: boolean | null;
 }
 
 /** Mirrors Corkboard.Contracts.ApiClients.ApiScopes.Areas on the backend. */

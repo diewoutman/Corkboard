@@ -1,8 +1,10 @@
 using Corkboard.Api.Auth;
+using Corkboard.Api.Common;
 using Corkboard.Application.ApiClients;
 using Corkboard.Contracts.ApiClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Corkboard.Api.Controllers;
 
@@ -17,6 +19,7 @@ namespace Corkboard.Api.Controllers;
 [ApiController]
 [AllowAnonymous]
 [Route("api/api-clients")]
+[EnableRateLimiting(RateLimiterPolicies.Auth)]
 public class ApiClientTokenController(IApiClientService apiClientService, ITokenService tokenService) : ControllerBase
 {
     [HttpPost("token")]
