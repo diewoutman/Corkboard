@@ -14,4 +14,7 @@ public interface IFamilyService
     Task<Result<FamilyResponse>> CreateAsync(Guid userId, CreateFamilyRequest request, CancellationToken cancellationToken);
 
     Task<Result<FamilyResponse>> GetMineAsync(Guid familyId, CancellationToken cancellationToken);
+
+    /// <summary>Renames a Family / changes its TimeZone — used by the admin console (AdminController), which isn't itself a member of the Family it's editing.</summary>
+    Task<Result<FamilyResponse>> UpdateAsync(Guid familyId, UpdateFamilyRequest request, CancellationToken cancellationToken);
 }

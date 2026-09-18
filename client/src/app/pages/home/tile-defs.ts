@@ -45,6 +45,10 @@ export const TILE_DEFS: TileDef[] = [
   },
 ];
 
+export function tileByKey(key: string | null): TileDef {
+  return TILE_DEFS.find((t) => t.key === key) ?? TILE_DEFS[0];
+}
+
 export function tilesInOrder(tileOrder: string[] | null): TileDef[] {
   if (!tileOrder || tileOrder.length === 0) return TILE_DEFS;
 

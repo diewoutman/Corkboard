@@ -1,8 +1,18 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Corkboard.Contracts.Auth;
 
-public record RegisterRequest(string Email, string Password);
+public record RegisterRequest(
+    [Required, EmailAddress, StringLength(256)] string Email,
+    // Upper bound guards against a password-hashing DoS (an attacker submitting
+    // a multi-megabyte "password" to make PBKDF2 expensive); lower bound mirrors
+    // Program.cs's Identity password policy (see its comment for why it's 6, not
+    // Identity's enterprise-grade default).
+    [Required, StringLength(128, MinimumLength = 6)] string Password);
 
-public record LoginRequest(string Email, string Password);
+public record LoginRequest(
+    [Required, EmailAddress, StringLength(256)] string Email,
+    [Required, StringLength(128, MinimumLength = 1)] string Password);
 
 /// <summary>FamilyId/Role are null until the caller has set up (or joined) a Family.</summary>
 public record AuthResponse(
@@ -11,4 +21,5 @@ public record AuthResponse(
     Guid UserId,
     string Email,
     Guid? FamilyId,
-    string? Role);
+    string? Role,
+    bool IsSystemOwner);

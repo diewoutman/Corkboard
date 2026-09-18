@@ -35,6 +35,9 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
 
     public DbSet<DashboardWidget> DashboardWidgets => Set<DashboardWidget>();
 
+    public DbSet<ApiClient> ApiClients => Set<ApiClient>();
+    public DbSet<ApiCallLog> ApiCallLogs => Set<ApiCallLog>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -160,6 +163,22 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
                 .WithMany(m => m.NodeAssignments)
                 .HasForeignKey(a => a.FamilyMemberId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<ApiClient>(entity =>
+        {
+            entity.HasIndex(c => c.ClientId).IsUnique();
+        });
+
+        builder.Entity<ApiCallLog>(entity =>
+        {
+            entity.HasOne(l => l.ApiClient)
+                .WithMany()
+                .HasForeignKey(l => l.ApiClientId)
+                .OnDelete(DeleteBehavior.Cascade);
+            // Cleanup job scans/deletes by Timestamp; the per-client log view filters by ApiClientId+Timestamp.
+            entity.HasIndex(l => l.Timestamp);
+            entity.HasIndex(l => new { l.ApiClientId, l.Timestamp });
         });
     }
 }

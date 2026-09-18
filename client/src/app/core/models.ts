@@ -18,6 +18,7 @@ export interface AuthResponse {
   email: string;
   familyId: string | null;
   role: string | null;
+  isSystemOwner: boolean;
 }
 
 export interface CreateFamilyRequest {
@@ -244,26 +245,37 @@ export interface ImportIcsResult {
 // Personal (per-User) or Family (one shared layout, admin-managed). One flat
 // shape covering every widget type's settings, same convention as
 // CreateNodeRequest — see CONCEPT.md.
-export type DashboardWidgetType = 'Navigation' | 'Notes' | 'Tasks' | 'Today' | 'Upcoming';
+export type DashboardWidgetType = 'Navigation' | 'Notes' | 'Tasks' | 'Today' | 'Upcoming' | 'Shortcut' | 'Timeline';
 export type DashboardWidgetScope = 'Personal' | 'Family';
 
 export interface CreateDashboardWidgetRequest {
   type: DashboardWidgetType;
   scope: DashboardWidgetScope;
+  // Applies to every type — whether the widget renders inside the card chrome or bare on the board.
+  showPanel: boolean;
   // Navigation-only
   tileOrder: string[] | null;
+  // Shortcut-only — which single TILE_DEFS entry this button points to.
+  tileKey: string | null;
   // Notes-only
   importantOnly: boolean | null;
-  // Tasks-only
+  // Tasks-only — a specific list, or all Tasks assigned to the caller when both are unset.
+  // Timeline-only too — restricts it to Tasks/Calendar occurrences assigned to the caller
+  // instead of the whole Family.
   collectionId: string | null;
   assignedToMeOnly: boolean | null;
+  // Timeline-only — true for an hour-by-hour grid, false/null (default) for the dayparts layout.
+  hourlyLayout: boolean | null;
 }
 
 export interface UpdateDashboardWidgetRequest {
+  showPanel: boolean;
   tileOrder: string[] | null;
+  tileKey: string | null;
   importantOnly: boolean | null;
   collectionId: string | null;
   assignedToMeOnly: boolean | null;
+  hourlyLayout: boolean | null;
 }
 
 export interface ReorderDashboardWidgetsRequest {
@@ -281,8 +293,69 @@ export interface DashboardWidgetResponse {
   sortOrder: number;
   /** How many of the dashboard's fixed columns (1-3) this widget's card spans. */
   span: number;
+  /** Whether this widget renders inside the card chrome (WidgetCardComponent) or bare, on the board directly. */
+  showPanel: boolean;
   tileOrder: string[] | null;
+  tileKey: string | null;
   importantOnly: boolean | null;
   collectionId: string | null;
   assignedToMeOnly: boolean | null;
+  hourlyLayout: boolean | null;
+}
+
+/** Mirrors Corkboard.Contracts.ApiClients.ApiScopes.Areas on the backend. */
+export const API_SCOPE_AREAS = ['nodes', 'calendar', 'collections', 'dashboard', 'family'] as const;
+
+export interface CreateApiClientRequest {
+  name: string;
+  scopes: string[];
+}
+
+export interface ApiClientResponse {
+  id: string;
+  name: string;
+  clientId: string;
+  scopes: string[];
+  isRevoked: boolean;
+  createdAt: string;
+  lastUsedAt: string | null;
+  /** True for exactly one row — the Angular GUI itself. Has full access via each caller's own Family role, not scopes; can't be revoked. */
+  isFirstParty: boolean;
+}
+
+/** Only returned once, right after creation — the only time the plaintext secret is shown. */
+export interface CreatedApiClientResponse {
+  client: ApiClientResponse;
+  clientSecret: string;
+}
+
+export interface ApiCallLogEntryResponse {
+  method: string;
+  path: string;
+  statusCode: number;
+  durationMs: number;
+  timestamp: string;
+}
+
+export interface UpdateFamilyRequest {
+  name: string;
+  timeZone: string;
+}
+
+export interface AdminStatsResponse {
+  familyCount: number;
+  userCount: number;
+  apiClientCount: number;
+  activeApiClientCount: number;
+  familyMemberCount: number;
+  nodeCount: number;
+}
+
+export interface AdminFamilySummaryResponse {
+  id: string;
+  name: string;
+  timeZone: string;
+  createdAt: string;
+  memberCount: number;
+  nodeCount: number;
 }

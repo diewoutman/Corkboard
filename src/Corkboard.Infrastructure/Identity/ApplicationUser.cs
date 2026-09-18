@@ -8,4 +8,12 @@ namespace Corkboard.Infrastructure.Identity;
 /// that reference a user (FamilyMember.LinkedUserId, UserFamily.UserId) do so via a
 /// bare Guid, not a navigation property.
 /// </summary>
-public class ApplicationUser : IdentityUser<Guid>;
+public class ApplicationUser : IdentityUser<Guid>
+{
+    /// <summary>
+    /// This app's instance-level administrator — distinct from a Family's Owner
+    /// role. Granted once, automatically, to the very first user (see
+    /// AuthController.Register), independent of any UserFamily/FamilyRole.
+    /// </summary>
+    public bool IsSystemOwner { get; set; }
+}

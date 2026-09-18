@@ -8,6 +8,8 @@ public enum DashboardWidgetType
     Tasks,
     Today,
     Upcoming,
+    Shortcut,
+    Timeline,
 }
 
 /// <summary>Mirrors Corkboard.Domain.Entities.DashboardWidgetScope — kept in sync by hand.</summary>
@@ -27,19 +29,31 @@ public enum DashboardWidgetScope
 public record CreateDashboardWidgetRequest(
     DashboardWidgetType Type,
     DashboardWidgetScope Scope,
+    // Applies to every type — whether the widget renders inside the card chrome or bare on the board.
+    bool ShowPanel,
     // Navigation-only — which tiles to show, and in what order. Null/omitted means "all, default order".
     IReadOnlyList<string>? TileOrder,
+    // Shortcut-only — which single tile (see TILE_DEFS on the client) this button points to.
+    string? TileKey,
     // Notes-only
     bool? ImportantOnly,
-    // Tasks-only — a specific list, or all Tasks assigned to the caller when both are unset
+    // Tasks-only — a specific list, or all Tasks assigned to the caller when both are unset.
+    // Timeline-only too — restricts it to Tasks/Calendar occurrences assigned to the caller
+    // instead of the whole Family.
     Guid? CollectionId,
-    bool? AssignedToMeOnly);
+    bool? AssignedToMeOnly,
+    // Timeline-only — true for an hour-by-hour grid, false/null (default) for the dayparts
+    // (night/morning/afternoon/evening) layout.
+    bool? HourlyLayout);
 
 public record UpdateDashboardWidgetRequest(
+    bool ShowPanel,
     IReadOnlyList<string>? TileOrder,
+    string? TileKey,
     bool? ImportantOnly,
     Guid? CollectionId,
-    bool? AssignedToMeOnly);
+    bool? AssignedToMeOnly,
+    bool? HourlyLayout);
 
 /// <summary>Full replacement of the caller's widget order — SortOrder becomes each id's index in this list.</summary>
 public record ReorderDashboardWidgetsRequest(IReadOnlyList<Guid> OrderedWidgetIds);
@@ -53,7 +67,10 @@ public record DashboardWidgetResponse(
     DashboardWidgetScope Scope,
     int SortOrder,
     int Span,
+    bool ShowPanel,
     IReadOnlyList<string>? TileOrder,
+    string? TileKey,
     bool? ImportantOnly,
     Guid? CollectionId,
-    bool? AssignedToMeOnly);
+    bool? AssignedToMeOnly,
+    bool? HourlyLayout);

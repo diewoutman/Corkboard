@@ -34,6 +34,7 @@ public class DashboardService(CorkboardDbContext db) : IDashboardService
                 Scope = DomainWidgetScope.Personal,
                 SortOrder = 0,
                 Span = ColumnCount,
+                ShowPanel = true,
                 CreatedAt = DateTimeOffset.UtcNow,
                 UpdatedAt = DateTimeOffset.UtcNow,
             };
@@ -72,7 +73,8 @@ public class DashboardService(CorkboardDbContext db) : IDashboardService
             Scope = domainScope,
             SortOrder = nextSortOrder,
             Span = 1,
-            Config = ToConfigJson(request.TileOrder, request.ImportantOnly, request.CollectionId, request.AssignedToMeOnly),
+            ShowPanel = request.ShowPanel,
+            Config = ToConfigJson(request.TileOrder, request.TileKey, request.ImportantOnly, request.CollectionId, request.AssignedToMeOnly, request.HourlyLayout),
             CreatedAt = now,
             UpdatedAt = now,
         };
@@ -94,7 +96,8 @@ public class DashboardService(CorkboardDbContext db) : IDashboardService
         if (!found.IsSuccess) return Result<DashboardWidgetResponse>.Failure(found.Error!);
         var widget = found.Value!;
 
-        widget.Config = ToConfigJson(request.TileOrder, request.ImportantOnly, request.CollectionId, request.AssignedToMeOnly);
+        widget.ShowPanel = request.ShowPanel;
+        widget.Config = ToConfigJson(request.TileOrder, request.TileKey, request.ImportantOnly, request.CollectionId, request.AssignedToMeOnly, request.HourlyLayout);
         widget.UpdatedAt = DateTimeOffset.UtcNow;
         await db.SaveChangesAsync(cancellationToken);
 
@@ -195,19 +198,21 @@ public class DashboardService(CorkboardDbContext db) : IDashboardService
     private static Error AdminOnlyError => Error.Forbidden(
         "Admin only", "Only the family's Owner or Adult members can manage the Family dashboard.");
 
-    private static string? ToConfigJson(IReadOnlyList<string>? tileOrder, bool? importantOnly, Guid? collectionId, bool? assignedToMeOnly)
+    private static string? ToConfigJson(
+        IReadOnlyList<string>? tileOrder, string? tileKey, bool? importantOnly, Guid? collectionId, bool? assignedToMeOnly, bool? hourlyLayout)
     {
-        if (tileOrder is null && importantOnly is null && collectionId is null && assignedToMeOnly is null) return null;
-        return JsonSerializer.Serialize(new WidgetConfig(tileOrder, importantOnly, collectionId, assignedToMeOnly));
+        if (tileOrder is null && tileKey is null && importantOnly is null && collectionId is null && assignedToMeOnly is null && hourlyLayout is null) return null;
+        return JsonSerializer.Serialize(new WidgetConfig(tileOrder, tileKey, importantOnly, collectionId, assignedToMeOnly, hourlyLayout));
     }
 
     private static DashboardWidgetResponse ToResponse(Domain.Entities.DashboardWidget widget)
     {
         var config = widget.Config is null ? null : JsonSerializer.Deserialize<WidgetConfig>(widget.Config);
         return new DashboardWidgetResponse(
-            widget.Id, (DashboardWidgetType)widget.Type, (DashboardWidgetScope)widget.Scope, widget.SortOrder, widget.Span,
-            config?.TileOrder, config?.ImportantOnly, config?.CollectionId, config?.AssignedToMeOnly);
+            widget.Id, (DashboardWidgetType)widget.Type, (DashboardWidgetScope)widget.Scope, widget.SortOrder, widget.Span, widget.ShowPanel,
+            config?.TileOrder, config?.TileKey, config?.ImportantOnly, config?.CollectionId, config?.AssignedToMeOnly, config?.HourlyLayout);
     }
 
-    private record WidgetConfig(IReadOnlyList<string>? TileOrder, bool? ImportantOnly, Guid? CollectionId, bool? AssignedToMeOnly);
+    private record WidgetConfig(
+        IReadOnlyList<string>? TileOrder, string? TileKey, bool? ImportantOnly, Guid? CollectionId, bool? AssignedToMeOnly, bool? HourlyLayout);
 }

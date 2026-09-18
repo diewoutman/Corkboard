@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Corkboard.Contracts.FamilyMembers;
 
 /// <summary>Mirrors Corkboard.Domain.Entities.FamilyRole — kept in sync by hand.</summary>
@@ -9,16 +11,16 @@ public enum FamilyRole
 }
 
 public record CreateFamilyMemberRequest(
-    string DisplayName,
-    string Color,
-    string? AvatarUrl,
+    [Required, StringLength(100, MinimumLength = 1)] string DisplayName,
+    [Required, StringLength(20)] string Color,
+    [StringLength(2000)] string? AvatarUrl,
     Guid? LinkedUserId,
     DateOnly? DateOfBirth);
 
 public record UpdateFamilyMemberRequest(
-    string DisplayName,
-    string Color,
-    string? AvatarUrl,
+    [Required, StringLength(100, MinimumLength = 1)] string DisplayName,
+    [Required, StringLength(20)] string Color,
+    [StringLength(2000)] string? AvatarUrl,
     Guid? LinkedUserId,
     DateOnly? DateOfBirth);
 
@@ -28,7 +30,10 @@ public record UpdateFamilyMemberRequest(
 /// see AuthController.Register). Role can't be Owner; that's set once, when the
 /// Family itself is created.
 /// </summary>
-public record CreateFamilyMemberAccountRequest(string Email, string Password, FamilyRole Role);
+public record CreateFamilyMemberAccountRequest(
+    [Required, EmailAddress, StringLength(256)] string Email,
+    [Required, StringLength(128, MinimumLength = 6)] string Password,
+    FamilyRole Role);
 
 public record FamilyMemberResponse(
     Guid Id,

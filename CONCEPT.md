@@ -51,11 +51,17 @@ Family (co-parents with two households, grandparents helping manage things).
 | CreatedAt | |
 
 `UserFamily` (join table): `UserId`, `FamilyId`, `Role` (Owner / Adult / Member) —
-governs who can manage family settings vs. just use the board. `Owner` is also this
-app's "system administrator": rather than a separate global admin concept, the
-Owner is the only one who can create logins for other family members (see
-"Registration and invites" below) — deliberately not a bigger abstraction, since
-this app is scoped to one Family per installation (§1).
+governs who can manage family settings vs. just use the board. The Owner is the
+only one who can create logins for other family members (see "Registration and
+invites" below).
+
+`ApplicationUser.IsSystemOwner` (bool, Infrastructure/Identity — not part of
+`UserFamily`): this app's actual instance-level administrator, granted once,
+automatically, to the very first user (the one who registers before any Family
+exists, `POST /api/auth/register`). Deliberately kept separate from the Family
+`Owner` role rather than reusing it: it's the flag that gates the API clients
+admin area (§8's kind of first-run special-casing, not a Family concern) —
+see "API clients" below.
 
 **Registration and invites.** `POST /api/auth/register` is only open for the very
 first user, before any Family exists — the first-run wizard (§8). Once a Family
@@ -367,6 +373,41 @@ hand-rolled; on login the API issues a JWT carrying the User's id and their
 token, so the whole surface is naturally multi-family-safe even though the UI only
 targets one family for now.
 
+**API clients (client-credentials).** Besides human logins, the system owner
+(`ApplicationUser.IsSystemOwner`, see §2.1) can provision `ApiClient`s — a
+name, a generated `ClientId`, and a generated secret (shown once, stored only
+as a PBKDF2 hash) — for automation scripts/integrations. `POST
+/api/api-clients/token` exchanges a valid `clientId`/`clientSecret` pair for a
+short-lived JWT through the same signing pipeline as a human login, carrying
+`client_id`/`scope` claims instead of `Family`/`Role`. Scopes
+(`nodes`/`calendar`/`collections`/`dashboard`/`family`, each `:read`/`:write`)
+gate the existing resource controllers via a `[RequireScope]` filter, which
+only fires for a token that actually carries a `scope` claim.
+
+The Angular GUI is itself modeled as a client — a single seeded
+`ApiClient` row (`IsFirstParty = true`, no secret, `ClientId = "corkboard-web"`,
+seeded once at startup, see `Program.cs`) that every human login's JWT also
+carries a `client_id` claim for. It never gets a `scope` claim, so
+`[RequireScope]` leaves it alone (access still comes from `Family`/`Role` as
+always) — the claim exists purely so its traffic gets a client identity too.
+Every request tied to *any* client — the GUI included — is written to
+`ApiCallLog` and kept for 48h (a TickerQ job purges older rows), so the
+system owner's API-clients screen is a full picture of what's calling the
+API, not just external automation.
+
+**Admin console (`/admin`, `/api/admin/...`).** A system-owner-only area,
+visually distinct from the rest of the app (own layout/nav/color palette —
+`AdminShellComponent` fully replaces `AppComponent`'s header/nav while
+active), reachable from the account menu. Covers: instance-wide stats
+(`GET /api/admin/stats`), every Family on the instance with basic
+edit (`/api/admin/families`, not just the caller's own), that Family's
+FamilyMembers incl. creating logins (`/api/admin/families/{familyId}/members...`
+— same `IFamilyMemberService` `/api/family-members` uses, just addressed by
+an explicit `familyId` instead of the caller's own JWT claim, since a system
+owner administering another Family isn't necessarily a member of it), and
+API client management (moved here from a bare `/api/api-clients` — see
+above; only the anonymous token-exchange endpoint stayed outside `/api/admin`).
+
 ## 4. Frontend
 
 - **Angular + Tailwind CSS**, calling the API exclusively (no server-side rendering
@@ -491,11 +532,13 @@ src/
   Corkboard.Contracts/    # request/response DTOs — Auth, Families, FamilyMembers, Nodes
 tests/
   Corkboard.Domain.Tests/  # empty so far
-  Corkboard.Api.Tests/     # empty so far
+  Corkboard.Api.Tests/     # ApiClientService, AdminService, FamilyService.UpdateAsync,
+                          # RequireScopeAttribute — in-memory-DB unit tests
 client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no Ionic, see §4
                           # + @angular/cdk (DragDropModule), added for the Home dashboard
   src/app/core/           # Auth, Families, FamilyMembers, Nodes, Collections, CalendarApi,
-                          # Dashboard, Setup services + auth interceptor/guards
+                          # Dashboard, Setup, ApiClients, Admin, AdminFamilyMembers
+                          # services + auth interceptor/guards
   src/app/pages/          # login, family-setup, add-members, home (entry point,
                           # / redirects here — customizable widget dashboard, see
                           # home/widgets/ and §2.4), tasks (Lists overview),
@@ -504,6 +547,8 @@ client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no
                           # schedule-editor (weekly grid, /calendar/schedules/:id),
                           # contacts (address book + Household management),
                           # family (manage FamilyMembers; Owner-only: create logins)
+  src/app/admin/          # system-owner-only, visually distinct shell (AdminShellComponent) —
+                          # stats, families (list + per-Family info/members admin), api-clients
 ```
 
 **API surface implemented so far** (all family-scoped ones require a JWT with a
@@ -525,6 +570,11 @@ client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no
 | `POST /api/calendar/collections/{id}/import` | Multipart `.ics` upload → creates Appointments in that Calendar |
 | `GET/POST /api/dashboard`, `PUT/DELETE /api/dashboard/{id}` | DashboardWidget CRUD. `GET`/`POST` take a `scope` query param / body field (`Personal`\|`Family`, defaults `Personal`); `Personal` is scoped to the caller (User × Family) and `GET` seeds one Navigation widget on a caller's very first request, `Family` is shared by the whole Family and requires an Owner/Adult role to mutate (403 otherwise) — `PUT`/`DELETE /{id}` infer scope from the widget itself |
 | `PUT /api/dashboard/reorder?scope=...` | Full replacement of one dashboard's widget order in one call — `SortOrder` becomes each id's index in the given list |
+| `GET/POST /api/admin/api-clients`, `GET /api/admin/api-clients/{id}/call-log`, `DELETE /api/admin/api-clients/{id}` | System-owner-only (§3.4) — ApiClient CRUD/revoke and its 48h call log; `POST` returns the plaintext secret once |
+| `POST /api/api-clients/token` | Anonymous — client-credentials grant, exchanges a `clientId`/`clientSecret` for a scoped JWT. Kept outside `/api/admin` on purpose: the caller here is the external client itself, not the system owner |
+| `GET /api/admin/stats` | System-owner-only — instance-wide counts (families, users, API clients, FamilyMembers, Nodes) |
+| `GET /api/admin/families`, `GET/PUT /api/admin/families/{id}` | System-owner-only — every Family on the instance (not just the caller's own), and renaming/timezone edits |
+| `GET/POST /api/admin/families/{familyId}/members`, `PUT/DELETE /api/admin/families/{familyId}/members/{id}`, `POST .../members/{id}/account` | System-owner-only — the same FamilyMember CRUD `/api/family-members` offers its own Family, but for *any* Family, without being one of its members |
 
 **First-run setup wizard**: the client doesn't have a separate `/setup` route —
 instead `/login` checks `GET /api/setup/status` on load, and when no Family exists

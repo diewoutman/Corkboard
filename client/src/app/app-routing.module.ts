@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
-import { authGuard, familyGuard } from './core/auth-guard';
+import { authGuard, familyGuard, systemOwnerGuard } from './core/auth-guard';
 
 const routes: Routes = [
   {
@@ -61,6 +61,11 @@ const routes: Routes = [
     path: 'family',
     canActivate: [familyGuard],
     loadChildren: () => import('./pages/family/family.module').then((m) => m.FamilyPageModule),
+  },
+  {
+    path: 'admin',
+    canActivate: [systemOwnerGuard],
+    loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule),
   },
 ];
 

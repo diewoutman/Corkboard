@@ -1,24 +1,26 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Corkboard.Contracts.Collections;
 
 public record CreateCollectionRequest(
-    string Name,
+    [Required, StringLength(200, MinimumLength = 1)] string Name,
     CollectionType Type,
-    string Color,
+    [Required, StringLength(20)] string Color,
     Guid? ParentCollectionId,
     // Household-only — shared address its member Contacts fall back to
-    string? Street,
-    string? City,
-    string? PostalCode,
-    string? Country);
+    [StringLength(200)] string? Street,
+    [StringLength(100)] string? City,
+    [StringLength(20)] string? PostalCode,
+    [StringLength(100)] string? Country);
 
 public record UpdateCollectionRequest(
-    string Name,
-    string Color,
+    [Required, StringLength(200, MinimumLength = 1)] string Name,
+    [Required, StringLength(20)] string Color,
     // Household-only
-    string? Street,
-    string? City,
-    string? PostalCode,
-    string? Country);
+    [StringLength(200)] string? Street,
+    [StringLength(100)] string? City,
+    [StringLength(20)] string? PostalCode,
+    [StringLength(100)] string? Country);
 
 public record CollectionResponse(
     Guid Id,

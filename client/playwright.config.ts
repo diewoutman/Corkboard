@@ -8,6 +8,9 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './e2e',
+  // README screenshots have their own config (playwright.screenshots.config.ts) and run via
+  // `npm run screenshots` — kept out of the regular suite so `npm run e2e`/CI doesn't churn PNGs.
+  testIgnore: '**/screenshots.spec.ts',
   fullyParallel: false,
   workers: 1,
   retries: 0,
