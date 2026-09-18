@@ -5,6 +5,8 @@ obj/
 *.suo
 .vs/
 
+src/Corkboard.Api/appsettings.Development.json
+
 # EF Core
 *.db
 *.db-shm
