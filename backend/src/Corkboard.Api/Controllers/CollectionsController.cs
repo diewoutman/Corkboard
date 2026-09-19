@@ -1,3 +1,4 @@
+using Corkboard.Application.Common;
 using Corkboard.Api.Common;
 using Corkboard.Application.Collections;
 using Corkboard.Contracts.ApiClients;
@@ -16,12 +17,13 @@ public class CollectionsController(ICollectionService collectionService) : Famil
     public async Task<ActionResult<IReadOnlyList<CollectionResponse>>> List(
         [FromQuery] CollectionType? type,
         [FromQuery] Guid? parentCollectionId,
+        [FromQuery] PageQuery paging,
         CancellationToken cancellationToken)
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var projections = await collectionService.ListAsync(familyId, CurrentUserId, type, parentCollectionId, cancellationToken);
-        return Ok(projections.Select(ToResponse).ToList());
+        var page = await collectionService.ListAsync(familyId, CurrentUserId, type, parentCollectionId, paging.ToRequest(), cancellationToken);
+        return this.PagedOk(new PagedResult<CollectionResponse>(page.Items.Select(ToResponse).ToList(), page.TotalCount));
     }
 
     [HttpGet("{id:guid}")]
@@ -77,11 +79,11 @@ public class CollectionsController(ICollectionService collectionService) : Famil
     }
 
     [HttpGet("{id:guid}/sections")]
-    public async Task<ActionResult<IReadOnlyList<SectionResponse>>> ListSections(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<SectionResponse>>> ListSections(Guid id, [FromQuery] PageQuery paging, CancellationToken cancellationToken)
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        return Ok(await collectionService.ListSectionsAsync(familyId, CurrentUserId, id, cancellationToken));
+        return this.PagedOk(await collectionService.ListSectionsAsync(familyId, CurrentUserId, id, paging.ToRequest(), cancellationToken));
     }
 
     /// <summary>Creates a Section, or returns the existing one with the same name (case-insensitive) — quick-add's "#tag" relies on that.</summary>

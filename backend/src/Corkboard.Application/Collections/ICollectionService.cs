@@ -5,7 +5,7 @@ namespace Corkboard.Application.Collections;
 
 public interface ICollectionService
 {
-    Task<IReadOnlyList<CollectionProjection>> ListAsync(Guid familyId, Guid userId, CollectionType? type, Guid? parentCollectionId, CancellationToken cancellationToken);
+    Task<PagedResult<CollectionProjection>> ListAsync(Guid familyId, Guid userId, CollectionType? type, Guid? parentCollectionId, PageRequest page, CancellationToken cancellationToken);
 
     Task<Result<CollectionProjection>> GetAsync(Guid familyId, Guid userId, Guid id, CancellationToken cancellationToken);
 
@@ -19,7 +19,7 @@ public interface ICollectionService
     /// <summary>Deleting a Collection deletes the Nodes in it; blocked while it still has child Collections.</summary>
     Task<Result> DeleteAsync(Guid familyId, Guid userId, Guid id, CancellationToken cancellationToken);
 
-    Task<IReadOnlyList<SectionResponse>> ListSectionsAsync(Guid familyId, Guid userId, Guid collectionId, CancellationToken cancellationToken);
+    Task<PagedResult<SectionResponse>> ListSectionsAsync(Guid familyId, Guid userId, Guid collectionId, PageRequest page, CancellationToken cancellationToken);
 
     Task<Result<SectionResponse>> CreateSectionAsync(Guid familyId, Guid userId, Guid collectionId, CreateSectionRequest request, CancellationToken cancellationToken);
 

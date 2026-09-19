@@ -10,7 +10,7 @@ namespace Corkboard.Application.Calendar;
 
 public class CalendarService(CorkboardDbContext db, RecurrenceExpansionService recurrence, IcsImportService icsImport) : ICalendarService
 {
-    public async Task<IReadOnlyList<OccurrenceResponse>> GetOccurrencesAsync(Guid familyId, DateTimeOffset from, DateTimeOffset until, Guid? calendarId, CancellationToken cancellationToken)
+    public async Task<PagedResult<OccurrenceResponse>> GetOccurrencesAsync(Guid familyId, DateTimeOffset from, DateTimeOffset until, Guid? calendarId, PageRequest page, CancellationToken cancellationToken)
     {
         var query = db.Appointments
             .AsNoTracking()
@@ -41,8 +41,9 @@ public class CalendarService(CorkboardDbContext db, RecurrenceExpansionService r
                     o.IsException,
                     !string.IsNullOrWhiteSpace(a.RecurrenceRule),
                     a.Assignments.Select(x => x.FamilyMemberId).ToList())))
-            .OrderBy(o => o.From)
-            .ToList();
+            .OrderBy(o => o.From).ThenBy(o => o.AppointmentId)
+            .ToList()
+            .ToPage(page); // recurrences are expanded in memory, so this one can only be cut after the fact
     }
 
     public async Task<Result> SetOccurrenceExceptionAsync(Guid familyId, Guid appointmentId, DateOnly date, SetOccurrenceExceptionRequest request, CancellationToken cancellationToken)

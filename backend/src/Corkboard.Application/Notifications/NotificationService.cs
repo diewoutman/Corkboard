@@ -15,12 +15,12 @@ public class NotificationService(CorkboardDbContext db, IOptions<PushOptions> op
     public PushConfigResponse GetConfig() =>
         options.Value.Enabled ? new PushConfigResponse(true, options.Value.PublicKey) : new PushConfigResponse(false, null);
 
-    public async Task<IReadOnlyList<PushSubscriptionResponse>> ListAsync(Guid userId, CancellationToken cancellationToken) =>
+    public async Task<PagedResult<PushSubscriptionResponse>> ListAsync(Guid userId, PageRequest page, CancellationToken cancellationToken) =>
         await db.PushSubscriptions
             .Where(p => p.UserId == userId)
-            .OrderBy(p => p.CreatedAt)
+            .OrderBy(p => p.CreatedAt).ThenBy(p => p.Id)
             .Select(p => new PushSubscriptionResponse(p.Id, p.Endpoint, p.LeadMinutes, p.UserAgent, p.CreatedAt))
-            .ToListAsync(cancellationToken);
+            .ToPagedAsync(page, cancellationToken);
 
     /// <summary>Registers this device, or updates its lead time / owner if the browser re-subscribes with the same endpoint.</summary>
     public async Task<Result<PushSubscriptionResponse>> SubscribeAsync(Guid userId, SubscribePushRequest request, CancellationToken cancellationToken)

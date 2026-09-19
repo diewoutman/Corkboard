@@ -1,3 +1,4 @@
+using Corkboard.Application.Common;
 using Corkboard.Application.Collections;
 using Corkboard.Application.Nodes;
 using Corkboard.Contracts.Collections;
@@ -36,18 +37,19 @@ public class ScopesAndSectionsTests
             null, null, null, null, null, null, null, null, null);
 
     [Fact]
-    public async Task Listing_task_lists_creates_a_family_inbox_and_a_personal_inbox_per_member_once()
+    public async Task Listing_task_lists_creates_a_personal_inbox_per_member_once()
     {
         await using var db = CreateDb();
         var service = new CollectionService(db);
 
-        await service.ListAsync(_familyId, _anna, CollectionType.TaskList, null, CancellationToken.None);
-        var again = await service.ListAsync(_familyId, _anna, CollectionType.TaskList, null, CancellationToken.None);
-        var forBen = await service.ListAsync(_familyId, _ben, CollectionType.TaskList, null, CancellationToken.None);
+        await service.ListAsync(_familyId, _anna, CollectionType.TaskList, null, PageRequest.Default, CancellationToken.None);
+        var again = (await service.ListAsync(_familyId, _anna, CollectionType.TaskList, null, PageRequest.Default, CancellationToken.None)).Items;
+        var forBen = (await service.ListAsync(_familyId, _ben, CollectionType.TaskList, null, PageRequest.Default, CancellationToken.None)).Items;
 
-        Assert.Equal(2, again.Count(c => c.IsInbox));
-        Assert.Equal(2, forBen.Count(c => c.IsInbox));
-        Assert.Equal(3, await db.Collections.CountAsync(c => c.IsInbox)); // 1 family + 1 personal each
+        Assert.Single(again, c => c.IsInbox);
+        Assert.Single(forBen, c => c.IsInbox);
+        Assert.Equal(2, await db.Collections.CountAsync(c => c.IsInbox)); // 1 personal each
+        Assert.All(again.Where(c => c.IsInbox), c => Assert.Equal(Corkboard.Domain.Entities.CollectionScope.Personal, c.Scope));
     }
 
     [Fact]
@@ -56,10 +58,9 @@ public class ScopesAndSectionsTests
         await using var db = CreateDb();
         var service = new CollectionService(db);
 
-        var lists = await service.ListAsync(_familyId, Guid.NewGuid(), CollectionType.TaskList, null, CancellationToken.None);
+        var lists = (await service.ListAsync(_familyId, Guid.NewGuid(), CollectionType.TaskList, null, PageRequest.Default, CancellationToken.None)).Items;
 
-        Assert.Single(lists);
-        Assert.Equal(Corkboard.Domain.Entities.CollectionScope.Family, lists[0].Scope);
+        Assert.Empty(lists);
     }
 
     [Fact]
@@ -72,15 +73,15 @@ public class ScopesAndSectionsTests
         var personal = (await collections.CreateAsync(_familyId, _anna, NewList("Mine", CollectionScope.Personal), CancellationToken.None)).Value;
         var created = await nodes.CreateAsync(_familyId, _anna, NewTask("Secret", personal.Id), CancellationToken.None);
 
-        var seenByBen = await collections.ListAsync(_familyId, _ben, CollectionType.TaskList, null, CancellationToken.None);
+        var seenByBen = (await collections.ListAsync(_familyId, _ben, CollectionType.TaskList, null, PageRequest.Default, CancellationToken.None)).Items;
         Assert.DoesNotContain(seenByBen, c => c.Id == personal.Id);
         Assert.Equal(404, (await collections.GetAsync(_familyId, _ben, personal.Id, CancellationToken.None)).Error!.StatusCode);
-        Assert.Empty(await nodes.ListAsync(_familyId, _ben, new NodeListFilter(NodeType.Task, null, null, null, null), CancellationToken.None));
+        Assert.Empty((await nodes.ListAsync(_familyId, _ben, new NodeListFilter(NodeType.Task, null, null, null, null), CancellationToken.None)).Items);
         Assert.Equal(404, (await nodes.GetAsync(_familyId, _ben, created.Value.Id, CancellationToken.None)).Error!.StatusCode);
         Assert.False((await nodes.CreateAsync(_familyId, _ben, NewTask("Sneaky", personal.Id), CancellationToken.None)).IsSuccess);
         Assert.False((await nodes.DeleteAsync(_familyId, _ben, created.Value.Id, CancellationToken.None)).IsSuccess);
 
-        Assert.Single(await nodes.ListAsync(_familyId, _anna, new NodeListFilter(NodeType.Task, null, null, null, null), CancellationToken.None));
+        Assert.Single((await nodes.ListAsync(_familyId, _anna, new NodeListFilter(NodeType.Task, null, null, null, null), CancellationToken.None)).Items);
     }
 
     [Fact]
@@ -111,7 +112,7 @@ public class ScopesAndSectionsTests
     {
         await using var db = CreateDb();
         var collections = new CollectionService(db);
-        var inbox = (await collections.ListAsync(_familyId, _anna, CollectionType.TaskList, null, CancellationToken.None)).First(c => c.IsInbox);
+        var inbox = (await collections.ListAsync(_familyId, _anna, CollectionType.TaskList, null, PageRequest.Default, CancellationToken.None)).Items.First(c => c.IsInbox);
 
         Assert.Equal(409, (await collections.DeleteAsync(_familyId, _anna, inbox.Id, CancellationToken.None)).Error!.StatusCode);
         var renamed = await collections.UpdateAsync(_familyId, _anna, inbox.Id, new UpdateCollectionRequest("Other", "#000", null, null, null, null), CancellationToken.None);
@@ -134,7 +135,7 @@ public class ScopesAndSectionsTests
         Assert.Equal(first.Id, task.SectionId);
 
         await collections.DeleteSectionAsync(_familyId, _anna, first.Id, CancellationToken.None);
-        Assert.Empty(await collections.ListSectionsAsync(_familyId, _anna, list.Id, CancellationToken.None));
+        Assert.Empty((await collections.ListSectionsAsync(_familyId, _anna, list.Id, PageRequest.Default, CancellationToken.None)).Items);
     }
 
     [Fact]

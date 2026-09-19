@@ -16,7 +16,12 @@ public class NodesController(INodeService nodeService) : FamilyScopedControllerB
     /// Lists Nodes in the caller's Family, optionally filtered by type, assignee,
     /// containing Collection, and a From/Until window. The window filter treats a
     /// null From/Until on a Node as open-ended (a plain Note has neither) rather
-    /// than excluding it.
+    /// than excluding it. Further filters: isCompleted/sectionId/priority (Tasks only),
+    /// dueFrom/dueUntil (Until set and ≥ / <; a null Until never matches), isImportant (Notes only),
+    /// scope (Family/Personal) and a case-insensitive search over title and description.
+    /// sort is createdAt (default), updatedAt, title, due, until, priority, important (Notes) or name (Contacts), "-" prefix for
+    /// descending. Like every list endpoint it is paged (page, pageSize ≤ 50, default 50);
+    /// the body is a plain array and the total match count is in the X-Total-Count header.
     /// </summary>
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<NodeResponse>>> List(
@@ -25,12 +30,28 @@ public class NodesController(INodeService nodeService) : FamilyScopedControllerB
         [FromQuery] Guid? collectionId,
         [FromQuery] DateTimeOffset? from,
         [FromQuery] DateTimeOffset? until,
+        [FromQuery] bool? isCompleted,
+        [FromQuery] Corkboard.Contracts.Collections.CollectionScope? scope,
+        [FromQuery] Guid? sectionId,
+        [FromQuery] int? priority,
+        [FromQuery] string? search,
+        [FromQuery] string? sort,
+        [FromQuery] PageQuery paging,
+        [FromQuery] DateTimeOffset? dueFrom,
+        [FromQuery] DateTimeOffset? dueUntil,
+        [FromQuery] bool? isImportant,
         CancellationToken cancellationToken)
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var filter = new NodeListFilter(type, assignedTo, collectionId, from, until);
-        return Ok(await nodeService.ListAsync(familyId, CurrentUserId, filter, cancellationToken));
+        if (!NodeSortKeys.IsValid(sort))
+        {
+            ModelState.AddModelError(nameof(sort), $"sort must be one of {string.Join(", ", NodeSortKeys.All)}, optionally prefixed with '-'.");
+            return ValidationProblem(ModelState);
+        }
+
+        var filter = new NodeListFilter(type, assignedTo, collectionId, from, until, isCompleted, scope, sectionId, priority, search, sort, paging.ToRequest(), dueFrom, dueUntil, isImportant);
+        return this.PagedOk(await nodeService.ListAsync(familyId, CurrentUserId, filter, cancellationToken));
     }
 
     [HttpGet("{id:guid}")]

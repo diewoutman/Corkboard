@@ -1,3 +1,4 @@
+using Corkboard.Application.Common;
 using Corkboard.Api.Common;
 using Corkboard.Application.Calendar;
 using Corkboard.Contracts.ApiClients;
@@ -16,11 +17,12 @@ public class CalendarController(ICalendarService calendarService) : FamilyScoped
         [FromQuery] DateTimeOffset from,
         [FromQuery] DateTimeOffset until,
         [FromQuery] Guid? calendarId,
+        [FromQuery] PageQuery paging,
         CancellationToken cancellationToken)
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        return Ok(await calendarService.GetOccurrencesAsync(familyId, from, until, calendarId, cancellationToken));
+        return this.PagedOk(await calendarService.GetOccurrencesAsync(familyId, from, until, calendarId, paging.ToRequest(), cancellationToken));
     }
 
     [HttpPut("appointments/{appointmentId:guid}/occurrences/{date}")]

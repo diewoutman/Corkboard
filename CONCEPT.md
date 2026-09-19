@@ -165,9 +165,9 @@ never reaches the user; each `CollectionType` gets its own user-facing framing:
   Every Collection has a **scope**: `Family` (shared) or `Personal` (only its
   `OwnerUserId` sees it — enforced in the collection and node services, so API
   clients, which authenticate as themselves, never see Personal lists; only Task
-  lists can be Personal). Each scope has one fixed, non-deletable **Inbox**
-  (`IsInbox`, created lazily on first list; quick-add lands there; `/tasks/inbox`
-  shows the Family and Personal Inbox combined). `IsSystemManaged` lists are normal
+  lists can be Personal). Each user has one fixed, non-deletable Personal **Inbox**
+  (`IsInbox`, created lazily on first list; quick-add lands there; `/tasks/inbox`);
+  there is no Family Inbox. `IsSystemManaged` lists are normal
   lists hidden from the tasks UI. Inside a list, Tasks group into **Sections**
   (`Section` entity with `SortOrder`, one level; `Task.SectionId`, replacing the old
   free-text `Category`). Moving a task between lists just changes its `CollectionId`.
@@ -569,6 +569,16 @@ frontend/                # Angular 22 + Tailwind CSS PWA (service worker) — no
 **API surface implemented so far** (all family-scoped ones require a JWT with a
 `family_id` claim, obtained from `POST /api/families`):
 
+**Every endpoint that returns a list is paged — there is no way to fetch "everything".**
+`?page=` (1-based, default 1) and `?pageSize=` (1–50, default 50; out-of-range → 400).
+The body stays a plain JSON array of that page; the total number of matches is in the
+`X-Total-Count` response header (exposed via CORS). A page past the end is an empty
+array. Every list pages in SQL (`ToPagedAsync`: count + skip/take on an ordered query that
+ends on a unique key), except calendar occurrences, which are expanded from recurrence
+rules in memory and can only be cut afterwards. API clients that
+want everything must loop over pages; the Angular client does this in `core/paging.ts`
+(`fetchAll`, which stops after page 1 when everything fits). Screens with long lists use `PagedList` + a "Load more" button instead (tasks, notes, contacts, admin families, call log); home widgets and the due-today badge ask the server for exactly what they show (filter + sort + `pageSize`, or `pageSize=1` for a bare count).
+
 | Endpoint | Purpose |
 |---|---|
 | `GET /api/setup/status` | Anonymous — whether this instance has any Family yet, drives the client's first-run wizard framing |
@@ -576,7 +586,7 @@ frontend/                # Angular 22 + Tailwind CSS PWA (service worker) — no
 | `POST /api/families`, `GET /api/families/mine` | One-time family setup (creates Family + Owner FamilyMember, returns a fresh token) |
 | `GET/POST /api/family-members`, `GET/PUT/DELETE /api/family-members/{id}` | FamilyMember CRUD — responses include `LinkedUserEmail`/`LinkedUserRole` when a member has a login |
 | `POST /api/family-members/{id}/account` | Owner-only — creates a login for a FamilyMember that doesn't have one yet and links it, in one call |
-| `GET/POST /api/nodes`, `PUT/DELETE /api/nodes/{id}` | Node CRUD across all four types (incl. Contact), with `?type=`/`?assignedTo=`/`?collectionId=`/`?from=`/`?until=` filters on the list endpoint |
+| `GET/POST /api/nodes`, `PUT/DELETE /api/nodes/{id}` | Node CRUD across all four types (incl. Contact), with `?type=`/`?assignedTo=`/`?collectionId=`/`?from=`/`?until=` filters on the list endpoint, plus `?isCompleted=`/`?scope=`/`?sectionId=`/`?priority=`/`?search=`, `?sort=` (`createdAt`|`updatedAt`|`title`|`due`|`until`|`priority`|`important`|`name`, `-` prefix = descending), `?dueFrom=`/`?dueUntil=` (due window on `until`; overdue included, undated never match), `?isImportant=` (paging: see below) |
 | `GET/POST /api/collections/{id}/sections`, `PUT/DELETE /api/collections/sections/{sectionId}` | Sections of a list; POST returns the existing section on a case-insensitive name match |
 | `GET/POST /api/collections`, `PUT/DELETE /api/collections/{id}` | Collection CRUD (Task lists, Calendars, Schedules, Households), with `?type=`/`?parentCollectionId=` filters — list responses include `NodeCount`/`IncompleteCount` |
 | `POST /api/collections/{id}/feed-token` | (Re)generates a Calendar's iCal feed URL |

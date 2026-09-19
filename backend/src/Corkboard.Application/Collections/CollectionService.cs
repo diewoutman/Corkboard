@@ -10,7 +10,7 @@ namespace Corkboard.Application.Collections;
 
 public class CollectionService(CorkboardDbContext db) : ICollectionService
 {
-    public async Task<IReadOnlyList<CollectionProjection>> ListAsync(Guid familyId, Guid userId, CollectionType? type, Guid? parentCollectionId, CancellationToken cancellationToken)
+    public async Task<PagedResult<CollectionProjection>> ListAsync(Guid familyId, Guid userId, CollectionType? type, Guid? parentCollectionId, PageRequest page, CancellationToken cancellationToken)
     {
         if (type is null or CollectionType.TaskList) await EnsureInboxesAsync(familyId, userId, cancellationToken);
 
@@ -26,7 +26,7 @@ public class CollectionService(CorkboardDbContext db) : ICollectionService
             ? query.Where(c => c.ParentCollectionId == parentId)
             : query.Where(c => c.ParentCollectionId == null);
 
-        return await query.OrderByDescending(c => c.IsInbox).ThenBy(c => c.Name).Select(ToProjectionExpression).ToListAsync(cancellationToken);
+        return await query.OrderByDescending(c => c.IsInbox).ThenBy(c => c.Name).ThenBy(c => c.Id).Select(ToProjectionExpression).ToPagedAsync(page, cancellationToken);
     }
 
     public async Task<Result<CollectionProjection>> GetAsync(Guid familyId, Guid userId, Guid id, CancellationToken cancellationToken)
@@ -135,7 +135,7 @@ public class CollectionService(CorkboardDbContext db) : ICollectionService
 
         if (collection.IsInbox)
         {
-            return Result.Failure(Error.Conflict("Inbox can't be deleted", "Every scope keeps one Inbox."));
+            return Result.Failure(Error.Conflict("Inbox can't be deleted", "Your Personal Inbox is always there."));
         }
 
         if (await db.Collections.AnyAsync(c => c.ParentCollectionId == id, cancellationToken))
@@ -173,41 +173,35 @@ public class CollectionService(CorkboardDbContext db) : ICollectionService
             c.Scope, c.IsInbox, c.IsSystemManaged);
 
     /// <summary>
-    /// Every Family has one Family Inbox and every user one Personal Inbox — created
-    /// on first use rather than by a migration, so new users and new Families need no
-    /// extra setup step. A concurrent request creating the same Inbox loses to the
-    /// unique index and is ignored.
+    /// Every user has one Personal Inbox — created on first use rather than by a
+    /// migration, so new users need no extra setup step. A concurrent request creating
+    /// the same Inbox loses to the unique index and is ignored.
     /// </summary>
     private async Task EnsureInboxesAsync(Guid familyId, Guid userId, CancellationToken cancellationToken)
     {
         var existing = await db.Collections
-            .Where(c => c.FamilyId == familyId && c.IsInbox && (c.Scope == DomainScope.Family || c.OwnerUserId == userId))
-            .Select(c => c.Scope)
-            .ToListAsync(cancellationToken);
+            .AnyAsync(c => c.FamilyId == familyId && c.IsInbox && c.OwnerUserId == userId, cancellationToken);
+        if (existing) return;
 
         // API clients authenticate as themselves, not as a family member — they get no Personal Inbox.
         var isMember = await db.FamilyMembers.AnyAsync(m => m.FamilyId == familyId && m.LinkedUserId == userId, cancellationToken);
+        if (!isMember) return;
 
         var now = DateTimeOffset.UtcNow;
-        foreach (var scope in new[] { DomainScope.Family, DomainScope.Personal }.Where(s => !existing.Contains(s) && (s == DomainScope.Family || isMember)))
+        db.Collections.Add(new Domain.Entities.Collection
         {
-            db.Collections.Add(new Domain.Entities.Collection
-            {
-                Id = Guid.NewGuid(),
-                FamilyId = familyId,
-                Name = "Inbox",
-                Type = DomainCollectionType.TaskList,
-                Color = "#9CA3AF",
-                Scope = scope,
-                OwnerUserId = scope == DomainScope.Personal ? userId : null,
-                IsInbox = true,
-                CreatedAt = now,
-                UpdatedAt = now,
-                CreatedByUserId = userId,
-            });
-        }
-
-        if (!db.ChangeTracker.HasChanges()) return;
+            Id = Guid.NewGuid(),
+            FamilyId = familyId,
+            Name = "Inbox",
+            Type = DomainCollectionType.TaskList,
+            Color = "#9CA3AF",
+            Scope = DomainScope.Personal,
+            OwnerUserId = userId,
+            IsInbox = true,
+            CreatedAt = now,
+            UpdatedAt = now,
+            CreatedByUserId = userId,
+        });
 
         try
         {
@@ -220,13 +214,13 @@ public class CollectionService(CorkboardDbContext db) : ICollectionService
         }
     }
 
-    public async Task<IReadOnlyList<SectionResponse>> ListSectionsAsync(Guid familyId, Guid userId, Guid collectionId, CancellationToken cancellationToken) =>
+    public async Task<PagedResult<SectionResponse>> ListSectionsAsync(Guid familyId, Guid userId, Guid collectionId, PageRequest page, CancellationToken cancellationToken) =>
         await db.Sections
             .Where(s => s.CollectionId == collectionId && s.Collection.FamilyId == familyId
                 && (s.Collection.Scope == DomainScope.Family || s.Collection.OwnerUserId == userId))
-            .OrderBy(s => s.SortOrder).ThenBy(s => s.Name)
+            .OrderBy(s => s.SortOrder).ThenBy(s => s.Name).ThenBy(s => s.Id)
             .Select(s => new SectionResponse(s.Id, s.CollectionId, s.Name, s.SortOrder))
-            .ToListAsync(cancellationToken);
+            .ToPagedAsync(page, cancellationToken);
 
     public async Task<Result<SectionResponse>> CreateSectionAsync(Guid familyId, Guid userId, Guid collectionId, CreateSectionRequest request, CancellationToken cancellationToken)
     {

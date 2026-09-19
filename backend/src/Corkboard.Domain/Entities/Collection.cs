@@ -22,8 +22,8 @@ public class Collection
     public Guid? OwnerUserId { get; set; }
 
     /// <summary>
-    /// The fixed, non-deletable landing list of its scope — quick-add goes here. Each
-    /// Family has one Family Inbox and each user one Personal Inbox (created lazily).
+    /// The fixed, non-deletable landing list — quick-add goes here. Each user has one
+    /// Personal Inbox (created lazily); there is no Family Inbox.
     /// </summary>
     public bool IsInbox { get; set; }
 

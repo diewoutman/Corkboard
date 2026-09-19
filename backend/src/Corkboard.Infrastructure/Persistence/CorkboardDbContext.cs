@@ -111,9 +111,7 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
             entity.HasIndex(c => c.FeedToken).IsUnique().HasFilter("\"FeedToken\" IS NOT NULL");
             entity.HasIndex(c => new { c.FamilyId, c.Scope, c.OwnerUserId });
 
-            // One Inbox per Family and one per user — enforced in the database because Inboxes are created lazily.
-            entity.HasIndex(c => c.FamilyId).IsUnique().HasDatabaseName("IX_Collections_FamilyInbox")
-                .HasFilter("\"IsInbox\" AND \"Scope\" = 0");
+            // One Personal Inbox per user — enforced in the database because Inboxes are created lazily.
             entity.HasIndex(c => new { c.FamilyId, c.OwnerUserId }).IsUnique().HasDatabaseName("IX_Collections_PersonalInbox")
                 .HasFilter("\"IsInbox\" AND \"Scope\" = 1");
         });

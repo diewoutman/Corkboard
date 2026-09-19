@@ -1,3 +1,4 @@
+using Corkboard.Application.Common;
 using Corkboard.Api.Common;
 using Corkboard.Application.Notifications;
 using Corkboard.Contracts.Notifications;
@@ -16,10 +17,10 @@ public class NotificationsController(NotificationService notifications) : Contro
     public ActionResult<PushConfigResponse> GetConfig() => Ok(notifications.GetConfig());
 
     [HttpGet("subscriptions")]
-    public async Task<ActionResult<IReadOnlyList<PushSubscriptionResponse>>> List(CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<PushSubscriptionResponse>>> List([FromQuery] PageQuery paging, CancellationToken cancellationToken)
     {
         if (User.IsScopedClient()) return ClientForbidden();
-        return Ok(await notifications.ListAsync(User.GetUserId(), cancellationToken));
+        return this.PagedOk(await notifications.ListAsync(User.GetUserId(), paging.ToRequest(), cancellationToken));
     }
 
     /// <summary>Registers (or updates) this device. Called after the browser granted permission.</summary>

@@ -11,7 +11,7 @@ namespace Corkboard.Application.Nodes;
 
 public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recurrence) : INodeService
 {
-    public async Task<IReadOnlyList<NodeResponse>> ListAsync(Guid familyId, Guid userId, NodeListFilter filter, CancellationToken cancellationToken)
+    public async Task<PagedResult<NodeResponse>> ListAsync(Guid familyId, Guid userId, NodeListFilter filter, CancellationToken cancellationToken)
     {
         var query = db.Nodes
             .AsNoTracking()
@@ -50,8 +50,68 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
             query = query.Where(n => n.From == null || n.From <= untilValue);
         }
 
-        var nodes = await query.ToListAsync(cancellationToken);
-        return nodes.Select(ToResponse).ToList();
+        if (filter.IsCompleted is { } isCompleted)
+        {
+            query = query.Where(n => ((TaskNode)n).IsCompleted == isCompleted);
+        }
+
+        if (filter.DueFrom is { } dueFrom)
+        {
+            query = query.Where(n => n.Until != null && n.Until >= dueFrom);
+        }
+
+        if (filter.DueUntil is { } dueUntil)
+        {
+            query = query.Where(n => n.Until != null && n.Until < dueUntil);
+        }
+
+        if (filter.IsImportant is { } isImportant)
+        {
+            query = query.Where(n => ((Note)n).IsImportant == isImportant);
+        }
+
+        if (filter.Scope is { } scope)
+        {
+            var domainScope = (CollectionScope)scope;
+            query = query.Where(n => n.Collection == null ? domainScope == CollectionScope.Family : n.Collection.Scope == domainScope);
+        }
+
+        if (filter.SectionId is { } sectionId)
+        {
+            query = query.Where(n => ((TaskNode)n).SectionId == sectionId);
+        }
+
+        if (filter.Priority is { } priority)
+        {
+            query = query.Where(n => ((TaskNode)n).Priority == priority);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+        {
+            var term = filter.Search.Trim().ToLower();
+            query = query.Where(n => n.Title.ToLower().Contains(term) || (n.Description != null && n.Description.ToLower().Contains(term)));
+        }
+
+        var page = await ApplySort(query, filter.Sort).ToPagedAsync(filter.Paging ?? PageRequest.Default, cancellationToken);
+        return new PagedResult<NodeResponse>(page.Items.Select(ToResponse).ToList(), page.TotalCount);
+    }
+
+    /// <summary>Always ends on Id so pages are stable when the sort key ties.</summary>
+    private static IQueryable<Node> ApplySort(IQueryable<Node> query, string? sort)
+    {
+        var descending = sort?.StartsWith('-') == true;
+        var ordered = sort?.TrimStart('-').ToLowerInvariant() switch
+        {
+            "updatedat" => descending ? query.OrderByDescending(n => n.UpdatedAt) : query.OrderBy(n => n.UpdatedAt),
+            "title" => descending ? query.OrderByDescending(n => n.Title) : query.OrderBy(n => n.Title),
+            "due" => descending ? query.OrderByDescending(n => n.Until ?? n.CreatedAt) : query.OrderBy(n => n.Until ?? n.CreatedAt),
+            "until" => descending ? query.OrderByDescending(n => n.Until) : query.OrderBy(n => n.Until),
+            "important" => (descending ? query.OrderByDescending(n => ((Note)n).IsImportant) : query.OrderBy(n => ((Note)n).IsImportant)).ThenByDescending(n => n.CreatedAt),
+            "name" => (descending ? query.OrderByDescending(n => ((Contact)n).LastName ?? "") : query.OrderBy(n => ((Contact)n).LastName ?? "")).ThenBy(n => ((Contact)n).FirstName ?? ""),
+            "priority" => descending ? query.OrderByDescending(n => ((TaskNode)n).Priority ?? 0) : query.OrderBy(n => ((TaskNode)n).Priority ?? 0),
+            _ => descending ? query.OrderByDescending(n => n.CreatedAt) : query.OrderBy(n => n.CreatedAt),
+        };
+        return ordered.ThenBy(n => n.Id);
     }
 
     public async Task<Result<NodeResponse>> GetAsync(Guid familyId, Guid userId, Guid id, CancellationToken cancellationToken)

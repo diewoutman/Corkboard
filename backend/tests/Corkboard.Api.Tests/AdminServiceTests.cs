@@ -54,7 +54,7 @@ public class AdminServiceTests
         await db.SaveChangesAsync();
 
         var service = new AdminService(db);
-        var families = await service.ListFamiliesAsync(CancellationToken.None);
+        var families = (await service.ListFamiliesAsync(Corkboard.Application.Common.PageRequest.Default, CancellationToken.None)).Items;
 
         Assert.Equal(2, families.Count);
         var a = Assert.Single(families, f => f.Id == familyA.Id);
