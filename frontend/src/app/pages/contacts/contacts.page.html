@@ -1,7 +1,7 @@
 <div class="flex items-center justify-between gap-2">
-  <h1 class="text-2xl font-extrabold text-ink">Contacts 📇</h1>
+  <h1 class="text-2xl font-extrabold text-ink">{{ 'tiles.contacts.title' | transloco }} 📇</h1>
   <button type="button" (click)="showHouseholdsPanel = !showHouseholdsPanel" class="rounded-full border-2 border-border-soft px-3 py-1.5 text-sm font-bold text-ink hover:bg-cork">
-    Households ({{ households.length }})
+    {{ 'contacts.households' | transloco }} ({{ households.length }})
   </button>
 </div>
 
@@ -11,23 +11,23 @@
 <div *ngIf="showHouseholdsPanel" class="mt-4 rounded-3xl bg-white p-4 shadow-sticker">
   <ul class="flex flex-col gap-2">
     <app-household-row *ngFor="let household of households" [household]="household" (edit)="openEditHouseholdForm(household)" />
-    <li *ngIf="households.length === 0" class="text-sm font-semibold text-ink-muted">No households yet.</li>
+    <li *ngIf="households.length === 0" class="text-sm font-semibold text-ink-muted">{{ 'contacts.no_households' | transloco }}</li>
   </ul>
 
   <form *ngIf="showHouseholdForm" (ngSubmit)="submitHouseholdForm()" #householdFormRef="ngForm" class="mt-3 space-y-2">
     <div>
-      <label for="householdName" class="block text-sm font-bold text-ink">Name</label>
+      <label for="householdName" class="block text-sm font-bold text-ink">{{ 'common.name' | transloco }}</label>
       <input
         id="householdName"
         name="householdName"
-        placeholder="e.g. Jansen"
+        [placeholder]="'contacts.household_name_placeholder' | transloco"
         [(ngModel)]="householdForm.name"
         required
         class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       />
     </div>
     <div>
-      <label for="householdStreet" class="block text-sm font-bold text-ink">Street <span class="font-semibold text-ink-muted">(optional)</span></label>
+      <label for="householdStreet" class="block text-sm font-bold text-ink">{{ 'contacts.street' | transloco }} <span class="font-semibold text-ink-muted">{{ 'common.optional' | transloco }}</span></label>
       <input
         id="householdStreet"
         name="householdStreet"
@@ -37,7 +37,7 @@
     </div>
     <div class="grid grid-cols-2 gap-2">
       <div>
-        <label for="householdPostalCode" class="block text-sm font-bold text-ink">Postal code</label>
+        <label for="householdPostalCode" class="block text-sm font-bold text-ink">{{ 'contacts.postal_code' | transloco }}</label>
         <input
           id="householdPostalCode"
           name="householdPostalCode"
@@ -46,7 +46,7 @@
         />
       </div>
       <div>
-        <label for="householdCity" class="block text-sm font-bold text-ink">City</label>
+        <label for="householdCity" class="block text-sm font-bold text-ink">{{ 'contacts.city' | transloco }}</label>
         <input
           id="householdCity"
           name="householdCity"
@@ -56,7 +56,7 @@
       </div>
     </div>
     <div>
-      <label for="householdCountry" class="block text-sm font-bold text-ink">Country</label>
+      <label for="householdCountry" class="block text-sm font-bold text-ink">{{ 'contacts.country' | transloco }}</label>
       <input
         id="householdCountry"
         name="householdCountry"
@@ -66,15 +66,15 @@
     </div>
     <div class="flex gap-2 pt-1">
       <button type="submit" [disabled]="householdFormRef.invalid" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
-        {{ editingHouseholdId ? 'Save changes' : 'Add household' }}
+        {{ (editingHouseholdId ? 'common.save_changes' : 'contacts.add_household') | transloco }}
       </button>
       <button type="button" (click)="cancelHouseholdForm()" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">
-        Cancel
+        {{ 'common.cancel' | transloco }}
       </button>
     </div>
   </form>
   <button *ngIf="!showHouseholdForm" type="button" (click)="openNewHouseholdForm()" class="mt-3 text-sm font-extrabold text-coral hover:text-coral-strong">
-    + Add a household
+    + {{ 'contacts.add_a_household' | transloco }}
   </button>
 </div>
 
@@ -96,7 +96,7 @@
       </li>
     </ul>
 
-    <p *ngIf="contacts.length === 0" class="px-4 py-8 text-center text-sm font-semibold text-ink-muted">No contacts here yet.</p>
+    <p *ngIf="contacts.length === 0" class="px-4 py-8 text-center text-sm font-semibold text-ink-muted">{{ 'contacts.empty' | transloco }}</p>
   </div>
 
   <!-- Detail panel for the selected contact, or the add/edit form -->
@@ -104,7 +104,7 @@
     <form *ngIf="showContactForm; else detail" (ngSubmit)="submitContactForm()" #form="ngForm" class="space-y-3">
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label for="firstName" class="block text-sm font-bold text-ink">First name</label>
+          <label for="firstName" class="block text-sm font-bold text-ink">{{ 'contacts.first_name' | transloco }}</label>
           <input
             id="firstName"
             name="firstName"
@@ -114,7 +114,7 @@
           />
         </div>
         <div>
-          <label for="lastName" class="block text-sm font-bold text-ink">Last name <span class="font-semibold text-ink-muted">(optional)</span></label>
+          <label for="lastName" class="block text-sm font-bold text-ink">{{ 'contacts.last_name' | transloco }} <span class="font-semibold text-ink-muted">{{ 'common.optional' | transloco }}</span></label>
           <input
             id="lastName"
             name="lastName"
@@ -125,52 +125,52 @@
       </div>
 
       <div>
-        <label class="block text-sm font-bold text-ink">Phone numbers <span class="font-semibold text-ink-muted">(optional)</span></label>
+        <label class="block text-sm font-bold text-ink">{{ 'contacts.phone_numbers' | transloco }} <span class="font-semibold text-ink-muted">{{ 'common.optional' | transloco }}</span></label>
         <div *ngFor="let phone of contactForm.phoneNumbers; let i = index" class="mt-1 flex gap-2">
           <input
             [name]="'phoneNumber' + i"
             [attr.name]="'phoneNumber' + i"
-            placeholder="Phone number"
+            [placeholder]="'contacts.phone_number' | transloco"
             [(ngModel)]="phone.number"
             class="block w-1/2 rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           />
           <input
             [name]="'phoneLabel' + i"
             [attr.name]="'phoneLabel' + i"
-            placeholder="Label (optional)"
+            [placeholder]="'contacts.label_optional' | transloco"
             [(ngModel)]="phone.label"
             class="block w-1/2 rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           />
-          <button type="button" (click)="removePhoneRow(i)" class="shrink-0 text-ink-muted hover:text-danger" aria-label="Remove">✕</button>
+          <button type="button" (click)="removePhoneRow(i)" class="shrink-0 text-ink-muted hover:text-danger" [attr.aria-label]="'members.remove' | transloco">✕</button>
         </div>
-        <button type="button" (click)="addPhoneRow()" class="mt-1 text-xs font-extrabold text-coral hover:text-coral-strong">+ Add phone number</button>
+        <button type="button" (click)="addPhoneRow()" class="mt-1 text-xs font-extrabold text-coral hover:text-coral-strong">+ {{ 'contacts.add_phone' | transloco }}</button>
       </div>
 
       <div>
-        <label class="block text-sm font-bold text-ink">Email addresses <span class="font-semibold text-ink-muted">(optional)</span></label>
+        <label class="block text-sm font-bold text-ink">{{ 'contacts.email_addresses' | transloco }} <span class="font-semibold text-ink-muted">{{ 'common.optional' | transloco }}</span></label>
         <div *ngFor="let email of contactForm.emails; let i = index" class="mt-1 flex gap-2">
           <input
             [name]="'email' + i"
             [attr.name]="'email' + i"
             type="email"
-            placeholder="Email address"
+            [placeholder]="'contacts.email_address' | transloco"
             [(ngModel)]="email.email"
             class="block w-1/2 rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           />
           <input
             [name]="'emailLabel' + i"
             [attr.name]="'emailLabel' + i"
-            placeholder="Label (optional)"
+            [placeholder]="'contacts.label_optional' | transloco"
             [(ngModel)]="email.label"
             class="block w-1/2 rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           />
-          <button type="button" (click)="removeEmailRow(i)" class="shrink-0 text-ink-muted hover:text-danger" aria-label="Remove">✕</button>
+          <button type="button" (click)="removeEmailRow(i)" class="shrink-0 text-ink-muted hover:text-danger" [attr.aria-label]="'members.remove' | transloco">✕</button>
         </div>
-        <button type="button" (click)="addEmailRow()" class="mt-1 text-xs font-extrabold text-coral hover:text-coral-strong">+ Add email address</button>
+        <button type="button" (click)="addEmailRow()" class="mt-1 text-xs font-extrabold text-coral hover:text-coral-strong">+ {{ 'contacts.add_email' | transloco }}</button>
       </div>
 
       <div>
-        <label for="dateOfBirth" class="block text-sm font-bold text-ink">Birthday <span class="font-semibold text-ink-muted">(optional)</span></label>
+        <label for="dateOfBirth" class="block text-sm font-bold text-ink">{{ 'family.birthday' | transloco }} <span class="font-semibold text-ink-muted">{{ 'common.optional' | transloco }}</span></label>
         <input
           id="dateOfBirth"
           type="date"
@@ -181,26 +181,26 @@
       </div>
 
       <div>
-        <label for="household" class="block text-sm font-bold text-ink">Household <span class="font-semibold text-ink-muted">(optional)</span></label>
+        <label for="household" class="block text-sm font-bold text-ink">{{ 'contacts.household' | transloco }} <span class="font-semibold text-ink-muted">{{ 'common.optional' | transloco }}</span></label>
         <select
           id="household"
           name="household"
           [(ngModel)]="contactForm.householdId"
           class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
         >
-          <option value="">None</option>
+          <option value="">{{ 'task_list.priorities.none' | transloco }}</option>
           <option *ngFor="let household of households" [value]="household.id">{{ household.name }}</option>
         </select>
       </div>
 
       <div>
         <label for="contactStreet" class="block text-sm font-bold text-ink">
-          Address <span class="font-semibold text-ink-muted">(optional{{ contactForm.householdId ? ' — leave blank to use the household address' : '' }})</span>
+          {{ 'contacts.address' | transloco }} <span class="font-semibold text-ink-muted">{{ (contactForm.householdId ? 'contacts.address_optional_household' : 'common.optional') | transloco }}</span>
         </label>
         <input
           id="contactStreet"
           name="contactStreet"
-          placeholder="Street"
+          [placeholder]="'contacts.street' | transloco"
           [(ngModel)]="contactForm.street"
           class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
         />
@@ -209,7 +209,7 @@
         <div>
           <input
             name="contactPostalCode"
-            placeholder="Postal code"
+            [placeholder]="'contacts.postal_code' | transloco"
             [(ngModel)]="contactForm.postalCode"
             class="block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           />
@@ -217,7 +217,7 @@
         <div>
           <input
             name="contactCity"
-            placeholder="City"
+            [placeholder]="'contacts.city' | transloco"
             [(ngModel)]="contactForm.city"
             class="block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           />
@@ -225,17 +225,17 @@
       </div>
       <input
         name="contactCountry"
-        placeholder="Country"
+        [placeholder]="'contacts.country' | transloco"
         [(ngModel)]="contactForm.country"
         class="block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       />
 
       <div class="flex gap-2 pt-1">
         <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
-          {{ editingContactId ? 'Save changes' : 'Add contact' }}
+          {{ (editingContactId ? 'common.save_changes' : 'contacts.add') | transloco }}
         </button>
         <button type="button" (click)="cancelContactForm()" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">
-          Cancel
+          {{ 'common.cancel' | transloco }}
         </button>
       </div>
     </form>
@@ -266,15 +266,15 @@
         </ul>
 
         <p *ngIf="effectiveAddress(contact) as address" class="mt-3 text-sm font-semibold text-ink-muted">
-          📍 {{ address }}<span *ngIf="!isOwnAddress(contact)"> (via {{ householdName(contact.collectionId) }})</span>
+          📍 {{ address }}<span *ngIf="!isOwnAddress(contact)"> ({{ 'contacts.via_household' | transloco: { name: householdName(contact.collectionId) } }})</span>
         </p>
       </ng-container>
 
       <ng-template #noSelection>
-        <p class="py-8 text-center text-sm font-semibold text-ink-muted">Select a contact to see their details.</p>
+        <p class="py-8 text-center text-sm font-semibold text-ink-muted">{{ 'contacts.select_hint' | transloco }}</p>
       </ng-template>
     </ng-template>
   </div>
 </div>
 
-<app-fab-button *ngIf="!showContactForm" label="Add contact" (clicked)="openNewContactForm()" />
+<app-fab-button *ngIf="!showContactForm" [label]="'contacts.add' | transloco" (clicked)="openNewContactForm()" />

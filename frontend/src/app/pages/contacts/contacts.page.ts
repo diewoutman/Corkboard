@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { forkJoin } from 'rxjs';
 import { Collections } from '../../core/collections';
 import { extractErrorMessage } from '../../core/http-error';
@@ -34,6 +35,7 @@ export class ContactsPage implements OnInit {
     private readonly nodesApi: Nodes,
     private readonly collectionsApi: Collections,
     private readonly cdr: ChangeDetectorRef,
+    private readonly transloco: TranslocoService,
   ) {}
 
   ngOnInit() {
@@ -57,7 +59,7 @@ export class ContactsPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not load your contacts. Pull to refresh to try again.';
+        this.errorMessage = this.transloco.translate('contacts.errors.load');
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -167,7 +169,7 @@ export class ContactsPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        this.errorMessage = extractErrorMessage(err, 'Could not save that household.');
+        this.errorMessage = extractErrorMessage(err, this.transloco.translate('contacts.errors.save_household'));
         this.cdr.markForCheck();
       },
     });
@@ -183,7 +185,7 @@ export class ContactsPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not delete that contact.';
+        this.errorMessage = this.transloco.translate('contacts.errors.delete');
         this.cdr.markForCheck();
       },
     });
@@ -268,7 +270,7 @@ export class ContactsPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        this.errorMessage = extractErrorMessage(err, 'Could not save that contact.');
+        this.errorMessage = extractErrorMessage(err, this.transloco.translate('contacts.errors.save'));
         this.cdr.markForCheck();
       },
     });

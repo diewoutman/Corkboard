@@ -18,7 +18,7 @@ import { MemberAvatarComponent, MemberAvatarSize } from '../member-avatar/member
         <h2 class="font-heading text-lg font-bold text-ink">{{ displayName }}</h2>
       </div>
       <div class="flex shrink-0 items-center gap-3">
-        <button type="button" (click)="edit.emit()" class="text-xs font-extrabold text-coral hover:text-coral-strong">{{ editLabel }}</button>
+        <button type="button" (click)="edit.emit()" class="text-xs font-extrabold text-coral hover:text-coral-strong">{{ editLabel || ('common.edit' | transloco) }}</button>
         <button type="button" (click)="remove.emit()" class="text-ink-muted hover:text-danger" [attr.aria-label]="'common.delete' | transloco">✕</button>
       </div>
     </div>
@@ -29,7 +29,7 @@ export class EntityDetailHeaderComponent {
   @Input() displayName = '';
   @Input() color = '';
   @Input() avatarSize: MemberAvatarSize = 'xl';
-  @Input() editLabel = 'Edit';
+  @Input() editLabel = '';
   @Output() edit = new EventEmitter<void>();
   @Output() remove = new EventEmitter<void>();
 }

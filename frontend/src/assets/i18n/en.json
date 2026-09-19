@@ -344,5 +344,38 @@
       "save_event": "Could not save that event.",
       "remove_event": "Could not remove that event."
     }
+  },
+  "contacts": {
+    "households": "Households",
+    "no_households": "No households yet.",
+    "household_name_placeholder": "e.g. Jansen",
+    "street": "Street",
+    "postal_code": "Postal code",
+    "city": "City",
+    "country": "Country",
+    "add_household": "Add household",
+    "add_a_household": "Add a household",
+    "empty": "No contacts here yet.",
+    "first_name": "First name",
+    "last_name": "Last name",
+    "phone_numbers": "Phone numbers",
+    "phone_number": "Phone number",
+    "label_optional": "Label (optional)",
+    "add_phone": "Add phone number",
+    "email_addresses": "Email addresses",
+    "email_address": "Email address",
+    "add_email": "Add email address",
+    "household": "Household",
+    "address": "Address",
+    "address_optional_household": "(optional — leave blank to use the household address)",
+    "add": "Add contact",
+    "via_household": "via {{name}}",
+    "select_hint": "Select a contact to see their details.",
+    "errors": {
+      "load": "Could not load your contacts. Pull to refresh to try again.",
+      "save_household": "Could not save that household.",
+      "delete": "Could not delete that contact.",
+      "save": "Could not save that contact."
+    }
   }
 }

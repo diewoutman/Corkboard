@@ -344,5 +344,38 @@
       "save_event": "De afspraak kon niet worden opgeslagen.",
       "remove_event": "De afspraak kon niet worden verwijderd."
     }
+  },
+  "contacts": {
+    "households": "Huishoudens",
+    "no_households": "Nog geen huishoudens.",
+    "household_name_placeholder": "bijv. Jansen",
+    "street": "Straat",
+    "postal_code": "Postcode",
+    "city": "Plaats",
+    "country": "Land",
+    "add_household": "Huishouden toevoegen",
+    "add_a_household": "Een huishouden toevoegen",
+    "empty": "Nog geen contacten.",
+    "first_name": "Voornaam",
+    "last_name": "Achternaam",
+    "phone_numbers": "Telefoonnummers",
+    "phone_number": "Telefoonnummer",
+    "label_optional": "Label (optioneel)",
+    "add_phone": "Telefoonnummer toevoegen",
+    "email_addresses": "E-mailadressen",
+    "email_address": "E-mailadres",
+    "add_email": "E-mailadres toevoegen",
+    "household": "Huishouden",
+    "address": "Adres",
+    "address_optional_household": "(optioneel — laat leeg om het adres van het huishouden te gebruiken)",
+    "add": "Contact toevoegen",
+    "via_household": "via {{name}}",
+    "select_hint": "Selecteer een contact om de gegevens te zien.",
+    "errors": {
+      "load": "Je contacten konden niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
+      "save_household": "Het huishouden kon niet worden opgeslagen.",
+      "delete": "Het contact kon niet worden verwijderd.",
+      "save": "Het contact kon niet worden opgeslagen."
+    }
   }
 }
