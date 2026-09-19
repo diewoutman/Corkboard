@@ -1,0 +1,381 @@
+{
+  "account": {
+    "menu": "Accountmenu",
+    "admin_console": "Beheerconsole",
+    "language": "Taal",
+    "log_out": "Uitloggen"
+  },
+  "common": {
+    "cancel": "Annuleren",
+    "create": "Aanmaken",
+    "save_changes": "Wijzigingen opslaan",
+    "loading": "Laden…",
+    "add": "Toevoegen",
+    "edit": "Bewerken",
+    "delete": "Verwijderen",
+    "name": "Naam",
+    "color": "Kleur",
+    "title": "Titel",
+    "generic_error": "Er ging iets mis. Probeer het opnieuw.",
+    "optional": "(optioneel)"
+  },
+  "tasks": {
+    "title": "Lijsten",
+    "new_list": "Nieuwe lijst",
+    "edit_list": "Lijst bewerken",
+    "empty": "Nog geen lijsten — maak er een aan om taken toe te voegen.",
+    "list_name": "Naam van de lijst",
+    "list_name_placeholder": "bijv. Boodschappen, Klusjes…",
+    "list_color": "Kleur van de lijst",
+    "errors": {
+      "load": "Je lijsten konden niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
+      "create": "De lijst kon niet worden aangemaakt.",
+      "save": "De lijst kon niet worden opgeslagen."
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "daily": "Dagelijks",
+    "administration": "Administratie",
+    "more": "Meer",
+    "tasks": "Taken",
+    "notes": "Notities",
+    "calendar": "Agenda",
+    "role_hint_owner": "Eigenaar: kan gezinsleden beheren en inlogaccounts voor hen aanmaken",
+    "role_hint_member": "Iedereen met een login ziet alle taken, notities en de agenda van dit gezin — er is geen beperking per lijst",
+    "family": "Gezin"
+  },
+  "tiles": {
+    "tasks": {
+      "title": "Taken",
+      "description": "Lijsten en to-do's voor het hele gezin."
+    },
+    "notes": {
+      "title": "Notities",
+      "description": "Snelle notities en herinneringen om te bewaren."
+    },
+    "calendar": {
+      "title": "Agenda",
+      "description": "Afspraken, agenda's en weekroosters."
+    },
+    "contacts": {
+      "title": "Contacten",
+      "description": "Telefoonnummers, e-mailadressen en adressen, per huishouden."
+    },
+    "family": {
+      "title": "Gezin",
+      "description": "Beheer gezinsleden en hun logins."
+    }
+  },
+  "timeline": {
+    "segments": {
+      "anytime": "Hele dag",
+      "night": "Nacht",
+      "morning": "Ochtend",
+      "afternoon": "Middag",
+      "evening": "Avond"
+    },
+    "nothing": "Niets op de tijdlijn van vandaag.",
+    "nothing_planned": "Niets gepland."
+  },
+  "home": {
+    "welcome": "Welkom",
+    "scope": {
+      "family": "Gezin",
+      "personal": "Persoonlijk"
+    },
+    "hint_editable": "Sleep widgets om ze te herschikken, of gebruik ↔ om het formaat te wijzigen.",
+    "hint_readonly": "Alleen gezinsbeheerders kunnen het gezinsdashboard bewerken.",
+    "empty_editable": "Je dashboard is leeg — voeg een widget toe om te beginnen.",
+    "empty_readonly": "Nog geen widgets — vraag een gezinsbeheerder om er een in te stellen.",
+    "widget_titles": {
+      "navigation": "Navigatie",
+      "notes": "Notities",
+      "important_notes": "Belangrijke notities",
+      "tasks": "Taken",
+      "my_tasks": "Mijn taken",
+      "today": "Vandaag",
+      "upcoming": "Binnenkort",
+      "timeline": "Tijdlijn"
+    },
+    "widget_types": {
+      "navigation": "Navigatie",
+      "notes": "Notities",
+      "tasks": "Taken",
+      "today": "Vandaag",
+      "timeline": "Tijdlijn",
+      "upcoming": "Binnenkort",
+      "shortcut": "Snelkoppeling"
+    },
+    "form": {
+      "configure": "Widget instellen",
+      "add": "Widget toevoegen",
+      "add_widget": "Widget toevoegen",
+      "type": "Type",
+      "destination": "Bestemming",
+      "tile_order": "Volgorde van tegels",
+      "drag_to_reorder": "(sleep om te herschikken)",
+      "important_only": "Alleen notities tonen die als belangrijk zijn gemarkeerd",
+      "tasks_assigned_to_me": "Alles wat aan mij is toegewezen",
+      "tasks_specific_list": "Een specifieke lijst",
+      "choose_list": "Kies een lijst…",
+      "timeline_family": "Taken en afspraken van iedereen",
+      "timeline_mine": "Alleen aan mij toegewezen",
+      "timeline_segments": "Dagdelen (ochtend/middag/avond/nacht)",
+      "timeline_hourly": "Uur voor uur",
+      "show_panel": "Paneel tonen"
+    },
+    "notes": {
+      "none_important": "Geen belangrijke notities.",
+      "none": "Nog geen notities.",
+      "view_all": "Alle notities bekijken →"
+    },
+    "tasks": {
+      "assigned_to_me": "Aan mij toegewezen",
+      "nothing_here": "Niets hier.",
+      "view_all": "Alles bekijken →"
+    },
+    "today": {
+      "unassigned": "Niet toegewezen",
+      "nothing_due": "Vandaag niets te doen."
+    },
+    "upcoming": {
+      "overdue": "Te laat",
+      "today": "Vandaag",
+      "tomorrow": "Morgen"
+    },
+    "errors": {
+      "load": "Je dashboard kon niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
+      "reorder": "De nieuwe volgorde kon niet worden opgeslagen.",
+      "resize": "Het formaat van de widget kon niet worden gewijzigd.",
+      "remove": "De widget kon niet worden verwijderd.",
+      "save": "De widget kon niet worden opgeslagen."
+    }
+  },
+  "roles": {
+    "Owner": "Eigenaar",
+    "Adult": "Volwassene",
+    "Member": "Lid"
+  },
+  "shared": {
+    "assigned_to": "Toegewezen aan",
+    "overdue": "Te laat",
+    "empty": "Leeg",
+    "list_left": "{{left}} van {{total}} over",
+    "due": "Uiterlijk {{date}}",
+    "repeats_hint": "Herhaalt — afronden schuift de deadline door",
+    "mark_important": "Markeren als belangrijk",
+    "unmark_important": "Niet meer als belangrijk markeren",
+    "widget_resize": "Formaat van widget wijzigen",
+    "widget_configure": "Widget instellen",
+    "widget_remove": "Widget verwijderen",
+    "every_other_week": "Om de week",
+    "ends": "Eindigt {{date}}",
+    "nothing_yet": "Nog niets.",
+    "more": "+{{count}} meer"
+  },
+  "login": {
+    "first_run_title": "Welkom! Laten we je account aanmaken",
+    "first_run_description": "Deze Qorkboard is nog niet ingesteld. Maak eerst je account aan — daarna stel je je gezin in.",
+    "log_in": "Inloggen",
+    "email": "E-mail",
+    "password": "Wachtwoord",
+    "create_account": "Account aanmaken en doorgaan"
+  },
+  "setup": {
+    "title": "Stel je gezin in",
+    "description": "Eenmalige instelling — dit maakt je gezin aan, met jou als eerste lid.",
+    "family_name": "Gezinsnaam",
+    "family_name_placeholder": "bijv. Familie Jansen",
+    "time_zone": "Tijdzone",
+    "display_name": "Je weergavenaam",
+    "display_name_placeholder": "bijv. Wouter",
+    "your_color": "Je kleur",
+    "create_family": "Gezin aanmaken"
+  },
+  "members": {
+    "title": "Voeg je gezin toe",
+    "description": "Voeg de rest van je gezin toe, zodat je notities, taken en afspraken aan hen kunt toewijzen. Je kunt later altijd meer leden toevoegen.",
+    "remove": "Verwijderen",
+    "name_placeholder": "bijv. Kinderen, partner, opa of oma…",
+    "add": "Gezinslid toevoegen",
+    "finish": "Instellen afronden",
+    "errors": {
+      "load": "Je gezinsleden konden niet worden geladen.",
+      "add": "Het gezinslid kon niet worden toegevoegd.",
+      "remove": "Het gezinslid kon niet worden verwijderd."
+    }
+  },
+  "notes": {
+    "empty": "Nog geen notities.",
+    "add": "Notitie toevoegen",
+    "edit": "Notitie bewerken",
+    "note": "Notitie",
+    "errors": {
+      "load": "Je notities konden niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
+      "update": "De notitie kon niet worden bijgewerkt.",
+      "delete": "De notitie kon niet worden verwijderd.",
+      "create": "De notitie kon niet worden aangemaakt.",
+      "save": "De notitie kon niet worden opgeslagen."
+    }
+  },
+  "task_list": {
+    "show_completed": "Afgeronde tonen",
+    "quick_add_placeholder": "Voeg een taak toe… probeer \"Melk kopen morgen 17:00 #Boodschappen\"",
+    "other": "Overig",
+    "empty": "Nog geen taken.",
+    "add": "Taak toevoegen",
+    "edit": "Taak bewerken",
+    "task": "Taak",
+    "notes": "Notities",
+    "due_date": "Deadline",
+    "priority": "Prioriteit",
+    "priorities": {
+      "none": "Geen",
+      "low": "Laag",
+      "medium": "Gemiddeld",
+      "high": "Hoog"
+    },
+    "category": "Categorie",
+    "category_hint": "(optioneel — groepeert de lijst, bijv. voor een boodschappenlijst)",
+    "category_placeholder": "bijv. Groente, Zuivel, Huishouden…",
+    "repeat": "Herhalen",
+    "repeat_hint": "(optioneel — afronden schuift de deadline door in plaats van de taak af te ronden)",
+    "repeats": {
+      "never": "Nooit",
+      "daily": "Dagelijks",
+      "weekly": "Wekelijks",
+      "monthly": "Maandelijks"
+    },
+    "errors": {
+      "load": "Deze lijst kon niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
+      "update": "De taak kon niet worden bijgewerkt.",
+      "delete": "De taak kon niet worden verwijderd.",
+      "create": "De taak kon niet worden aangemaakt.",
+      "save": "De taak kon niet worden opgeslagen."
+    }
+  },
+  "family": {
+    "intro": "Iedereen met een login ziet alle taken, notities en de agenda van dit gezin — delen per lijst kan nog niet.",
+    "owner_note": "Alleen de eigenaar kan logins aanmaken en leden beheren; volwassenen en leden hebben verder dezelfde rechten.",
+    "no_login": "Nog geen login — alleen de eigenaar kan er een aanmaken.",
+    "create_login": "Login aanmaken",
+    "password_hint": "Deel dit zelf met hen — ze kunnen het na het inloggen wijzigen.",
+    "role": "Rol",
+    "empty": "Nog geen gezinsleden.",
+    "birthday": "Verjaardag",
+    "errors": {
+      "load": "Je gezinsleden konden niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
+      "save": "Het gezinslid kon niet worden opgeslagen.",
+      "login": "De login kon niet worden aangemaakt."
+    }
+  },
+  "weekdays": {
+    "mo": "Maandag",
+    "tu": "Dinsdag",
+    "we": "Woensdag",
+    "th": "Donderdag",
+    "fr": "Vrijdag",
+    "sa": "Zaterdag",
+    "su": "Zondag"
+  },
+  "schedule": {
+    "title": "Rooster",
+    "add": "Onderdeel toevoegen",
+    "edit": "Onderdeel bewerken",
+    "day": "Dag",
+    "start_time": "Starttijd",
+    "end_time": "Eindtijd",
+    "location": "Locatie",
+    "ends_on": "Eindigt op",
+    "errors": {
+      "load": "Dit rooster kon niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
+      "save": "Het onderdeel kon niet worden opgeslagen.",
+      "add": "Het onderdeel kon niet worden toegevoegd.",
+      "remove": "Het onderdeel kon niet worden verwijderd."
+    }
+  },
+  "weekdays_short": {
+    "mo": "Ma",
+    "tu": "Di",
+    "we": "Wo",
+    "th": "Do",
+    "fr": "Vr",
+    "sa": "Za",
+    "su": "Zo"
+  },
+  "calendar": {
+    "views": {
+      "month": "Maand",
+      "week": "Week",
+      "day": "Dag"
+    },
+    "quick_add_placeholder": "Voeg een afspraak toe… probeer \"Tandarts morgen 15:00\"",
+    "previous": "Vorige",
+    "next": "Volgende",
+    "grid_hint": "Sleep over het raster om een afspraak toe te voegen, of sleep een afspraak om die te verplaatsen.",
+    "add_event": "Afspraak toevoegen",
+    "edit_event": "Afspraak bewerken",
+    "event": "Afspraak",
+    "start": "Start",
+    "end": "Einde",
+    "nothing_on_day": "Niets op deze dag.",
+    "add_calendar_hint": "Voeg een agenda toe in de zijbalk om afspraken toe te voegen.",
+    "calendars": "Agenda's",
+    "schedules": "Roosters",
+    "subscribe": "Abonneerlink",
+    "import_ics": ".ics importeren",
+    "no_calendars": "Nog geen agenda's.",
+    "no_schedules": "Nog geen roosters.",
+    "edit_schedule": "Rooster bewerken",
+    "calendar_name_placeholder": "bijv. Gezin, Werk…",
+    "calendar_color": "Kleur van de agenda",
+    "schedule_name_placeholder": "bijv. Schoolrooster…",
+    "schedule_color": "Kleur van het rooster",
+    "errors": {
+      "load_calendars": "Je agenda's konden niet worden geladen.",
+      "load": "Je agenda kon niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
+      "create_calendar": "De agenda kon niet worden aangemaakt.",
+      "subscribe": "Er kon geen abonneerlink voor deze agenda worden opgehaald.",
+      "load_event": "De afspraak kon niet worden geladen.",
+      "reschedule": "De afspraak kon niet worden verplaatst.",
+      "no_date": "Geen datum of tijd gevonden in \"{{text}}\" — probeer bijv. \"morgen 17:00\".",
+      "create_event": "De afspraak kon niet worden aangemaakt.",
+      "save_event": "De afspraak kon niet worden opgeslagen.",
+      "remove_event": "De afspraak kon niet worden verwijderd."
+    }
+  },
+  "contacts": {
+    "households": "Huishoudens",
+    "no_households": "Nog geen huishoudens.",
+    "household_name_placeholder": "bijv. Jansen",
+    "street": "Straat",
+    "postal_code": "Postcode",
+    "city": "Plaats",
+    "country": "Land",
+    "add_household": "Huishouden toevoegen",
+    "add_a_household": "Een huishouden toevoegen",
+    "empty": "Nog geen contacten.",
+    "first_name": "Voornaam",
+    "last_name": "Achternaam",
+    "phone_numbers": "Telefoonnummers",
+    "phone_number": "Telefoonnummer",
+    "label_optional": "Label (optioneel)",
+    "add_phone": "Telefoonnummer toevoegen",
+    "email_addresses": "E-mailadressen",
+    "email_address": "E-mailadres",
+    "add_email": "E-mailadres toevoegen",
+    "household": "Huishouden",
+    "address": "Adres",
+    "address_optional_household": "(optioneel — laat leeg om het adres van het huishouden te gebruiken)",
+    "add": "Contact toevoegen",
+    "via_household": "via {{name}}",
+    "select_hint": "Selecteer een contact om de gegevens te zien.",
+    "errors": {
+      "load": "Je contacten konden niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
+      "save_household": "Het huishouden kon niet worden opgeslagen.",
+      "delete": "Het contact kon niet worden verwijderd.",
+      "save": "Het contact kon niet worden opgeslagen."
+    }
+  }
+}

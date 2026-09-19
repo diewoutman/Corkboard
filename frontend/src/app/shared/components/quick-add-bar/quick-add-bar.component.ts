@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -6,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-quick-add-bar',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslocoPipe],
   template: `
     <form (ngSubmit)="onSubmit()" class="flex gap-2">
       <input
@@ -19,7 +20,7 @@ import { FormsModule } from '@angular/forms';
         type="submit"
         [disabled]="!text.trim()"
         class="shrink-0 rounded-full bg-coral px-5 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50"
-      >Add</button>
+      >{{ 'common.add' | transloco }}</button>
     </form>
   `,
 })

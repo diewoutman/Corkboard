@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 /**
  * A single positioned occurrence block inside Calendar's time grid (Week/Day view): a colored
@@ -9,6 +10,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 @Component({
   selector: 'app-calendar-event-block',
   standalone: true,
+  imports: [TranslocoPipe],
   host: {
     'data-occurrence-block': '',
     class:
@@ -24,14 +26,14 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
     <button
       type="button"
       class="float-right ml-1 hidden shrink-0 leading-none opacity-80 hover:opacity-100 group-hover:inline"
-      aria-label="Delete"
+      [attr.aria-label]="'common.delete' | transloco"
       (pointerdown)="$event.stopPropagation()"
       (click)="deleteClick.emit($event)"
     >✕</button>
     <button
       type="button"
       class="float-right ml-1 hidden shrink-0 leading-none opacity-80 hover:opacity-100 group-hover:inline"
-      aria-label="Edit"
+      [attr.aria-label]="'common.edit' | transloco"
       (pointerdown)="$event.stopPropagation()"
       (click)="editClick.emit($event)"
     >✎</button>

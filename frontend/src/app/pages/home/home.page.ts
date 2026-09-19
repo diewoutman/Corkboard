@@ -1,5 +1,6 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { forkJoin } from 'rxjs';
 import { Auth } from '../../core/auth';
 import { Collections } from '../../core/collections';
@@ -35,8 +36,8 @@ export class HomePage implements OnInit {
   readonly tileDefs = TILE_DEFS;
 
   readonly dashboardOptions: SegmentedControlOption[] = [
-    { value: 'Family', label: 'Family' },
-    { value: 'Personal', label: 'Personal' },
+    { value: 'Family', label: this.transloco.translate('home.scope.family') },
+    { value: 'Personal', label: this.transloco.translate('home.scope.personal') },
   ];
 
   familyName: string | null = null;
@@ -57,6 +58,7 @@ export class HomePage implements OnInit {
     private readonly dashboardApi: Dashboard,
     private readonly collectionsApi: Collections,
     private readonly cdr: ChangeDetectorRef,
+    private readonly transloco: TranslocoService,
   ) {}
 
   /** Personal is always editable by its owner; Family only by an Owner/Adult admin. */
@@ -95,7 +97,7 @@ export class HomePage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not load your dashboard. Pull to refresh to try again.';
+        this.errorMessage = this.transloco.translate('home.errors.load');
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -103,25 +105,28 @@ export class HomePage implements OnInit {
   }
 
   tileTitle(key: string): string {
-    return TILE_DEFS.find((t) => t.key === key)?.title ?? key;
+    const tile = TILE_DEFS.find((t) => t.key === key);
+    return tile ? this.transloco.translate(tile.titleKey) : key;
   }
 
   widgetTitle(widget: DashboardWidgetResponse): string {
     switch (widget.type) {
       case 'Navigation':
-        return 'Navigation';
+        return this.transloco.translate('home.widget_titles.navigation');
       case 'Notes':
-        return widget.importantOnly ? 'Important notes' : 'Notes';
+        return this.transloco.translate(widget.importantOnly ? 'home.widget_titles.important_notes' : 'home.widget_titles.notes');
       case 'Tasks':
-        return widget.collectionId ? this.taskLists.find((l) => l.id === widget.collectionId)?.name ?? 'Tasks' : 'My tasks';
+        return widget.collectionId
+          ? this.taskLists.find((l) => l.id === widget.collectionId)?.name ?? this.transloco.translate('home.widget_titles.tasks')
+          : this.transloco.translate('home.widget_titles.my_tasks');
       case 'Today':
-        return 'Today';
+        return this.transloco.translate('home.widget_titles.today');
       case 'Upcoming':
-        return 'Upcoming';
+        return this.transloco.translate('home.widget_titles.upcoming');
       case 'Shortcut':
         return this.tileTitle(widget.tileKey ?? '');
       case 'Timeline':
-        return 'Timeline';
+        return this.transloco.translate('home.widget_titles.timeline');
     }
   }
 
@@ -129,7 +134,7 @@ export class HomePage implements OnInit {
     moveItemInArray(this.widgets, event.previousIndex, event.currentIndex);
     this.dashboardApi.reorder(this.dashboardScope, { orderedWidgetIds: this.widgets.map((w) => w.id) }).subscribe({
       error: () => {
-        this.errorMessage = 'Could not save the new widget order.';
+        this.errorMessage = this.transloco.translate('home.errors.reorder');
         this.reload();
       },
     });
@@ -168,7 +173,7 @@ export class HomePage implements OnInit {
     this.dashboardApi.updateSpan(widget.id, { span: nextSpan }).subscribe({
       error: () => {
         widget.span = previousSpan;
-        this.errorMessage = 'Could not resize that widget.';
+        this.errorMessage = this.transloco.translate('home.errors.resize');
         this.cdr.markForCheck();
       },
     });
@@ -237,7 +242,7 @@ export class HomePage implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        this.errorMessage = extractErrorMessage(err, 'Could not save that widget.');
+        this.errorMessage = extractErrorMessage(err, this.transloco.translate('home.errors.save'));
         this.cdr.markForCheck();
       },
     });
@@ -250,7 +255,7 @@ export class HomePage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not remove that widget.';
+        this.errorMessage = this.transloco.translate('home.errors.remove');
         this.cdr.markForCheck();
       },
     });

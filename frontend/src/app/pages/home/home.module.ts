@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 import { HomePageRoutingModule } from './home-routing.module';
 import { MemberAvatarsComponent } from '../../shared/member-avatars.component';
@@ -31,6 +32,7 @@ import { UpcomingWidgetComponent } from './widgets/upcoming-widget.component';
     CommonModule,
     FormsModule,
     DragDropModule,
+    TranslocoPipe,
     HomePageRoutingModule,
     MemberAvatarsComponent,
     ErrorBannerComponent,

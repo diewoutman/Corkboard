@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { CollectionResponse } from '../../../core/models';
 
 /**
@@ -8,6 +9,7 @@ import { CollectionResponse } from '../../../core/models';
 @Component({
   selector: 'app-household-row',
   standalone: true,
+  imports: [TranslocoPipe],
   host: { class: 'contents' },
   template: `
     <li class="flex items-start justify-between gap-2 rounded-2xl bg-cork px-3 py-2">
@@ -21,7 +23,7 @@ import { CollectionResponse } from '../../../core/models';
           </p>
         }
       </div>
-      <button type="button" (click)="edit.emit()" class="shrink-0 text-xs font-extrabold text-coral hover:text-coral-strong">Edit</button>
+      <button type="button" (click)="edit.emit()" class="shrink-0 text-xs font-extrabold text-coral hover:text-coral-strong">{{ 'common.edit' | transloco }}</button>
     </li>
   `,
 })

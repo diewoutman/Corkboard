@@ -8,7 +8,7 @@
     <div *ngFor="let group of groups">
       <div class="mb-1 flex items-center gap-1.5">
         <app-member-avatar *ngIf="group.member" [name]="group.member.displayName" [color]="group.member.color" size="xs" />
-        <p class="text-xs font-extrabold text-ink">{{ group.member ? group.member.displayName : 'Unassigned' }}</p>
+        <p class="text-xs font-extrabold text-ink">{{ group.member ? group.member.displayName : ('home.today.unassigned' | transloco) }}</p>
       </div>
       <ul class="flex flex-col gap-1 pl-1">
         <app-agenda-list-item *ngFor="let item of group.items" [item]="item" size="sm" (toggleDone)="toggleDone(item.task!)" />
@@ -16,5 +16,5 @@
     </div>
   </div>
 
-  <p *ngIf="groups.length === 0" class="text-sm font-semibold text-ink-muted">Nothing due today. 🎉</p>
+  <p *ngIf="groups.length === 0" class="text-sm font-semibold text-ink-muted">{{ 'home.today.nothing_due' | transloco }} 🎉</p>
 </div>

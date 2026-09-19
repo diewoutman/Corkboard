@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -14,6 +15,7 @@ import { HouseholdRowComponent } from '../../shared/components/household-row/hou
 
 @NgModule({
   imports: [
+    TranslocoPipe,
     CommonModule,
     FormsModule,
     ContactsPageRoutingModule,

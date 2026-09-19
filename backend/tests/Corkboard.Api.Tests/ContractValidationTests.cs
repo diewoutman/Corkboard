@@ -99,4 +99,15 @@ public class ContractValidationTests
 
         Assert.NotEmpty(errors);
     }
+
+    [Theory]
+    [InlineData("en", true)]
+    [InlineData("nl", true)]
+    [InlineData("de", false)]
+    [InlineData("EN", false)]
+    [InlineData("", false)]
+    public void UpdateLanguageRequest_only_accepts_the_supported_languages(string language, bool valid)
+    {
+        Assert.Equal(valid, Validate(new UpdateLanguageRequest(language)).Count == 0);
+    }
 }

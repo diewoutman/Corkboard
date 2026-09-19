@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { forkJoin, Observable, switchMap } from 'rxjs';
 import {
   addDays,
@@ -22,6 +23,7 @@ import { extractErrorMessage } from '../../core/http-error';
 import { FamilyMembers } from '../../core/family-members';
 import { CollectionResponse, FamilyMemberResponse, NodeResponse, OccurrenceResponse } from '../../core/models';
 import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
+import { periodLabel } from '../../core/period-label';
 import { parseQuickAdd } from '../../core/quick-add';
 import { SegmentedControlOption } from '../../shared/components/segmented-control/segmented-control.component';
 
@@ -44,9 +46,9 @@ type ViewMode = 'month' | 'week' | 'day';
 })
 export class CalendarPage implements OnInit {
   readonly viewModeOptions: SegmentedControlOption[] = [
-    { value: 'month', label: 'Month' },
-    { value: 'week', label: 'Week' },
-    { value: 'day', label: 'Day' },
+    { value: 'month', label: this.transloco.translate('calendar.views.month') },
+    { value: 'week', label: this.transloco.translate('calendar.views.week') },
+    { value: 'day', label: this.transloco.translate('calendar.views.day') },
   ];
 
   viewMode: ViewMode = 'month';
@@ -81,6 +83,7 @@ export class CalendarPage implements OnInit {
     private readonly membersApi: FamilyMembers,
     private readonly nodesApi: Nodes,
     private readonly cdr: ChangeDetectorRef,
+    private readonly transloco: TranslocoService,
   ) {}
 
   ngOnInit() {
@@ -154,7 +157,7 @@ export class CalendarPage implements OnInit {
         this.loadOccurrences();
       },
       error: () => {
-        this.errorMessage = 'Could not load your calendars.';
+        this.errorMessage = this.transloco.translate('calendar.errors.load_calendars');
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -204,7 +207,7 @@ export class CalendarPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not load your calendar. Pull to refresh to try again.';
+        this.errorMessage = this.transloco.translate('calendar.errors.load');
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -262,13 +265,7 @@ export class CalendarPage implements OnInit {
   }
 
   get periodLabel(): string {
-    if (this.viewMode === 'month') return format(this.viewDate, 'MMMM yyyy');
-    if (this.viewMode === 'day') return format(this.viewDate, 'EEEE, MMMM d');
-    const start = this.weekDays[0];
-    const lastDay = this.weekDays[6];
-    return isSameMonth(start, lastDay)
-      ? `${format(start, 'MMM d')} – ${format(lastDay, 'd, yyyy')}`
-      : `${format(start, 'MMM d')} – ${format(lastDay, 'MMM d, yyyy')}`;
+    return periodLabel(this.viewMode, this.viewDate, this.weekDays, this.transloco.getActiveLang());
   }
 
   selectDay(cell: DayCell) {
@@ -320,7 +317,7 @@ export class CalendarPage implements OnInit {
           this.cdr.markForCheck();
         },
         error: (err) => {
-          this.errorMessage = extractErrorMessage(err, 'Could not create that calendar.');
+          this.errorMessage = extractErrorMessage(err, this.transloco.translate('calendar.errors.create_calendar'));
           this.cdr.markForCheck();
         },
       });
@@ -334,7 +331,7 @@ export class CalendarPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not get a subscribe link for that calendar.';
+        this.errorMessage = this.transloco.translate('calendar.errors.subscribe');
         this.cdr.markForCheck();
       },
     });
@@ -397,7 +394,7 @@ export class CalendarPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not load that event.';
+        this.errorMessage = this.transloco.translate('calendar.errors.load_event');
         this.cdr.markForCheck();
       },
     });
@@ -452,7 +449,7 @@ export class CalendarPage implements OnInit {
     request$.subscribe({
       next: () => this.loadOccurrences(),
       error: () => {
-        this.errorMessage = 'Could not reschedule that event.';
+        this.errorMessage = this.transloco.translate('calendar.errors.reschedule');
         this.cdr.markForCheck();
       },
     });
@@ -465,7 +462,7 @@ export class CalendarPage implements OnInit {
     if (!parsed.title || !calendarId) return;
 
     if (!parsed.start) {
-      this.errorMessage = `Couldn't find a date/time in "${text}" — try e.g. "tomorrow 5pm".`;
+      this.errorMessage = this.transloco.translate('calendar.errors.no_date', { text });
       this.cdr.markForCheck();
       return;
     }
@@ -492,7 +489,7 @@ export class CalendarPage implements OnInit {
           this.loadOccurrences();
         },
         error: (err) => {
-          this.errorMessage = extractErrorMessage(err, 'Could not create that event.');
+          this.errorMessage = extractErrorMessage(err, this.transloco.translate('calendar.errors.create_event'));
           this.cdr.markForCheck();
         },
       });
@@ -546,7 +543,7 @@ export class CalendarPage implements OnInit {
         this.loadOccurrences();
       },
       error: (err) => {
-        this.errorMessage = extractErrorMessage(err, wasEditing ? 'Could not save that event.' : 'Could not create that event.');
+        this.errorMessage = extractErrorMessage(err, this.transloco.translate(wasEditing ? 'calendar.errors.save_event' : 'calendar.errors.create_event'));
         this.cdr.markForCheck();
       },
     });
@@ -585,7 +582,7 @@ export class CalendarPage implements OnInit {
     request$.subscribe({
       next: () => this.loadOccurrences(),
       error: () => {
-        this.errorMessage = 'Could not remove that event.';
+        this.errorMessage = this.transloco.translate('calendar.errors.remove_event');
         this.cdr.markForCheck();
       },
     });

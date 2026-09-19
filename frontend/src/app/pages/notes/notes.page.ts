@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { forkJoin } from 'rxjs';
 import { FamilyMembers } from '../../core/family-members';
 import { extractErrorMessage } from '../../core/http-error';
@@ -25,6 +26,7 @@ export class NotesPage implements OnInit {
     private readonly nodesApi: Nodes,
     private readonly membersApi: FamilyMembers,
     private readonly cdr: ChangeDetectorRef,
+    private readonly transloco: TranslocoService,
   ) {}
 
   ngOnInit() {
@@ -45,7 +47,7 @@ export class NotesPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not load your notes. Pull to refresh to try again.';
+        this.errorMessage = this.transloco.translate('notes.errors.load');
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -66,7 +68,7 @@ export class NotesPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not update that note.';
+        this.errorMessage = this.transloco.translate('notes.errors.update');
         this.cdr.markForCheck();
       },
     });
@@ -79,7 +81,7 @@ export class NotesPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not delete that note.';
+        this.errorMessage = this.transloco.translate('notes.errors.delete');
         this.cdr.markForCheck();
       },
     });
@@ -145,7 +147,7 @@ export class NotesPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        this.errorMessage = extractErrorMessage(err, wasEditing ? 'Could not save that note.' : 'Could not create that note.');
+        this.errorMessage = extractErrorMessage(err, this.transloco.translate(wasEditing ? 'notes.errors.save' : 'notes.errors.create'));
         this.cdr.markForCheck();
       },
     });

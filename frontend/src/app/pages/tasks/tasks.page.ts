@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { Collections, NULL_HOUSEHOLD_FIELDS } from '../../core/collections';
 import { extractErrorMessage } from '../../core/http-error';
 import { CollectionResponse } from '../../core/models';
@@ -24,6 +25,7 @@ export class TasksPage implements OnInit {
   constructor(
     private readonly collectionsApi: Collections,
     private readonly cdr: ChangeDetectorRef,
+    private readonly transloco: TranslocoService,
   ) {}
 
   ngOnInit() {
@@ -41,7 +43,7 @@ export class TasksPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not load your lists. Pull to refresh to try again.';
+        this.errorMessage = this.transloco.translate('tasks.errors.load');
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -86,7 +88,7 @@ export class TasksPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        this.errorMessage = extractErrorMessage(err, wasEditing ? 'Could not save that list.' : 'Could not create that list.');
+        this.errorMessage = extractErrorMessage(err, this.transloco.translate(wasEditing ? 'tasks.errors.save' : 'tasks.errors.create'));
         this.submitting = false;
         this.cdr.markForCheck();
       },

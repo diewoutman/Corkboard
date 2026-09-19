@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AgendaItem } from '../../../core/agenda';
 import { FamilyMemberResponse } from '../../../core/models';
@@ -19,7 +20,7 @@ import { MemberAvatarsComponent } from '../../member-avatars.component';
   selector: 'app-agenda-list-item',
   standalone: true,
   host: { class: 'contents' },
-  imports: [DatePipe, MemberAvatarsComponent],
+  imports: [DatePipe, MemberAvatarsComponent, TranslocoPipe],
   template: `
     <li class="flex items-center gap-2 py-1.5" [class]="dividerClass">
       @if (item.kind === 'task') {
@@ -31,7 +32,7 @@ import { MemberAvatarsComponent } from '../../member-avatars.component';
       <span class="truncate text-sm" [class]="titleClass">{{ item.title }}</span>
 
       @if (titleMode === 'auto' && item.overdue) {
-        <span class="shrink-0 rounded-full bg-danger px-2 py-0.5 text-xs font-extrabold text-white">Overdue</span>
+        <span class="shrink-0 rounded-full bg-danger px-2 py-0.5 text-xs font-extrabold text-white">{{ 'shared.overdue' | transloco }}</span>
       }
 
       @if (showAvatars) {

@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { Router } from '@angular/router';
 import { Auth } from '../../core/auth';
 import { Families } from '../../core/families';
@@ -23,6 +24,7 @@ export class FamilySetupPage {
     private readonly auth: Auth,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
+    private readonly transloco: TranslocoService,
   ) {}
 
   submit() {
@@ -46,7 +48,7 @@ export class FamilySetupPage {
         },
         error: (err) => {
           this.submitting = false;
-          this.errorMessage = extractErrorMessage(err, 'Something went wrong. Please try again.');
+          this.errorMessage = extractErrorMessage(err, this.transloco.translate('common.generic_error'));
           this.cdr.markForCheck();
         },
       });

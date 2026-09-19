@@ -1,7 +1,9 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { Auth } from '../../core/auth';
+import { Language } from '../../core/language';
 import { extractErrorMessage } from '../../core/http-error';
 import { Setup } from '../../core/setup';
 
@@ -33,6 +35,8 @@ export class LoginPage implements OnInit {
     private readonly setup: Setup,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
+    private readonly transloco: TranslocoService,
+    private readonly language: Language,
   ) {}
 
   ngOnInit() {
@@ -60,11 +64,14 @@ export class LoginPage implements OnInit {
     request$.subscribe({
       next: (auth) => {
         this.submitting = false;
-        this.router.navigateByUrl(auth.familyId ? '/home' : '/family-setup');
+        const target = auth.familyId ? '/home' : '/family-setup';
+        // The account's saved language wins over this device's; switching it needs a full page load.
+        if (this.language.adopt(auth.language)) window.location.href = target;
+        else this.router.navigateByUrl(target);
       },
       error: (err) => {
         this.submitting = false;
-        this.errorMessage = extractErrorMessage(err, 'Something went wrong. Please try again.');
+        this.errorMessage = extractErrorMessage(err, this.transloco.translate('common.generic_error'));
         this.cdr.markForCheck();
       },
     });

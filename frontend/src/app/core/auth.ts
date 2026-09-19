@@ -34,6 +34,13 @@ export class Auth {
       .pipe(tap((auth) => this.persist(auth)));
   }
 
+  /** Stores the language on the account; the response is a fresh token/auth carrying it. */
+  updateLanguage(language: string) {
+    return this.http
+      .put<AuthResponse>(`${environment.apiUrl}/account/language`, { language })
+      .pipe(tap((auth) => this.persist(auth)));
+  }
+
   /** Swaps in a fresh token — used after family setup, whose new token carries the FamilyId claim. */
   applyAuth(auth: AuthResponse) {
     this.persist(auth);

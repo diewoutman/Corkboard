@@ -1,7 +1,7 @@
 <app-loading-indicator *ngIf="loading" />
 
 <div *ngIf="!loading">
-  <p *ngIf="isEmpty" class="text-sm font-semibold text-ink-muted">Nothing on today's timeline. 🎉</p>
+  <p *ngIf="isEmpty" class="text-sm font-semibold text-ink-muted">{{ 'timeline.nothing' | transloco }} 🎉</p>
 
   <div
     *ngIf="!isEmpty"
@@ -11,7 +11,7 @@
   >
     <div *ngFor="let segment of segments" [attr.data-segment]="segment.key">
       <h2 class="mb-1 flex items-center gap-1.5 text-xs font-extrabold" [class]="segment.key === currentKey ? 'text-coral' : 'text-ink'">
-        {{ segment.label }}
+        {{ segment.labelKey ? (segment.labelKey | transloco) : segment.label }}
         <span *ngIf="segment.key === currentKey" class="h-1.5 w-1.5 shrink-0 rounded-full bg-coral"></span>
       </h2>
       <ul *ngIf="segment.items.length > 0" class="flex flex-col gap-1 pl-1">
@@ -27,7 +27,7 @@
       </ul>
       <!-- Hourly has 24 slots, most empty — a "Nothing planned" line per slot would be pure noise;
            the bare hour label is enough of a ruler. Dayparts (only 4-5 slots) keeps it. -->
-      <p *ngIf="segment.items.length === 0 && !hourlyLayout" class="pl-1 text-xs font-semibold text-ink-muted">Nothing planned.</p>
+      <p *ngIf="segment.items.length === 0 && !hourlyLayout" class="pl-1 text-xs font-semibold text-ink-muted">{{ 'timeline.nothing_planned' | transloco }}</p>
     </div>
   </div>
 </div>

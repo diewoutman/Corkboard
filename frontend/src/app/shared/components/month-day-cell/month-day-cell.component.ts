@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { OccurrenceResponse } from '../../../core/models';
 
 /**
@@ -15,6 +16,7 @@ import { OccurrenceResponse } from '../../../core/models';
 @Component({
   selector: 'app-month-day-cell',
   standalone: true,
+  imports: [TranslocoPipe],
   host: { class: 'contents' },
   template: `
     <button
@@ -31,7 +33,7 @@ import { OccurrenceResponse } from '../../../core/models';
         <span class="w-full truncate rounded-md px-1 text-[10px] font-bold text-white" [style.background]="calendarColor(o.collectionId)">{{ o.title }}</span>
       }
       @if (occurrences.length > 3) {
-        <span class="text-[10px] font-bold text-ink-muted">+{{ occurrences.length - 3 }} more</span>
+        <span class="text-[10px] font-bold text-ink-muted">{{ 'shared.more' | transloco: { count: occurrences.length - 3 } }}</span>
       }
     </button>
   `,

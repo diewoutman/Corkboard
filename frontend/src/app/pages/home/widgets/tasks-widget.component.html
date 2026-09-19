@@ -1,7 +1,7 @@
 <p *ngIf="listName" class="-mt-1 mb-2 text-xs font-bold text-ink-muted">{{ listName }}</p>
-<p *ngIf="!listName && assignedToMeOnly" class="-mt-1 mb-2 text-xs font-bold text-ink-muted">Assigned to me</p>
+<p *ngIf="!listName && assignedToMeOnly" class="-mt-1 mb-2 text-xs font-bold text-ink-muted">{{ 'home.tasks.assigned_to_me' | transloco }}</p>
 
-<div *ngIf="loading" class="text-sm font-semibold text-ink-muted">Loading…</div>
+<div *ngIf="loading" class="text-sm font-semibold text-ink-muted">{{ 'common.loading' | transloco }}</div>
 
 <ul *ngIf="!loading" class="space-y-1.5">
   <li *ngFor="let task of tasks" class="flex items-center gap-2">
@@ -10,7 +10,7 @@
     <app-member-avatars class="ml-auto shrink-0" [members]="members" [assignedIds]="task.assignedFamilyMemberIds"></app-member-avatars>
     <span *ngIf="task.until" class="shrink-0 text-xs" [ngClass]="dueClass(task)">{{ task.until | date: 'MMM d' }}</span>
   </li>
-  <li *ngIf="tasks.length === 0" class="text-sm font-semibold text-ink-muted">Nothing here.</li>
+  <li *ngIf="tasks.length === 0" class="text-sm font-semibold text-ink-muted">{{ 'home.tasks.nothing_here' | transloco }}</li>
 </ul>
 
-<a [routerLink]="collectionId ? ['/tasks', collectionId] : ['/tasks']" class="mt-3 inline-block text-xs font-extrabold text-coral hover:text-coral-strong">View all →</a>
+<a [routerLink]="collectionId ? ['/tasks', collectionId] : ['/tasks']" class="mt-3 inline-block text-xs font-extrabold text-coral hover:text-coral-strong">{{ 'home.tasks.view_all' | transloco }}</a>

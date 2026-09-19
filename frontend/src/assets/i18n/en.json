@@ -1,0 +1,381 @@
+{
+  "account": {
+    "menu": "Account menu",
+    "admin_console": "Admin console",
+    "language": "Language",
+    "log_out": "Log out"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "create": "Create",
+    "save_changes": "Save changes",
+    "loading": "Loading…",
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "name": "Name",
+    "color": "Color",
+    "title": "Title",
+    "generic_error": "Something went wrong. Please try again.",
+    "optional": "(optional)"
+  },
+  "tasks": {
+    "title": "Lists",
+    "new_list": "New list",
+    "edit_list": "Edit list",
+    "empty": "No lists yet — create one to start adding tasks.",
+    "list_name": "List name",
+    "list_name_placeholder": "e.g. Groceries, Chores…",
+    "list_color": "List color",
+    "errors": {
+      "load": "Could not load your lists. Pull to refresh to try again.",
+      "create": "Could not create that list.",
+      "save": "Could not save that list."
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "daily": "Daily",
+    "administration": "Administration",
+    "more": "More",
+    "tasks": "Tasks",
+    "notes": "Notes",
+    "calendar": "Calendar",
+    "role_hint_owner": "Owner: can manage family members and create logins for them",
+    "role_hint_member": "Everyone with a login sees this family's full Tasks, Notes and Calendar — there is no per-list restriction",
+    "family": "Family"
+  },
+  "tiles": {
+    "tasks": {
+      "title": "Tasks",
+      "description": "Lists and to-dos for the whole family."
+    },
+    "notes": {
+      "title": "Notes",
+      "description": "Quick notes and reminders worth keeping."
+    },
+    "calendar": {
+      "title": "Calendar",
+      "description": "Events, calendars and weekly schedules."
+    },
+    "contacts": {
+      "title": "Contacts",
+      "description": "Phone numbers, emails and addresses, by household."
+    },
+    "family": {
+      "title": "Family",
+      "description": "Manage family members and their logins."
+    }
+  },
+  "timeline": {
+    "segments": {
+      "anytime": "All day",
+      "night": "Night",
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening"
+    },
+    "nothing": "Nothing on today's timeline.",
+    "nothing_planned": "Nothing planned."
+  },
+  "home": {
+    "welcome": "Welcome",
+    "scope": {
+      "family": "Family",
+      "personal": "Personal"
+    },
+    "hint_editable": "Drag widgets to reorder them, or use ↔ to resize.",
+    "hint_readonly": "Only family admins can edit the Family dashboard.",
+    "empty_editable": "Your dashboard is empty — add a widget to get started.",
+    "empty_readonly": "No widgets yet — ask a family admin to set one up.",
+    "widget_titles": {
+      "navigation": "Navigation",
+      "notes": "Notes",
+      "important_notes": "Important notes",
+      "tasks": "Tasks",
+      "my_tasks": "My tasks",
+      "today": "Today",
+      "upcoming": "Upcoming",
+      "timeline": "Timeline"
+    },
+    "widget_types": {
+      "navigation": "Navigation",
+      "notes": "Notes",
+      "tasks": "Tasks",
+      "today": "Today",
+      "timeline": "Timeline",
+      "upcoming": "Upcoming",
+      "shortcut": "Shortcut"
+    },
+    "form": {
+      "configure": "Configure widget",
+      "add": "Add a widget",
+      "add_widget": "Add widget",
+      "type": "Type",
+      "destination": "Destination",
+      "tile_order": "Tile order",
+      "drag_to_reorder": "(drag to reorder)",
+      "important_only": "Only show notes marked important",
+      "tasks_assigned_to_me": "Everything assigned to me",
+      "tasks_specific_list": "A specific list",
+      "choose_list": "Choose a list…",
+      "timeline_family": "Everyone's tasks and events",
+      "timeline_mine": "Only assigned to me",
+      "timeline_segments": "Dayparts (morning/afternoon/evening/night)",
+      "timeline_hourly": "Hour by hour",
+      "show_panel": "Show panel"
+    },
+    "notes": {
+      "none_important": "No important notes.",
+      "none": "No notes yet.",
+      "view_all": "View all notes →"
+    },
+    "tasks": {
+      "assigned_to_me": "Assigned to me",
+      "nothing_here": "Nothing here.",
+      "view_all": "View all →"
+    },
+    "today": {
+      "unassigned": "Unassigned",
+      "nothing_due": "Nothing due today."
+    },
+    "upcoming": {
+      "overdue": "Overdue",
+      "today": "Today",
+      "tomorrow": "Tomorrow"
+    },
+    "errors": {
+      "load": "Could not load your dashboard. Pull to refresh to try again.",
+      "reorder": "Could not save the new widget order.",
+      "resize": "Could not resize that widget.",
+      "remove": "Could not remove that widget.",
+      "save": "Could not save that widget."
+    }
+  },
+  "roles": {
+    "Owner": "Owner",
+    "Adult": "Adult",
+    "Member": "Member"
+  },
+  "shared": {
+    "assigned_to": "Assigned to",
+    "overdue": "Overdue",
+    "empty": "Empty",
+    "list_left": "{{left}} of {{total}} left",
+    "due": "Due {{date}}",
+    "repeats_hint": "Repeats — completing it rolls the due date forward",
+    "mark_important": "Mark as important",
+    "unmark_important": "Unmark as important",
+    "widget_resize": "Resize widget",
+    "widget_configure": "Configure widget",
+    "widget_remove": "Remove widget",
+    "every_other_week": "Every other week",
+    "ends": "Ends {{date}}",
+    "nothing_yet": "Nothing yet.",
+    "more": "+{{count}} more"
+  },
+  "login": {
+    "first_run_title": "Welcome! Let's create your account",
+    "first_run_description": "Nobody's set up this Qorkboard yet. Create your account first — you'll set up your family next.",
+    "log_in": "Log in",
+    "email": "Email",
+    "password": "Password",
+    "create_account": "Create account and continue"
+  },
+  "setup": {
+    "title": "Set up your family",
+    "description": "One-time setup — this creates your family and you as its first member.",
+    "family_name": "Family name",
+    "family_name_placeholder": "e.g. The Smiths",
+    "time_zone": "Time zone",
+    "display_name": "Your display name",
+    "display_name_placeholder": "e.g. Wouter",
+    "your_color": "Your color",
+    "create_family": "Create family"
+  },
+  "members": {
+    "title": "Add your family",
+    "description": "Add the rest of your family so you can assign notes, tasks, and appointments to them. You can always add more later.",
+    "remove": "Remove",
+    "name_placeholder": "e.g. Kids, partner, grandparent…",
+    "add": "Add family member",
+    "finish": "Finish setup",
+    "errors": {
+      "load": "Could not load your family members.",
+      "add": "Could not add that family member.",
+      "remove": "Could not remove that family member."
+    }
+  },
+  "notes": {
+    "empty": "No notes here yet.",
+    "add": "Add note",
+    "edit": "Edit note",
+    "note": "Note",
+    "errors": {
+      "load": "Could not load your notes. Pull to refresh to try again.",
+      "update": "Could not update that note.",
+      "delete": "Could not delete that note.",
+      "create": "Could not create that note.",
+      "save": "Could not save that note."
+    }
+  },
+  "task_list": {
+    "show_completed": "Show completed",
+    "quick_add_placeholder": "Add a task… try \"Buy milk tomorrow 5pm #Groceries\"",
+    "other": "Other",
+    "empty": "No tasks here yet.",
+    "add": "Add task",
+    "edit": "Edit task",
+    "task": "Task",
+    "notes": "Notes",
+    "due_date": "Due date",
+    "priority": "Priority",
+    "priorities": {
+      "none": "None",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "category": "Category",
+    "category_hint": "(optional — groups the list, e.g. for a shopping list)",
+    "category_placeholder": "e.g. Produce, Dairy, Household…",
+    "repeat": "Repeat",
+    "repeat_hint": "(optional — completing it rolls the due date forward instead of finishing it)",
+    "repeats": {
+      "never": "Never",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly"
+    },
+    "errors": {
+      "load": "Could not load this list. Pull to refresh to try again.",
+      "update": "Could not update that task.",
+      "delete": "Could not delete that task.",
+      "create": "Could not create that task.",
+      "save": "Could not save that task."
+    }
+  },
+  "family": {
+    "intro": "Everyone with a login sees this family's full Tasks, Notes and Calendar — there's no per-list sharing yet.",
+    "owner_note": "Only the Owner can create logins and manage members; Adult and Member accounts otherwise have the same access.",
+    "no_login": "No login yet — only the Owner can create one.",
+    "create_login": "Create login",
+    "password_hint": "Share this with them yourself — they can change it after logging in.",
+    "role": "Role",
+    "empty": "No family members yet.",
+    "birthday": "Birthday",
+    "errors": {
+      "load": "Could not load your family members. Pull to refresh to try again.",
+      "save": "Could not save that family member.",
+      "login": "Could not create that login."
+    }
+  },
+  "weekdays": {
+    "mo": "Monday",
+    "tu": "Tuesday",
+    "we": "Wednesday",
+    "th": "Thursday",
+    "fr": "Friday",
+    "sa": "Saturday",
+    "su": "Sunday"
+  },
+  "schedule": {
+    "title": "Schedule",
+    "add": "Add entry",
+    "edit": "Edit entry",
+    "day": "Day",
+    "start_time": "Start time",
+    "end_time": "End time",
+    "location": "Location",
+    "ends_on": "Ends on",
+    "errors": {
+      "load": "Could not load this schedule. Pull to refresh to try again.",
+      "save": "Could not save that entry.",
+      "add": "Could not add that entry.",
+      "remove": "Could not remove that entry."
+    }
+  },
+  "weekdays_short": {
+    "mo": "Mon",
+    "tu": "Tue",
+    "we": "Wed",
+    "th": "Thu",
+    "fr": "Fri",
+    "sa": "Sat",
+    "su": "Sun"
+  },
+  "calendar": {
+    "views": {
+      "month": "Month",
+      "week": "Week",
+      "day": "Day"
+    },
+    "quick_add_placeholder": "Add an event… try \"Dentist tomorrow 3pm\"",
+    "previous": "Previous",
+    "next": "Next",
+    "grid_hint": "Drag on the grid to add an event, or drag an event to reschedule it.",
+    "add_event": "Add event",
+    "edit_event": "Edit event",
+    "event": "Event",
+    "start": "Start",
+    "end": "End",
+    "nothing_on_day": "Nothing on this day.",
+    "add_calendar_hint": "Add a calendar in the sidebar to start adding events.",
+    "calendars": "Calendars",
+    "schedules": "Schedules",
+    "subscribe": "Subscribe link",
+    "import_ics": "Import .ics",
+    "no_calendars": "No calendars yet.",
+    "no_schedules": "No schedules yet.",
+    "edit_schedule": "Edit schedule",
+    "calendar_name_placeholder": "e.g. Family, Work…",
+    "calendar_color": "Calendar color",
+    "schedule_name_placeholder": "e.g. School schedule…",
+    "schedule_color": "Schedule color",
+    "errors": {
+      "load_calendars": "Could not load your calendars.",
+      "load": "Could not load your calendar. Pull to refresh to try again.",
+      "create_calendar": "Could not create that calendar.",
+      "subscribe": "Could not get a subscribe link for that calendar.",
+      "load_event": "Could not load that event.",
+      "reschedule": "Could not reschedule that event.",
+      "no_date": "Couldn't find a date/time in \"{{text}}\" — try e.g. \"tomorrow 5pm\".",
+      "create_event": "Could not create that event.",
+      "save_event": "Could not save that event.",
+      "remove_event": "Could not remove that event."
+    }
+  },
+  "contacts": {
+    "households": "Households",
+    "no_households": "No households yet.",
+    "household_name_placeholder": "e.g. Jansen",
+    "street": "Street",
+    "postal_code": "Postal code",
+    "city": "City",
+    "country": "Country",
+    "add_household": "Add household",
+    "add_a_household": "Add a household",
+    "empty": "No contacts here yet.",
+    "first_name": "First name",
+    "last_name": "Last name",
+    "phone_numbers": "Phone numbers",
+    "phone_number": "Phone number",
+    "label_optional": "Label (optional)",
+    "add_phone": "Add phone number",
+    "email_addresses": "Email addresses",
+    "email_address": "Email address",
+    "add_email": "Add email address",
+    "household": "Household",
+    "address": "Address",
+    "address_optional_household": "(optional — leave blank to use the household address)",
+    "add": "Add contact",
+    "via_household": "via {{name}}",
+    "select_hint": "Select a contact to see their details.",
+    "errors": {
+      "load": "Could not load your contacts. Pull to refresh to try again.",
+      "save_household": "Could not save that household.",
+      "delete": "Could not delete that contact.",
+      "save": "Could not save that contact."
+    }
+  }
+}

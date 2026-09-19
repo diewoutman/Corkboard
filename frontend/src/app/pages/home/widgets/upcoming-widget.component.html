@@ -2,7 +2,7 @@
 
 <div *ngIf="!loading" class="space-y-4">
   <div *ngIf="overdue.length > 0" class="rounded-3xl bg-danger-bg p-4 shadow-[0_4px_0_0_var(--color-danger-shadow)]">
-    <h2 class="mb-2 font-heading text-sm font-bold text-danger-text-strong">Overdue ⚠️</h2>
+    <h2 class="mb-2 font-heading text-sm font-bold text-danger-text-strong">{{ 'home.upcoming.overdue' | transloco }} ⚠️</h2>
     <ul class="flex flex-col gap-1.5">
       <app-agenda-list-item
         *ngFor="let item of overdue"
@@ -33,7 +33,7 @@
       />
     </ul>
     <ng-template #noItems>
-      <p class="pl-1 text-xs font-semibold text-ink-muted">Nothing planned.</p>
+      <p class="pl-1 text-xs font-semibold text-ink-muted">{{ 'timeline.nothing_planned' | transloco }}</p>
     </ng-template>
   </div>
 </div>

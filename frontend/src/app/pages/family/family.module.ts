@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -14,6 +15,7 @@ import { FabButtonComponent } from '../../shared/components/fab-button/fab-butto
 
 @NgModule({
   imports: [
+    TranslocoPipe,
     CommonModule,
     FormsModule,
     FamilyPageRoutingModule,

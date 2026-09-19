@@ -19,6 +19,8 @@ export interface AuthResponse {
   familyId: string | null;
   role: string | null;
   isSystemOwner: boolean;
+  /** The account's stored UI language, or null until they pick one. */
+  language: string | null;
 }
 
 export interface CreateFamilyRequest {

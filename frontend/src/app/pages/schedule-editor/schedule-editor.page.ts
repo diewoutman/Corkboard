@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { addDays, format, getDay, startOfWeek } from 'date-fns';
@@ -9,14 +10,15 @@ import { CollectionResponse, FamilyMemberResponse, NodeResponse } from '../../co
 import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
 import { endsOn, isBiweekly } from '../../core/recurrence';
 
-const WEEKDAYS: { label: string; byDay: string }[] = [
-  { label: 'Monday', byDay: 'MO' },
-  { label: 'Tuesday', byDay: 'TU' },
-  { label: 'Wednesday', byDay: 'WE' },
-  { label: 'Thursday', byDay: 'TH' },
-  { label: 'Friday', byDay: 'FR' },
-  { label: 'Saturday', byDay: 'SA' },
-  { label: 'Sunday', byDay: 'SU' },
+/** `labelKey` is a translation key. */
+const WEEKDAYS: { labelKey: string; byDay: string }[] = [
+  { labelKey: 'weekdays.mo', byDay: 'MO' },
+  { labelKey: 'weekdays.tu', byDay: 'TU' },
+  { labelKey: 'weekdays.we', byDay: 'WE' },
+  { labelKey: 'weekdays.th', byDay: 'TH' },
+  { labelKey: 'weekdays.fr', byDay: 'FR' },
+  { labelKey: 'weekdays.sa', byDay: 'SA' },
+  { labelKey: 'weekdays.su', byDay: 'SU' },
 ];
 
 /** date-fns getDay() is 0=Sun..6=Sat; WEEKDAYS above is Mon-first, so remap. */
@@ -59,6 +61,7 @@ export class ScheduleEditorPage implements OnInit {
     private readonly membersApi: FamilyMembers,
     private readonly collectionsApi: Collections,
     private readonly cdr: ChangeDetectorRef,
+    private readonly transloco: TranslocoService,
   ) {}
 
   ngOnInit() {
@@ -82,7 +85,7 @@ export class ScheduleEditorPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not load this schedule. Pull to refresh to try again.';
+        this.errorMessage = this.transloco.translate('schedule.errors.load');
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -178,7 +181,7 @@ export class ScheduleEditorPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        this.errorMessage = extractErrorMessage(err, wasEditing ? 'Could not save that entry.' : 'Could not add that entry.');
+        this.errorMessage = extractErrorMessage(err, this.transloco.translate(wasEditing ? 'schedule.errors.save' : 'schedule.errors.add'));
         this.cdr.markForCheck();
       },
     });
@@ -191,7 +194,7 @@ export class ScheduleEditorPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not remove that entry.';
+        this.errorMessage = this.transloco.translate('schedule.errors.remove');
         this.cdr.markForCheck();
       },
     });

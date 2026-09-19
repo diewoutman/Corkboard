@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { Auth } from '../../core/auth';
 import { FamilyMembers } from '../../core/family-members';
 import { extractErrorMessage } from '../../core/http-error';
@@ -28,6 +29,7 @@ export class FamilyPage implements OnInit {
     private readonly auth: Auth,
     private readonly familyMembersApi: FamilyMembers,
     private readonly cdr: ChangeDetectorRef,
+    private readonly transloco: TranslocoService,
   ) {}
 
   ngOnInit() {
@@ -44,7 +46,7 @@ export class FamilyPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not load your family members. Pull to refresh to try again.';
+        this.errorMessage = this.transloco.translate('family.errors.load');
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -96,7 +98,7 @@ export class FamilyPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        this.errorMessage = extractErrorMessage(err, 'Could not save that family member.');
+        this.errorMessage = extractErrorMessage(err, this.transloco.translate('family.errors.save'));
         this.cdr.markForCheck();
       },
     });
@@ -109,7 +111,7 @@ export class FamilyPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not remove that family member.';
+        this.errorMessage = this.transloco.translate('members.errors.remove');
         this.cdr.markForCheck();
       },
     });
@@ -134,7 +136,7 @@ export class FamilyPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        this.errorMessage = extractErrorMessage(err, 'Could not create that login.');
+        this.errorMessage = extractErrorMessage(err, this.transloco.translate('family.errors.login'));
         this.cdr.markForCheck();
       },
     });

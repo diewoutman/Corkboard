@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FamilyMemberResponse } from '../../../core/models';
 import { MemberAvatarComponent } from '../member-avatar/member-avatar.component';
@@ -13,7 +14,7 @@ import { RoleBadgeComponent } from '../role-badge/role-badge.component';
 @Component({
   selector: 'app-family-member-card',
   standalone: true,
-  imports: [DatePipe, MemberAvatarComponent, RoleBadgeComponent],
+  imports: [DatePipe, MemberAvatarComponent, RoleBadgeComponent, TranslocoPipe],
   template: `
     <div class="rounded-3xl bg-white p-4 shadow-sticker">
       <div class="flex items-start justify-between gap-2">
@@ -22,8 +23,8 @@ import { RoleBadgeComponent } from '../role-badge/role-badge.component';
           <p class="font-heading font-bold text-ink">{{ member.displayName }}</p>
         </div>
         <div class="flex items-center gap-3">
-          <button type="button" (click)="edit.emit()" class="text-xs font-extrabold text-coral hover:text-coral-strong">✏️ Edit</button>
-          <button type="button" (click)="remove.emit()" class="text-ink-muted hover:text-danger" aria-label="Delete">✕</button>
+          <button type="button" (click)="edit.emit()" class="text-xs font-extrabold text-coral hover:text-coral-strong">✏️ {{ 'common.edit' | transloco }}</button>
+          <button type="button" (click)="remove.emit()" class="text-ink-muted hover:text-danger" [attr.aria-label]="'common.delete' | transloco">✕</button>
         </div>
       </div>
 

@@ -467,6 +467,9 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsSystemOwner")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Language")
+                        .HasColumnType("text");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
 
