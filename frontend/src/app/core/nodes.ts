@@ -41,7 +41,7 @@ export function toggleTaskCompletionRequest(task: NodeResponse, isCompleted: boo
     isImportant: null,
     isCompleted,
     priority: task.priority,
-    category: task.category,
+    sectionId: task.sectionId,
     location: null,
     allDay: null,
     recurrenceRule: task.recurrenceRule,

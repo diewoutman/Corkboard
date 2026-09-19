@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { Collections, NULL_HOUSEHOLD_FIELDS } from '../../core/collections';
 import { extractErrorMessage } from '../../core/http-error';
-import { CollectionResponse } from '../../core/models';
+import { CollectionResponse, CollectionScope } from '../../core/models';
 import { PALETTE } from '../../core/colors';
 
 @Component({
@@ -12,6 +12,7 @@ import { PALETTE } from '../../core/colors';
   standalone: false,
 })
 export class TasksPage implements OnInit {
+  readonly scopes: CollectionScope[] = ['Family', 'Personal'];
   lists: CollectionResponse[] = [];
   loading = true;
   errorMessage: string | null = null;
@@ -20,6 +21,7 @@ export class TasksPage implements OnInit {
   editingList: CollectionResponse | null = null;
   newListName = '';
   newListColor = PALETTE[0];
+  newListScope: CollectionScope = 'Family';
   submitting = false;
 
   constructor(
@@ -30,6 +32,24 @@ export class TasksPage implements OnInit {
 
   ngOnInit() {
     this.reload();
+  }
+
+  /** The Family and Personal Inbox, shown as one combined tile. */
+  get inboxes(): CollectionResponse[] {
+    return this.lists.filter((l) => l.isInbox);
+  }
+
+  get inboxNodeCount(): number {
+    return this.inboxes.reduce((sum, l) => sum + l.nodeCount, 0);
+  }
+
+  get inboxIncompleteCount(): number {
+    return this.inboxes.reduce((sum, l) => sum + (l.incompleteCount ?? 0), 0);
+  }
+
+  /** Lists you can open in the tasks UI — system-managed lists and the Inboxes are shown elsewhere or not at all. */
+  listsIn(scope: CollectionScope): CollectionResponse[] {
+    return this.lists.filter((l) => l.scope === scope && !l.isInbox && !l.isSystemManaged);
   }
 
   reload() {
@@ -53,6 +73,7 @@ export class TasksPage implements OnInit {
   openAddListForm() {
     this.editingList = null;
     this.newListName = '';
+    this.newListScope = 'Family';
     this.newListColor = PALETTE[this.lists.length % PALETTE.length];
     this.showNewListForm = true;
   }
@@ -75,7 +96,7 @@ export class TasksPage implements OnInit {
     this.submitting = true;
     const request$ = this.editingList
       ? this.collectionsApi.update(this.editingList.id, { name: this.newListName, color: this.newListColor, ...NULL_HOUSEHOLD_FIELDS })
-      : this.collectionsApi.create({ name: this.newListName, type: 'TaskList', color: this.newListColor, parentCollectionId: null, ...NULL_HOUSEHOLD_FIELDS });
+      : this.collectionsApi.create({ name: this.newListName, type: 'TaskList', color: this.newListColor, parentCollectionId: null, scope: this.newListScope, ...NULL_HOUSEHOLD_FIELDS });
 
     const wasEditing = !!this.editingList;
     request$.subscribe({
@@ -83,6 +104,7 @@ export class TasksPage implements OnInit {
         this.lists = (wasEditing ? this.lists.map((l) => (l.id === saved.id ? saved : l)) : [...this.lists, saved]).sort((a, b) =>
           a.name.localeCompare(b.name),
         );
+        this.newListColor = PALETTE[this.lists.length % PALETTE.length];
         this.closeListForm();
         this.submitting = false;
         this.cdr.markForCheck();

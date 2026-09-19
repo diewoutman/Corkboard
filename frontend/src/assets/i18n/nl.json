@@ -31,7 +31,20 @@
       "load": "Je lijsten konden niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
       "create": "De lijst kon niet worden aangemaakt.",
       "save": "De lijst kon niet worden opgeslagen."
-    }
+    },
+    "inbox": "Inbox",
+    "inbox_family": "Gezinsinbox",
+    "inbox_personal": "Persoonlijke inbox",
+    "scopes": {
+      "Family": "Gezin",
+      "Personal": "Persoonlijk"
+    },
+    "scope_hint": {
+      "Family": "Gedeeld met iedereen in het gezin.",
+      "Personal": "Alleen jij ziet deze lijst."
+    },
+    "list_scope": "Wie ziet het",
+    "empty_scope": "Nog geen lijsten."
   },
   "nav": {
     "home": "Home",
@@ -236,9 +249,6 @@
       "medium": "Gemiddeld",
       "high": "Hoog"
     },
-    "category": "Categorie",
-    "category_hint": "(optioneel — groepeert de lijst, bijv. voor een boodschappenlijst)",
-    "category_placeholder": "bijv. Groente, Zuivel, Huishouden…",
     "repeat": "Herhalen",
     "repeat_hint": "(optioneel — afronden schuift de deadline door in plaats van de taak af te ronden)",
     "repeats": {
@@ -255,7 +265,8 @@
       "update": "De taak kon niet worden bijgewerkt.",
       "delete": "De taak kon niet worden verwijderd.",
       "create": "De taak kon niet worden aangemaakt.",
-      "save": "De taak kon niet worden opgeslagen."
+      "save": "De taak kon niet worden opgeslagen.",
+      "section": "De sectie kon niet worden verwijderd."
     },
     "due_time": "Tijd",
     "due_time_hint": "(optioneel)",
@@ -280,7 +291,14 @@
     "monthly_modes": {
       "date": "Op dezelfde datum",
       "nth_weekday": "Op dezelfde weekdag (bv. 3e vrijdag)"
-    }
+    },
+    "add_to": "Toevoegen aan",
+    "inbox_quick_add_placeholder": "Leg een taak vast… probeer \"Tandarts bellen morgen 17:00\"",
+    "list": "Lijst",
+    "section": "Sectie",
+    "section_hint": "(optioneel — groepeert de lijst, bv. voor een boodschappenlijst)",
+    "section_placeholder": "bv. Groente, Zuivel, Huishouden…",
+    "delete_section": "Sectie verwijderen (de taken blijven in de lijst)"
   },
   "family": {
     "intro": "Iedereen met een login ziet alle taken, notities en de agenda van dit gezin — delen per lijst kan nog niet.",

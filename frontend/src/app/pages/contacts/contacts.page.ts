@@ -237,7 +237,7 @@ export class ContactsPage implements OnInit {
       assignedFamilyMemberIds: [],
       collectionId: this.contactForm.householdId || null,
       priority: null,
-      category: null,
+      sectionId: null,
       location: null,
       allDay: null,
       recurrenceRule: null,

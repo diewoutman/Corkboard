@@ -31,7 +31,20 @@
       "load": "Could not load your lists. Pull to refresh to try again.",
       "create": "Could not create that list.",
       "save": "Could not save that list."
-    }
+    },
+    "inbox": "Inbox",
+    "inbox_family": "Family inbox",
+    "inbox_personal": "Personal inbox",
+    "scopes": {
+      "Family": "Family",
+      "Personal": "Personal"
+    },
+    "scope_hint": {
+      "Family": "Shared with everyone in the family.",
+      "Personal": "Only you can see this list."
+    },
+    "list_scope": "Who can see it",
+    "empty_scope": "No lists here yet."
   },
   "nav": {
     "home": "Home",
@@ -236,9 +249,6 @@
       "medium": "Medium",
       "high": "High"
     },
-    "category": "Category",
-    "category_hint": "(optional — groups the list, e.g. for a shopping list)",
-    "category_placeholder": "e.g. Produce, Dairy, Household…",
     "repeat": "Repeat",
     "repeat_hint": "(optional — completing it rolls the due date forward instead of finishing it)",
     "repeats": {
@@ -255,7 +265,8 @@
       "update": "Could not update that task.",
       "delete": "Could not delete that task.",
       "create": "Could not create that task.",
-      "save": "Could not save that task."
+      "save": "Could not save that task.",
+      "section": "Could not delete that section."
     },
     "due_time": "Time",
     "due_time_hint": "(optional)",
@@ -280,7 +291,14 @@
     "monthly_modes": {
       "date": "On the same date",
       "nth_weekday": "On the same weekday (e.g. 3rd Friday)"
-    }
+    },
+    "add_to": "Add to",
+    "inbox_quick_add_placeholder": "Capture a task… try \"Call the dentist tomorrow 5pm\"",
+    "list": "List",
+    "section": "Section",
+    "section_hint": "(optional — groups the list, e.g. for a shopping list)",
+    "section_placeholder": "e.g. Produce, Dairy, Household…",
+    "delete_section": "Delete section (its tasks stay in the list)"
   },
   "family": {
     "intro": "Everyone with a login sees this family's full Tasks, Notes and Calendar — there's no per-list sharing yet.",

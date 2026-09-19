@@ -162,6 +162,15 @@ never reaches the user; each `CollectionType` gets its own user-facing framing:
 
 - **`TaskList`** — "a Task list is a Collection of Task Nodes". `/tasks` lists a
   family's `TaskList` Collections, `/tasks/{id}` shows the Tasks inside one.
+  Every Collection has a **scope**: `Family` (shared) or `Personal` (only its
+  `OwnerUserId` sees it — enforced in the collection and node services, so API
+  clients, which authenticate as themselves, never see Personal lists; only Task
+  lists can be Personal). Each scope has one fixed, non-deletable **Inbox**
+  (`IsInbox`, created lazily on first list; quick-add lands there; `/tasks/inbox`
+  shows the Family and Personal Inbox combined). `IsSystemManaged` lists are normal
+  lists hidden from the tasks UI. Inside a list, Tasks group into **Sections**
+  (`Section` entity with `SortOrder`, one level; `Task.SectionId`, replacing the old
+  free-text `Category`). Moving a task between lists just changes its `CollectionId`.
 - **`Calendar`** — "a Calendar is a Collection of Appointment Nodes". `/calendar`
   renders a month grid overlaying every `Calendar` Collection's Appointments (each
   toggleable, color-coded); creating an event picks which Calendar it belongs to.
@@ -564,6 +573,7 @@ frontend/                # Angular 22 + Tailwind CSS PWA (service worker) — no
 | `GET/POST /api/family-members`, `GET/PUT/DELETE /api/family-members/{id}` | FamilyMember CRUD — responses include `LinkedUserEmail`/`LinkedUserRole` when a member has a login |
 | `POST /api/family-members/{id}/account` | Owner-only — creates a login for a FamilyMember that doesn't have one yet and links it, in one call |
 | `GET/POST /api/nodes`, `PUT/DELETE /api/nodes/{id}` | Node CRUD across all four types (incl. Contact), with `?type=`/`?assignedTo=`/`?collectionId=`/`?from=`/`?until=` filters on the list endpoint |
+| `GET/POST /api/collections/{id}/sections`, `PUT/DELETE /api/collections/sections/{sectionId}` | Sections of a list; POST returns the existing section on a case-insensitive name match |
 | `GET/POST /api/collections`, `PUT/DELETE /api/collections/{id}` | Collection CRUD (Task lists, Calendars, Schedules, Households), with `?type=`/`?parentCollectionId=` filters — list responses include `NodeCount`/`IncompleteCount` |
 | `POST /api/collections/{id}/feed-token` | (Re)generates a Calendar's iCal feed URL |
 | `GET /api/calendar-feed/{collectionId}/{token}.ics` | Anonymous — the actual iCal subscribe feed |

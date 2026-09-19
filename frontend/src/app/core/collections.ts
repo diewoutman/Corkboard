@@ -5,6 +5,7 @@ import {
   CollectionResponse,
   CollectionType,
   CreateCollectionRequest,
+  SectionResponse,
   UpdateCollectionRequest,
 } from './models';
 
@@ -52,5 +53,23 @@ export class Collections {
   /** (Re)generates the calendar's iCal subscribe URL. */
   rotateFeedToken(id: string) {
     return this.http.post<CollectionResponse>(`${environment.apiUrl}/collections/${id}/feed-token`, {});
+  }
+
+  sections(collectionId: string) {
+    return this.http.get<SectionResponse[]>(`${environment.apiUrl}/collections/${collectionId}/sections`);
+  }
+
+  /** Returns the existing section when one with that name (any casing) already exists. */
+  createSection(collectionId: string, name: string) {
+    return this.http.post<SectionResponse>(`${environment.apiUrl}/collections/${collectionId}/sections`, { name });
+  }
+
+  updateSection(sectionId: string, request: { name: string; sortOrder: number }) {
+    return this.http.put<SectionResponse>(`${environment.apiUrl}/collections/sections/${sectionId}`, request);
+  }
+
+  /** Its tasks stay in the list, without a section. */
+  deleteSection(sectionId: string) {
+    return this.http.delete<void>(`${environment.apiUrl}/collections/sections/${sectionId}`);
   }
 }

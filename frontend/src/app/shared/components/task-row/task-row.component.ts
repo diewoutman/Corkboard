@@ -40,6 +40,9 @@ import { MemberBadgeComponent } from '../member-badge/member-badge.component';
           @if (task.until) {
             <span class="text-xs" [class]="dueClassFor(task)">{{ 'shared.due' | transloco: { date: (task.until | date: (hasTime(task) ? 'medium' : 'mediumDate')) } }}</span>
           }
+          @if (origin) {
+            <span class="rounded-full bg-cork px-2 py-0.5 text-xs font-bold text-ink-muted">{{ origin }}</span>
+          }
           @if (task.recurrenceRule) {
             <span class="text-xs text-ink-muted" [title]="'shared.repeats_hint' | transloco">🔁</span>
           }
@@ -56,6 +59,8 @@ import { MemberBadgeComponent } from '../member-badge/member-badge.component';
 export class TaskRowComponent {
   @Input({ required: true }) task!: NodeResponse;
   @Input() members: FamilyMemberResponse[] = [];
+  /** Which list the task comes from, when a view mixes several (the combined Inbox). */
+  @Input() origin: string | null = null;
   @Output() toggleDone = new EventEmitter<void>();
   @Output() delete = new EventEmitter<void>();
   @Output() edit = new EventEmitter<void>();
