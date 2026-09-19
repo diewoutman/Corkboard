@@ -191,14 +191,24 @@ builder.Services.AddTickerQ(options =>
 
 var app = builder.Build();
 
-// Ensures the Angular GUI's own first-party ApiClient row exists — every human
-// login (TokenService.CreateTokenAsync) attaches its id as a ClientId claim so
-// the GUI's own traffic shows up in the API-clients call log too. Idempotent;
-// assumes migrations have already been applied (this only queries/inserts,
-// never migrates).
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<CorkboardDbContext>();
+
+    // Opt-in, off by default: applying migrations from every instance that
+    // starts up is unsafe with more than one replica. The single-instance
+    // Docker image sets this so self-hosters don't need a separate `dotnet
+    // ef database update` step.
+    if (builder.Configuration.GetValue<bool>("ApplyMigrationsOnStartup"))
+    {
+        await db.Database.MigrateAsync();
+    }
+
+    // Ensures the Angular GUI's own first-party ApiClient row exists — every
+    // human login (TokenService.CreateTokenAsync) attaches its id as a
+    // ClientId claim so the GUI's own traffic shows up in the API-clients
+    // call log too. Idempotent; assumes migrations have already been applied
+    // (this only queries/inserts, never migrates, unless the flag above did).
     if (!await db.ApiClients.AnyAsync(c => c.IsFirstParty))
     {
         db.ApiClients.Add(new ApiClient
@@ -230,6 +240,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Serves the Angular build the Docker image copies into wwwroot (no-op if
+// wwwroot is empty, e.g. local `dotnet run` where the client runs via `ng
+// serve` instead). MapFallbackToFile below routes any unmatched GET request
+// to index.html so Angular's client-side router handles it.
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseCors(ClientCorsPolicy);
 
 app.UseRateLimiter();
@@ -242,5 +259,7 @@ app.UseMiddleware<ApiCallLoggingMiddleware>();
 app.MapControllers();
 
 app.UseTickerQ();
+
+app.MapFallbackToFile("index.html");
 
 app.Run();
