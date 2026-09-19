@@ -519,22 +519,24 @@ pre-answer them now.
 
 ## 8. Getting started (current scaffold)
 
-Layout matches §3.2, plus the Angular client at repo root (its own convention,
-alongside `src`/`tests` rather than under them):
+Layout matches §3.2, split into a `backend/` (.NET) and `frontend/` (Angular)
+monorepo tree, with cross-cutting bits (`docker-compose.yml`, `scripts/`, `docs/`)
+at the repo root:
 
 ```
-Corkboard.sln
 docker-compose.yml       # postgres only, for now — see §6
-src/
-  Corkboard.Api/          # ASP.NET Core Web API — see endpoint table below
-  Corkboard.Domain/       # Family, FamilyMember, Node (+ Note/TaskNode/Appointment), ...
-  Corkboard.Infrastructure/ # CorkboardDbContext (EF Core + Identity + TickerQ tables), migrations
-  Corkboard.Contracts/    # request/response DTOs — Auth, Families, FamilyMembers, Nodes
-tests/
-  Corkboard.Domain.Tests/  # empty so far
-  Corkboard.Api.Tests/     # ApiClientService, AdminService, FamilyService.UpdateAsync,
-                          # RequireScopeAttribute — in-memory-DB unit tests
-client/                  # Angular 22 + Tailwind CSS PWA (service worker) — no Ionic, see §4
+backend/
+  Corkboard.slnx
+  src/
+    Corkboard.Api/          # ASP.NET Core Web API — see endpoint table below
+    Corkboard.Domain/       # Family, FamilyMember, Node (+ Note/TaskNode/Appointment), ...
+    Corkboard.Infrastructure/ # CorkboardDbContext (EF Core + Identity + TickerQ tables), migrations
+    Corkboard.Contracts/    # request/response DTOs — Auth, Families, FamilyMembers, Nodes
+  tests/
+    Corkboard.Domain.Tests/  # empty so far
+    Corkboard.Api.Tests/     # ApiClientService, AdminService, FamilyService.UpdateAsync,
+                            # RequireScopeAttribute — in-memory-DB unit tests
+frontend/                # Angular 22 + Tailwind CSS PWA (service worker) — no Ionic, see §4
                           # + @angular/cdk (DragDropModule), added for the Home dashboard
   src/app/core/           # Auth, Families, FamilyMembers, Nodes, Collections, CalendarApi,
                           # Dashboard, Setup, ApiClients, Admin, AdminFamilyMembers
@@ -594,20 +596,20 @@ SDK, and Node/npm on `PATH`). It starts Postgres, waits for it to actually be re
 (`docker compose up --wait`, via the healthcheck in `docker-compose.yml`), applies
 pending EF Core migrations, then runs the API and the Angular dev server together
 (via `concurrently`, prefixed/colored output) — Ctrl+C stops both. First run also
-installs `dotnet-ef` (if missing) and `client/node_modules`. Postgres itself keeps
+installs `dotnet-ef` (if missing) and `frontend/node_modules`. Postgres itself keeps
 running afterwards (`docker compose down` to stop it).
 
 What that script does, spelled out (useful if something in it needs debugging):
 1. `docker compose up -d --wait postgres` — Postgres on `localhost:5432` (user/db/
    password all `corkboard`, matching `Corkboard.Api/appsettings.json`'s dev
    connection string — change both together if you change one).
-2. `dotnet ef database update --project src/Corkboard.Infrastructure --startup-project src/Corkboard.Api`
+2. `dotnet ef database update --project backend/src/Corkboard.Infrastructure --startup-project backend/src/Corkboard.Api`
    — applies the `InitialCreate` migration (Identity + domain + TickerQ tables).
-3. `dotnet run --project src/Corkboard.Api --launch-profile http` — API on
+3. `dotnet run --project backend/src/Corkboard.Api --launch-profile http` — API on
    `http://localhost:5147` (plain HTTP, deliberately — see below). A real
    `Jwt:SigningKey` is already set via `dotnet user-secrets` (not committed —
    see `Corkboard.Api.csproj`'s `UserSecretsId`); nothing to configure there.
-4. `npm --prefix client start` — Angular dev server. Points at
+4. `npm --prefix frontend start` — Angular dev server. Points at
    `http://localhost:5147/api` via `environment.ts`.
 
 Local dev deliberately uses plain HTTP, not the ASP.NET Core dev HTTPS cert

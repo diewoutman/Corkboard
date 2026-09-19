@@ -69,15 +69,17 @@ nobody in the household asked for. Qorkboard is the opposite bet:
 ## Project structure
 
 ```
-src/
-  Corkboard.Api/             # controllers, auth, DI wiring
-  Corkboard.Domain/          # entities: Family, FamilyMember, Node (Note/Task/Appointment/Contact), ...
-  Corkboard.Infrastructure/  # EF Core DbContext + migrations, TickerQ jobs, Identity, iCal
-  Corkboard.Contracts/       # request/response DTOs shared with the client's shape
-tests/
-  Corkboard.Domain.Tests/
-  Corkboard.Api.Tests/       # in-memory-DB unit tests + contract validation
-client/                      # Angular 22 + Tailwind CSS PWA
+backend/
+  Corkboard.slnx
+  src/
+    Corkboard.Api/             # controllers, auth, DI wiring
+    Corkboard.Domain/          # entities: Family, FamilyMember, Node (Note/Task/Appointment/Contact), ...
+    Corkboard.Infrastructure/  # EF Core DbContext + migrations, TickerQ jobs, Identity, iCal
+    Corkboard.Contracts/       # request/response DTOs shared with the client's shape
+  tests/
+    Corkboard.Domain.Tests/
+    Corkboard.Api.Tests/       # in-memory-DB unit tests + contract validation
+frontend/                     # Angular 22 + Tailwind CSS PWA
   src/app/core/               # Auth, Families, FamilyMembers, Nodes, Collections, CalendarApi, Dashboard, Admin, ...
   src/app/pages/               # login, family-setup, add-members, home, tasks, task-list, notes, calendar,
                                 # schedule-editor, contacts, family
@@ -98,7 +100,7 @@ Requirements: [Docker](https://docs.docker.com/get-docker/), the
 This starts Postgres in Docker, waits for it to be healthy, applies pending
 EF Core migrations, then runs the API and the Angular dev server together
 (Ctrl+C stops both; Postgres keeps running — `docker compose down` to stop
-it too). First run also installs `dotnet-ef` and `client/node_modules` if
+it too). First run also installs `dotnet-ef` and `frontend/node_modules` if
 missing.
 
 - API: `http://localhost:5147`
@@ -111,9 +113,9 @@ members) before landing on the dashboard.
 ### Running tests
 
 ```bash
-dotnet test                    # .NET unit tests
-npm --prefix client test       # Angular unit tests
-npm --prefix client run e2e    # Playwright end-to-end tests
+dotnet test                     # .NET unit tests
+npm --prefix frontend test      # Angular unit tests
+npm --prefix frontend run e2e   # Playwright end-to-end tests
 ```
 
 ### Regenerating the screenshots
@@ -121,7 +123,7 @@ npm --prefix client run e2e    # Playwright end-to-end tests
 The images above are captured by a dedicated Playwright script, not hand-taken:
 
 ```bash
-npm --prefix client run screenshots
+npm --prefix frontend run screenshots
 ```
 
 It drives the seeded dev family (starting the dev stack itself if it isn't

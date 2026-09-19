@@ -26,9 +26,9 @@ if ! command -v dotnet-ef >/dev/null 2>&1; then
   dotnet tool install --global dotnet-ef
 fi
 
-if [ ! -d client/node_modules ]; then
+if [ ! -d frontend/node_modules ]; then
   echo "==> Installing client dependencies (one-time)..."
-  npm --prefix client install
+  npm --prefix frontend install
 fi
 
 echo "==> Starting Postgres..."
@@ -36,10 +36,10 @@ docker compose up -d --wait postgres
 
 echo "==> Applying EF Core migrations..."
 dotnet ef database update \
-  --project src/Corkboard.Infrastructure \
-  --startup-project src/Corkboard.Api
+  --project backend/src/Corkboard.Infrastructure \
+  --startup-project backend/src/Corkboard.Api
 
 echo "==> Starting API (http://localhost:5147) and client (Ionic dev server)..."
 npx --yes concurrently --kill-others --names API,CLIENT --prefix-colors "blue,green" \
-  "dotnet run --project src/Corkboard.Api --launch-profile http" \
-  "npm --prefix client start"
+  "dotnet run --project backend/src/Corkboard.Api --launch-profile http" \
+  "npm --prefix frontend start"
