@@ -41,6 +41,10 @@
               routerLink="/admin"
               class="block w-full px-4 py-2 text-left text-sm font-bold text-ink-muted hover:text-coral"
             >{{ 'account.admin_console' | transloco }}</a>
+            <a
+              routerLink="/notifications"
+              class="block w-full px-4 py-2 text-left text-sm font-bold text-ink-muted hover:text-coral"
+            >{{ 'account.notifications' | transloco }}</a>
             <div class="flex items-center gap-1 px-4 py-2" role="group" [attr.aria-label]="'account.language' | transloco">
               <button
                 *ngFor="let lang of languages"

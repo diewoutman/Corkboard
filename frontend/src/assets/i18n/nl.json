@@ -3,7 +3,8 @@
     "menu": "Accountmenu",
     "admin_console": "Beheerconsole",
     "language": "Taal",
-    "log_out": "Uitloggen"
+    "log_out": "Uitloggen",
+    "notifications": "Meldingen"
   },
   "common": {
     "cancel": "Annuleren",
@@ -421,6 +422,37 @@
       "save_household": "Het huishouden kon niet worden opgeslagen.",
       "delete": "Het contact kon niet worden verwijderd.",
       "save": "Het contact kon niet worden opgeslagen."
+    }
+  },
+  "notifications": {
+    "title": "Meldingen",
+    "intro": "Krijg op dit apparaat een herinnering als een taak of afspraak aanstaande is — ook als de app dicht is.",
+    "on": "Herinneringen staan aan voor dit apparaat.",
+    "off": "Herinneringen staan uit voor dit apparaat.",
+    "enable": "Herinneringen aanzetten",
+    "disable": "Herinneringen uitzetten",
+    "lead": "Herinner mij",
+    "lead_hint": "Items met alleen een datum (zonder tijd) krijg je die dag om 9:00 te zien. Elk apparaat heeft een eigen instelling.",
+    "leads": {
+      "0": "Op het tijdstip zelf",
+      "5": "5 minuten van tevoren",
+      "10": "10 minuten van tevoren",
+      "15": "15 minuten van tevoren",
+      "30": "30 minuten van tevoren",
+      "60": "1 uur van tevoren",
+      "1440": "1 dag van tevoren"
+    },
+    "status": {
+      "unsupported": "Deze browser kan hier geen pushmeldingen ontvangen. (Op de ontwikkelserver staan ze ook uit.)",
+      "ios-needs-install": "Op iPhone en iPad werken meldingen pas als Qorkboard op je beginscherm staat: tik op Deel, kies \"Zet op beginscherm\", open de app van daaruit en kom terug op deze pagina.",
+      "server-disabled": "Pushmeldingen zijn op deze server nog niet ingesteld — vraag degene die de server beheert om de VAPID-sleutels in te stellen.",
+      "denied": "Meldingen zijn geblokkeerd voor deze site. Sta ze toe in je browserinstellingen en laad de pagina opnieuw."
+    },
+    "errors": {
+      "load": "De meldingsinstellingen konden niet worden gecontroleerd.",
+      "enable": "Herinneringen aanzetten is mislukt. Heb je meldingen toegestaan?",
+      "disable": "Herinneringen uitzetten is mislukt.",
+      "save": "Die instelling kon niet worden opgeslagen."
     }
   }
 }

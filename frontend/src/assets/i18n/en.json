@@ -3,7 +3,8 @@
     "menu": "Account menu",
     "admin_console": "Admin console",
     "language": "Language",
-    "log_out": "Log out"
+    "log_out": "Log out",
+    "notifications": "Notifications"
   },
   "common": {
     "cancel": "Cancel",
@@ -421,6 +422,37 @@
       "save_household": "Could not save that household.",
       "delete": "Could not delete that contact.",
       "save": "Could not save that contact."
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "intro": "Get a reminder on this device when a task or appointment is due — even when the app is closed.",
+    "on": "Reminders are on for this device.",
+    "off": "Reminders are off for this device.",
+    "enable": "Turn on reminders",
+    "disable": "Turn off reminders",
+    "lead": "Remind me",
+    "lead_hint": "Items with only a date (no time) are reminded at 9:00 that day. Each device has its own setting.",
+    "leads": {
+      "0": "At the time",
+      "5": "5 minutes before",
+      "10": "10 minutes before",
+      "15": "15 minutes before",
+      "30": "30 minutes before",
+      "60": "1 hour before",
+      "1440": "1 day before"
+    },
+    "status": {
+      "unsupported": "This browser can't receive push notifications here. (They are also off in the development server.)",
+      "ios-needs-install": "On iPhone and iPad, notifications only work once Qorkboard is on your Home Screen: tap the Share button, choose \"Add to Home Screen\", then open the app from there and come back to this page.",
+      "server-disabled": "Push notifications aren't set up on this server yet — ask whoever runs it to configure the VAPID keys.",
+      "denied": "Notifications are blocked for this site. Allow them in your browser settings, then reload this page."
+    },
+    "errors": {
+      "load": "Could not check the notification settings.",
+      "enable": "Could not turn on reminders. Did you allow notifications?",
+      "disable": "Could not turn off reminders.",
+      "save": "Could not save that setting."
     }
   }
 }
