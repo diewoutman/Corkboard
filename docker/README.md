@@ -23,9 +23,9 @@ docker build -f docker/Dockerfile -t corkboard .
 
 ## Prebuilt image
 
-The `Docker image` GitHub Action publishes to GHCR: pushes to `main` give
-`ghcr.io/diewoutman/corkboard:main`, and version tags (`v1.2.3`) give
-`:1.2.3`, `:1.2` and `:latest`. Pull requests only build, without pushing.
+The `Docker image` GitHub Action publishes to GHCR only when a version tag
+(`v1.2.3`) is pushed, giving `ghcr.io/diewoutman/corkboard:1.2.3`, `:1.2` and
+`:latest`. Pull requests and pushes to `main` only build, without pushing.
 
 ## Run
 
