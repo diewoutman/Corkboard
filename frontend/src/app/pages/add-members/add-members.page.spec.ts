@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { translocoTesting } from '../../testing/transloco-testing';
 import { AddMembersPage } from './add-members.page';
 
 describe('AddMembersPage', () => {
@@ -6,6 +7,7 @@ describe('AddMembersPage', () => {
   let fixture: ComponentFixture<AddMembersPage>;
 
   beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [translocoTesting()] });
     fixture = TestBed.createComponent(AddMembersPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
