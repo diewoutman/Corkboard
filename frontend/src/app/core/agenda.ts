@@ -150,7 +150,8 @@ export function groupBySegment(items: AgendaItem[]): TimelineSegment[] {
 }
 
 function hourLabel(hour: number): string {
-  return new Date(2020, 0, 1, hour).toLocaleTimeString([], { hour: 'numeric' });
+  // <html lang> is kept in sync with the app language (see Language.init), so this follows the language picker.
+  return new Date(2020, 0, 1, hour).toLocaleTimeString(document.documentElement.lang || [], { hour: 'numeric' });
 }
 
 /** Which hour-of-day slot key `date` falls into — used to scroll/highlight the Timeline widget's current hour. */
