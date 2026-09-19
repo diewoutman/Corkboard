@@ -34,6 +34,9 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
     public DbSet<CollectionAddress> CollectionAddresses => Set<CollectionAddress>();
     public DbSet<Section> Sections => Set<Section>();
 
+    public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
+    public DbSet<SentReminder> SentReminders => Set<SentReminder>();
+
     public DbSet<DashboardWidget> DashboardWidgets => Set<DashboardWidget>();
 
     public DbSet<ApiClient> ApiClients => Set<ApiClient>();
@@ -113,6 +116,22 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
                 .HasFilter("\"IsInbox\" AND \"Scope\" = 0");
             entity.HasIndex(c => new { c.FamilyId, c.OwnerUserId }).IsUnique().HasDatabaseName("IX_Collections_PersonalInbox")
                 .HasFilter("\"IsInbox\" AND \"Scope\" = 1");
+        });
+
+        builder.Entity<PushSubscription>(entity =>
+        {
+            entity.HasIndex(p => p.Endpoint).IsUnique();
+            entity.HasIndex(p => p.UserId);
+            entity.Property(p => p.Endpoint).HasMaxLength(2048);
+            entity.Property(p => p.UserAgent).HasMaxLength(500);
+        });
+
+        builder.Entity<SentReminder>(entity =>
+        {
+            entity.HasKey(r => new { r.PushSubscriptionId, r.NodeId, r.OccurrenceStart });
+            entity.HasOne(r => r.PushSubscription).WithMany().HasForeignKey(r => r.PushSubscriptionId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(r => r.Node).WithMany().HasForeignKey(r => r.NodeId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(r => r.OccurrenceStart);
         });
 
         builder.Entity<Section>(entity =>

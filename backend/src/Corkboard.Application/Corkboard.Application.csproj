@@ -6,4 +6,8 @@
     <ProjectReference Include="..\Corkboard.Contracts\Corkboard.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="WebPush" />
+  </ItemGroup>
+
 </Project>
