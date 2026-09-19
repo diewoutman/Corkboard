@@ -7,6 +7,7 @@
     "notifications": "Meldingen"
   },
   "common": {
+    "load_more": "Meer laden",
     "cancel": "Annuleren",
     "create": "Aanmaken",
     "save_changes": "Wijzigingen opslaan",
@@ -34,6 +35,7 @@
       "save": "De lijst kon niet worden opgeslagen."
     },
     "inbox": "Inbox",
+    "all": "Alle taken",
     "inbox_family": "Gezinsinbox",
     "inbox_personal": "Persoonlijke inbox",
     "scopes": {
@@ -234,6 +236,7 @@
     }
   },
   "task_list": {
+    "load_more": "Meer laden",
     "show_completed": "Afgeronde tonen",
     "quick_add_placeholder": "Voeg een taak toe… probeer \"Melk kopen morgen 17:00 #Boodschappen\"",
     "other": "Overig",

@@ -96,6 +96,8 @@
       </li>
     </ul>
 
+    <app-load-more class="block p-3" [visible]="contactList.hasMore" [loading]="contactList.loadingMore" (more)="loadMore()" />
+
     <p *ngIf="contacts.length === 0" class="px-4 py-8 text-center text-sm font-semibold text-ink-muted">{{ 'contacts.empty' | transloco }}</p>
   </div>
 

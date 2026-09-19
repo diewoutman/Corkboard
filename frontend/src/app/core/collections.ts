@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { fetchAll } from './paging';
 import {
   CollectionResponse,
   CollectionType,
@@ -27,11 +28,7 @@ export class Collections {
   private readonly http = inject(HttpClient);
 
   list(filter: CollectionListFilter = {}) {
-    let params = new HttpParams();
-    for (const [key, value] of Object.entries(filter)) {
-      if (value != null) params = params.set(key, value);
-    }
-    return this.http.get<CollectionResponse[]>(`${environment.apiUrl}/collections`, { params });
+    return fetchAll<CollectionResponse>(this.http, `${environment.apiUrl}/collections`, { ...filter });
   }
 
   get(id: string) {
@@ -56,7 +53,7 @@ export class Collections {
   }
 
   sections(collectionId: string) {
-    return this.http.get<SectionResponse[]>(`${environment.apiUrl}/collections/${collectionId}/sections`);
+    return fetchAll<SectionResponse>(this.http, `${environment.apiUrl}/collections/${collectionId}/sections`);
   }
 
   /** Returns the existing section when one with that name (any casing) already exists. */

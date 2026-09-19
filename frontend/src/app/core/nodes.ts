@@ -1,6 +1,8 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
+import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { Page, fetchAll, fetchPage } from './paging';
 import { CreateNodeRequest, NodeResponse, NodeType, UpdateNodeRequest } from './models';
 
 export interface NodeListFilter {
@@ -9,6 +11,25 @@ export interface NodeListFilter {
   collectionId?: string;
   from?: string;
   until?: string;
+  /** Tasks only. */
+  isCompleted?: boolean;
+  /** Notes only. */
+  isImportant?: boolean;
+  /** Due window on `until`: on/after dueFrom, strictly before dueUntil. Nodes without a due date never match; overdue ones do. */
+  dueFrom?: string;
+  dueUntil?: string;
+  scope?: 'Family' | 'Personal';
+  /** Tasks only. */
+  sectionId?: string;
+  /** Tasks only, exact match. */
+  priority?: number;
+  /** Case-insensitive match on title or description. */
+  search?: string;
+  /** createdAt (default), updatedAt, title, due, until or priority; a "-" prefix sorts descending. */
+  sort?: string;
+  /** 1-based; the API pages every list (pageSize 1–50, default 50). */
+  page?: number;
+  pageSize?: number;
 }
 
 /** Spread into a Create/UpdateNodeRequest for any non-Contact node type. */
@@ -53,12 +74,15 @@ export function toggleTaskCompletionRequest(task: NodeResponse, isCompleted: boo
 export class Nodes {
   private readonly http = inject(HttpClient);
 
-  list(filter: NodeListFilter = {}) {
-    let params = new HttpParams();
-    for (const [key, value] of Object.entries(filter)) {
-      if (value != null) params = params.set(key, value);
-    }
-    return this.http.get<NodeResponse[]>(`${environment.apiUrl}/nodes`, { params });
+  /** Every match, fetched page by page — for screens that need the whole set. Use listPage() for long, scrolling lists. */
+  list(filter: Omit<NodeListFilter, 'page' | 'pageSize'> = {}) {
+    return fetchAll<NodeResponse>(this.http, `${environment.apiUrl}/nodes`, { ...filter });
+  }
+
+  /** One page (page defaults to 1, pageSize to 50, the maximum) plus the total match count. */
+  listPage(filter: NodeListFilter): Observable<Page<NodeResponse>> {
+    const { page, pageSize, ...rest } = filter;
+    return fetchPage<NodeResponse>(this.http, `${environment.apiUrl}/nodes`, { ...rest }, page, pageSize);
   }
 
   get(id: string) {

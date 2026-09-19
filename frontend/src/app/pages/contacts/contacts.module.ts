@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { ContactsPageRoutingModule } from './contacts-routing.module';
 
 import { ContactsPage } from './contacts.page';
+import { LoadMoreComponent } from '../../shared/components/load-more/load-more.component';
 import { ErrorBannerComponent } from '../../shared/components/error-banner/error-banner.component';
 import { LoadingIndicatorComponent } from '../../shared/components/loading-indicator/loading-indicator.component';
 import { ContactListRowComponent } from '../../shared/components/contact-list-row/contact-list-row.component';
@@ -20,6 +21,7 @@ import { HouseholdRowComponent } from '../../shared/components/household-row/hou
     FormsModule,
     ContactsPageRoutingModule,
     ErrorBannerComponent,
+    LoadMoreComponent,
     LoadingIndicatorComponent,
     ContactListRowComponent,
     EntityDetailHeaderComponent,

@@ -28,3 +28,11 @@
     </tbody>
   </table>
 </div>
+
+<button
+  *ngIf="familyList.hasMore"
+  type="button"
+  (click)="loadMore()"
+  [disabled]="familyList.loadingMore"
+  class="mt-3 rounded-md border border-slate-700 px-3 py-1.5 text-xs font-extrabold text-slate-300 hover:bg-slate-800 disabled:opacity-50"
+>Load more ({{ families.length }}/{{ familyList.total }})</button>

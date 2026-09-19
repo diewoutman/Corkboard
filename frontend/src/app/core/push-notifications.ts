@@ -1,4 +1,5 @@
 import { HttpClient } from '@angular/common/http';
+import { fetchAll } from './paging';
 import { Service, inject } from '@angular/core';
 import { SwPush } from '@angular/service-worker';
 import { firstValueFrom } from 'rxjs';
@@ -47,7 +48,7 @@ export class PushNotifications {
 
     const current = await firstValueFrom(this.swPush.subscription);
     if (!current) return { status: 'off', subscription: null };
-    const known = await firstValueFrom(this.http.get<PushSubscriptionInfo[]>(`${this.base}/subscriptions`));
+    const known = await firstValueFrom(fetchAll<PushSubscriptionInfo>(this.http, `${this.base}/subscriptions`));
     const match = known.find((s) => s.endpoint === current.endpoint) ?? null;
     return { status: match ? 'on' : 'off', subscription: match };
   }

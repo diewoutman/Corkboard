@@ -5,7 +5,7 @@ import { Observable, forkJoin, of, switchMap } from 'rxjs';
 import { Collections } from '../../core/collections';
 import { FamilyMembers } from '../../core/family-members';
 import { extractErrorMessage } from '../../core/http-error';
-import { CollectionResponse, FamilyMemberResponse, NodeResponse, SectionResponse, UpdateNodeRequest } from '../../core/models';
+import { CollectionResponse, CollectionScope, FamilyMemberResponse, NodeResponse, SectionResponse, UpdateNodeRequest } from '../../core/models';
 import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
 import { parseQuickAdd } from '../../core/quick-add';
 import { RepeatSpec, WEEKDAY_CODES, WeekdayCode, buildRule, emptyRepeat, joinDue, parseRule, splitDue } from '../../core/recurrence';
@@ -27,6 +27,10 @@ export class TaskListPage implements OnInit {
   listId!: string;
   /** True for the combined Family + Personal Inbox at /tasks/inbox, which has no single list of its own. */
   isInboxView = false;
+  /** True for /tasks/all: every task from every list you can see, grouped by list. */
+  isAllView = false;
+  /** The lists whose tasks a combined view (Inbox or All) shows. */
+  viewLists: CollectionResponse[] = [];
   list: CollectionResponse | null = null;
   /** Both Inboxes, in the combined view. */
   inboxes: CollectionResponse[] = [];
@@ -40,6 +44,11 @@ export class TaskListPage implements OnInit {
   members: FamilyMemberResponse[] = [];
   tasks: NodeResponse[] = [];
   showCompleted = false;
+  /** Combined views load from the server a page at a time; how many tasks matched in all. */
+  total = 0;
+  private page = 1;
+  loadingMore = false;
+  private static readonly PAGE_SIZE = 50;
   loading = true;
   errorMessage: string | null = null;
 
@@ -47,6 +56,7 @@ export class TaskListPage implements OnInit {
   editingTask: NodeResponse | null = null;
   newTask = this.emptyNewTask();
   readonly weekdayCodes = WEEKDAY_CODES;
+  readonly scopes: CollectionScope[] = ['Family', 'Personal'];
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -58,9 +68,22 @@ export class TaskListPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.listId = this.route.snapshot.paramMap.get('id')!;
-    this.isInboxView = this.listId === 'inbox';
-    this.reload();
+    // The shell reuses this component when another list is picked in the sidebar, so follow the param.
+    this.route.paramMap.subscribe((params) => {
+      this.listId = params.get('id')!;
+      this.isInboxView = this.listId === 'inbox';
+      this.isAllView = this.listId === 'all';
+      this.list = null;
+      this.tasks = [];
+      this.sections = [];
+      this.quickAddTargetId = null;
+      this.reload();
+    });
+  }
+
+  /** Views that span several lists have no single list of their own. */
+  get isCombinedView(): boolean {
+    return this.isInboxView || this.isAllView;
   }
 
   get visibleTasks(): NodeResponse[] {
@@ -72,13 +95,13 @@ export class TaskListPage implements OnInit {
    * list doubles as a shopping-mode view. The combined Inbox groups by which Inbox a task sits in instead.
    */
   get groupedTasks(): TaskGroup[] {
-    if (this.isInboxView) {
-      return this.inboxes
-        .map((inbox) => ({
-          key: inbox.id,
-          title: this.transloco.translate(inbox.scope === 'Personal' ? 'tasks.inbox_personal' : 'tasks.inbox_family'),
+    if (this.isCombinedView) {
+      return this.viewLists
+        .map((list) => ({
+          key: list.id,
+          title: this.listLabel(list),
           sectionId: null,
-          tasks: this.visibleTasks.filter((t) => t.collectionId === inbox.id),
+          tasks: this.visibleTasks.filter((t) => t.collectionId === list.id),
         }))
         .filter((g) => g.tasks.length > 0);
     }
@@ -96,9 +119,9 @@ export class TaskListPage implements OnInit {
     return group.key;
   }
 
-  /** Name of the Inbox a task sits in, shown on its row in the combined view. */
+  /** Name of the Inbox a task sits in, shown on its row when the Inbox view combines several (it is normally just the Personal one). */
   originOf(task: NodeResponse): string | null {
-    if (!this.isInboxView) return null;
+    if (!this.isInboxView || this.inboxes.length < 2) return null;
     const inbox = this.inboxes.find((i) => i.id === task.collectionId);
     return inbox ? this.transloco.translate(inbox.scope === 'Personal' ? 'tasks.inbox_personal' : 'tasks.inbox_family') : null;
   }
@@ -107,7 +130,7 @@ export class TaskListPage implements OnInit {
     this.loading = !quiet;
     this.errorMessage = null;
 
-    const load$ = this.isInboxView ? this.loadInbox() : this.loadList();
+    const load$ = this.isCombinedView ? this.loadCombined() : this.loadList();
     load$.subscribe({
       next: () => {
         this.loading = false;
@@ -126,21 +149,19 @@ export class TaskListPage implements OnInit {
       list: this.collectionsApi.get(this.listId),
       lists: this.collectionsApi.list({ type: 'TaskList' }),
       members: this.membersApi.list(),
-      tasks: this.nodesApi.list({ type: 'Task', collectionId: this.listId }),
       sections: this.collectionsApi.sections(this.listId),
     }).pipe(
-      switchMap(({ list, lists, members, tasks, sections }) => {
+      switchMap(({ list, lists, members, sections }) => {
         this.list = list;
         this.allLists = this.movableLists(lists);
         this.members = members;
-        this.tasks = this.sortTasks(tasks);
         this.sections = sections;
-        return of(undefined);
+        return this.fetchTaskPage(1);
       }),
     );
   }
 
-  private loadInbox(): Observable<void> {
+  private loadCombined(): Observable<void> {
     return forkJoin({ lists: this.collectionsApi.list({ type: 'TaskList' }), members: this.membersApi.list() }).pipe(
       switchMap(({ lists, members }) => {
         this.allLists = this.movableLists(lists);
@@ -148,14 +169,67 @@ export class TaskListPage implements OnInit {
         this.members = members;
         // Personal first: an Inbox is for capturing things, and nobody else needs to see a half-formed thought.
         this.quickAddTargetId ??= (this.inboxes.find((i) => i.scope === 'Personal') ?? this.inboxes[0])?.id ?? null;
-        return forkJoin(this.inboxes.map((inbox) => this.nodesApi.list({ type: 'Task', collectionId: inbox.id }))).pipe(
-          switchMap((perInbox) => {
-            this.tasks = this.sortTasks(perInbox.flat());
-            return of(undefined);
-          }),
-        );
+        this.viewLists = this.isAllView ? this.allLists : this.inboxes;
+        return this.fetchTaskPage(1);
       }),
     );
+  }
+
+  /** Server-side filter + sort + paging: open tasks by due date, or every task when "show completed" is on. Used by every view. */
+  private fetchTaskPage(page: number): Observable<void> {
+    const inboxId = this.inboxes[0]?.id;
+    if (this.isInboxView && !inboxId) {
+      this.tasks = [];
+      this.total = 0;
+      return of(undefined);
+    }
+
+    return this.nodesApi
+      .listPage({
+        type: 'Task',
+        collectionId: this.isInboxView ? inboxId : this.isAllView ? undefined : this.listId,
+        isCompleted: this.showCompleted ? undefined : false,
+        sort: 'due',
+        page,
+        pageSize: TaskListPage.PAGE_SIZE,
+      })
+      .pipe(
+        switchMap(({ items, total }) => {
+          this.page = page;
+          this.total = total;
+          this.tasks = page === 1 ? items : [...this.tasks, ...items];
+          return of(undefined);
+        }),
+      );
+  }
+
+  get hasMore(): boolean {
+    return this.tasks.length < this.total;
+  }
+
+  loadMore() {
+    this.loadingMore = true;
+    this.fetchTaskPage(this.page + 1).subscribe({
+      next: () => {
+        this.loadingMore = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.errorMessage = this.transloco.translate('task_list.errors.load');
+        this.loadingMore = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  /** Completed tasks are only fetched on demand, so toggling needs a reload. */
+  onShowCompletedChange() {
+    this.reload(true);
+  }
+
+  /** The task form's "List" options for one scope; the Personal Inbox comes first (allLists is sorted that way). */
+  listsInScope(scope: CollectionScope): CollectionResponse[] {
+    return this.allLists.filter((l) => l.scope === scope);
   }
 
   private movableLists(lists: CollectionResponse[]): CollectionResponse[] {
@@ -164,7 +238,7 @@ export class TaskListPage implements OnInit {
 
   /** Display name of a list in the "List" dropdown — the Inboxes are named after their scope, not "Inbox". */
   listLabel(list: CollectionResponse): string {
-    if (!list.isInbox) return `${list.name}${list.scope === 'Personal' ? ' 🔒' : ''}`;
+    if (!list.isInbox) return list.name;
     return this.transloco.translate(list.scope === 'Personal' ? 'tasks.inbox_personal' : 'tasks.inbox_family');
   }
 
@@ -220,6 +294,8 @@ export class TaskListPage implements OnInit {
   toggleDone(task: NodeResponse) {
     this.nodesApi.update(task.id, this.toUpdateRequest(task, { isCompleted: !task.isCompleted })).subscribe({
       next: (updated) => {
+        // With more pages still on the server, a changed task shifts every later page: start over from page 1.
+        if (this.hasMore) return this.reload(true);
         this.tasks = this.sortTasks(this.tasks.map((t) => (t.id === updated.id ? updated : t)));
         this.cdr.markForCheck();
       },
@@ -233,6 +309,7 @@ export class TaskListPage implements OnInit {
   deleteTask(task: NodeResponse) {
     this.nodesApi.delete(task.id).subscribe({
       next: () => {
+        if (this.hasMore) return this.reload(true);
         this.tasks = this.tasks.filter((t) => t.id !== task.id);
         this.cdr.markForCheck();
       },
@@ -246,7 +323,7 @@ export class TaskListPage implements OnInit {
   openAddTaskForm() {
     this.editingTask = null;
     this.newTask = this.emptyNewTask();
-    this.newTask.collectionId = this.isInboxView ? this.quickAddTargetId : this.listId;
+    this.newTask.collectionId = this.isCombinedView ? this.quickAddTargetId : this.listId;
     this.loadFormSections();
     this.showNewTaskForm = true;
   }
@@ -334,11 +411,11 @@ export class TaskListPage implements OnInit {
     const parsed = parseQuickAdd(text);
     if (!parsed.title) return;
 
-    // The combined Inbox is for unsorted capture, so a "#tag" is ignored there.
-    const target = this.isInboxView ? this.quickAddTargetId : this.listId;
+    // The combined views are for unsorted capture, so a "#tag" is ignored there.
+    const target = this.isCombinedView ? this.quickAddTargetId : this.listId;
     if (!target) return;
 
-    this.resolveSection(target, this.isInboxView ? '' : (parsed.category ?? ''))
+    this.resolveSection(target, this.isCombinedView ? '' : (parsed.category ?? ''))
       .pipe(
         switchMap((sectionId) =>
           this.nodesApi.create({

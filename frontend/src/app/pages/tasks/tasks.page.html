@@ -1,45 +1,71 @@
-<h1 class="text-2xl font-extrabold text-ink">{{ 'tasks.title' | transloco }} 📋</h1>
+<div class="md:grid md:grid-cols-[18rem_minmax(0,1fr)] md:gap-8">
+  <aside [class.hidden]="hasSelection" class="md:block">
+    <h1 class="text-2xl font-extrabold text-ink">{{ 'tasks.title' | transloco }} 📋</h1>
 
-<app-error-banner [message]="errorMessage" />
+    <app-error-banner [message]="errorMessage" />
 
-<app-loading-indicator *ngIf="loading" class="mt-8" />
+    <app-loading-indicator *ngIf="loading" class="mt-8" />
 
-<div *ngIf="!loading" class="mt-4 space-y-6">
-  <a *ngIf="inboxes.length > 0" routerLink="/tasks/inbox" class="block sm:max-w-sm">
-    <app-list-card
-      [name]="'tasks.inbox' | transloco"
-      [color]="inboxes[0].color"
-      [nodeCount]="inboxNodeCount"
-      [incompleteCount]="inboxIncompleteCount"
-      [editable]="false"
-    />
-  </a>
-
-  <section *ngFor="let scope of scopes">
-    <h2 class="mb-2 text-xs font-extrabold uppercase tracking-wide text-ink-muted">{{ 'tasks.scopes.' + scope | transloco }}</h2>
-    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      <a *ngFor="let list of listsIn(scope)" [routerLink]="['/tasks', list.id]" class="contents">
-        <app-list-card
-          [name]="list.name"
-          [color]="list.color"
-          [nodeCount]="list.nodeCount"
-          [incompleteCount]="list.incompleteCount"
-          (edit)="openEditListForm(list)"
-        />
+    <nav *ngIf="!loading" class="mt-4 space-y-5 rounded-3xl bg-white p-3 shadow-sticker" [attr.aria-label]="'tasks.title' | transloco">
+      <a
+        routerLink="/tasks/all"
+        routerLinkActive="bg-cork"
+        class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-extrabold text-ink hover:bg-cork"
+      >
+        <span class="h-3 w-3 shrink-0 rounded-full bg-ink-muted"></span>
+        <span class="flex-1 truncate">{{ 'tasks.all' | transloco }}</span>
+        <span *ngIf="totalIncompleteCount > 0" class="text-xs font-bold text-ink-muted">{{ totalIncompleteCount }}</span>
       </a>
-      <p *ngIf="listsIn(scope).length === 0" class="text-sm font-semibold text-ink-muted">{{ 'tasks.empty_scope' | transloco }}</p>
-    </div>
-  </section>
 
-  <button
-    *ngIf="!showNewListForm"
-    type="button"
-    (click)="openAddListForm()"
-    class="flex min-h-[92px] w-full flex-col items-center justify-center gap-1 rounded-3xl border-4 border-dashed border-border-soft text-sm font-extrabold text-ink-muted hover:border-coral hover:text-coral sm:max-w-sm"
-  >
-    <span class="text-2xl leading-none">+</span>
-    {{ 'tasks.new_list' | transloco }}
-  </button>
+      <a
+        *ngIf="inboxes.length > 0"
+        routerLink="/tasks/inbox"
+        routerLinkActive="bg-cork"
+        class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-extrabold text-ink hover:bg-cork"
+      >
+        <span class="h-3 w-3 shrink-0 rounded-full" [style.background]="inboxes[0].color"></span>
+        <span class="flex-1 truncate">{{ 'tasks.inbox' | transloco }}</span>
+        <span *ngIf="inboxIncompleteCount > 0" class="text-xs font-bold text-ink-muted">{{ inboxIncompleteCount }}</span>
+      </a>
+
+      <section *ngFor="let scope of scopes">
+        <h2 class="mb-1 px-3 text-xs font-extrabold uppercase tracking-wide text-ink-muted">{{ 'tasks.scopes.' + scope | transloco }}</h2>
+        <ul class="flex flex-col">
+          <li *ngFor="let list of listsIn(scope)" class="group relative">
+            <a
+              [routerLink]="['/tasks', list.id]"
+              routerLinkActive="bg-cork"
+              class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-extrabold text-ink hover:bg-cork"
+            >
+              <span class="h-3 w-3 shrink-0 rounded-full" [style.background]="list.color"></span>
+              <span class="flex-1 truncate">{{ list.name }}</span>
+              <span *ngIf="list.incompleteCount" class="text-xs font-bold text-ink-muted group-hover:invisible">{{ list.incompleteCount }}</span>
+            </a>
+            <button
+              type="button"
+              (click)="openEditListForm(list)"
+              class="absolute right-3 top-1/2 hidden -translate-y-1/2 text-ink-muted hover:text-coral group-hover:block focus:block"
+              [attr.aria-label]="'tasks.edit_list' | transloco"
+            >✎</button>
+          </li>
+          <li *ngIf="listsIn(scope).length === 0" class="px-3 py-1 text-sm font-semibold text-ink-muted">{{ 'tasks.empty_scope' | transloco }}</li>
+        </ul>
+      </section>
+
+      <button
+        *ngIf="!showNewListForm"
+        type="button"
+        (click)="openAddListForm()"
+        class="w-full rounded-xl px-3 py-2 text-left text-sm font-extrabold text-coral hover:bg-cork hover:text-coral-strong"
+      >
+        + {{ 'tasks.new_list' | transloco }}
+      </button>
+    </nav>
+  </aside>
+
+  <section [class.hidden]="!hasSelection" class="min-w-0 md:block">
+    <router-outlet (activate)="onSelectionChange(true)" (deactivate)="onSelectionChange(false)"></router-outlet>
+  </section>
 </div>
 
 <app-modal-sheet *ngIf="showNewListForm" (dismissed)="closeListForm()">

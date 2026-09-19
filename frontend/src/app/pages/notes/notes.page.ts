@@ -5,6 +5,7 @@ import { FamilyMembers } from '../../core/family-members';
 import { extractErrorMessage } from '../../core/http-error';
 import { FamilyMemberResponse, NodeResponse, UpdateNodeRequest } from '../../core/models';
 import { NULL_CONTACT_FIELDS, Nodes } from '../../core/nodes';
+import { PagedList } from '../../core/paging';
 
 @Component({
   selector: 'app-notes',
@@ -14,7 +15,7 @@ import { NULL_CONTACT_FIELDS, Nodes } from '../../core/nodes';
 })
 export class NotesPage implements OnInit {
   members: FamilyMemberResponse[] = [];
-  notes: NodeResponse[] = [];
+  readonly noteList = new PagedList<NodeResponse>((page) => this.nodesApi.listPage({ type: 'Note', sort: '-important', page }));
   loading = true;
   errorMessage: string | null = null;
 
@@ -33,16 +34,19 @@ export class NotesPage implements OnInit {
     this.reload();
   }
 
-  reload() {
-    this.loading = true;
+  get notes(): NodeResponse[] {
+    return this.noteList.items;
+  }
+
+  reload(quiet = false) {
+    this.loading = !quiet;
     this.errorMessage = null;
     forkJoin({
       members: this.membersApi.list(),
-      notes: this.nodesApi.list({ type: 'Note' }),
+      notes: this.noteList.first(),
     }).subscribe({
-      next: ({ members, notes }) => {
+      next: ({ members }) => {
         this.members = members;
-        this.notes = this.sortNotes(notes);
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -63,10 +67,7 @@ export class NotesPage implements OnInit {
 
   toggleImportant(note: NodeResponse) {
     this.nodesApi.update(note.id, this.toUpdateRequest(note, { isImportant: !note.isImportant })).subscribe({
-      next: (updated) => {
-        this.notes = this.sortNotes(this.notes.map((n) => (n.id === updated.id ? updated : n)));
-        this.cdr.markForCheck();
-      },
+      next: () => this.reload(true),
       error: () => {
         this.errorMessage = this.transloco.translate('notes.errors.update');
         this.cdr.markForCheck();
@@ -76,10 +77,7 @@ export class NotesPage implements OnInit {
 
   deleteNote(note: NodeResponse) {
     this.nodesApi.delete(note.id).subscribe({
-      next: () => {
-        this.notes = this.notes.filter((n) => n.id !== note.id);
-        this.cdr.markForCheck();
-      },
+      next: () => this.reload(true),
       error: () => {
         this.errorMessage = this.transloco.translate('notes.errors.delete');
         this.cdr.markForCheck();
@@ -141,10 +139,9 @@ export class NotesPage implements OnInit {
 
     const wasEditing = !!this.editingNote;
     request$.subscribe({
-      next: (saved) => {
-        this.notes = this.sortNotes(wasEditing ? this.notes.map((n) => (n.id === saved.id ? saved : n)) : [...this.notes, saved]);
+      next: () => {
         this.closeNoteForm();
-        this.cdr.markForCheck();
+        this.reload(true);
       },
       error: (err) => {
         this.errorMessage = extractErrorMessage(err, this.transloco.translate(wasEditing ? 'notes.errors.save' : 'notes.errors.create'));
@@ -181,11 +178,20 @@ export class NotesPage implements OnInit {
     };
   }
 
-  private sortNotes(notes: NodeResponse[]): NodeResponse[] {
-    return [...notes].sort((a, b) => {
-      if (!!a.isImportant !== !!b.isImportant) return a.isImportant ? -1 : 1;
-      return b.createdAt.localeCompare(a.createdAt);
+  loadMore() {
+    this.noteList.loadingMore = true;
+    this.noteList.more().subscribe({
+      next: () => this.finishLoadMore(),
+      error: () => {
+        this.errorMessage = this.transloco.translate('notes.errors.load');
+        this.finishLoadMore();
+      },
     });
+  }
+
+  private finishLoadMore() {
+    this.noteList.loadingMore = false;
+    this.cdr.markForCheck();
   }
 
   private emptyNewNote() {

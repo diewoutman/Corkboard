@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { fetchAll } from './paging';
 import {
   CreateDashboardWidgetRequest,
   DashboardWidgetResponse,
@@ -15,7 +16,7 @@ export class Dashboard {
   private readonly http = inject(HttpClient);
 
   list(scope: DashboardWidgetScope) {
-    return this.http.get<DashboardWidgetResponse[]>(`${environment.apiUrl}/dashboard`, { params: { scope } });
+    return fetchAll<DashboardWidgetResponse>(this.http, `${environment.apiUrl}/dashboard`, { scope });
   }
 
   create(request: CreateDashboardWidgetRequest) {

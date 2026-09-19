@@ -1,4 +1,6 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { Subscription, filter } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { Collections, NULL_HOUSEHOLD_FIELDS } from '../../core/collections';
 import { extractErrorMessage } from '../../core/http-error';
@@ -11,10 +13,12 @@ import { PALETTE } from '../../core/colors';
   styleUrls: ['./tasks.page.scss'],
   standalone: false,
 })
-export class TasksPage implements OnInit {
+export class TasksPage implements OnInit, OnDestroy {
   readonly scopes: CollectionScope[] = ['Family', 'Personal'];
   lists: CollectionResponse[] = [];
   loading = true;
+  /** A list is open in the right-hand pane; on phones the pane then replaces the sidebar. */
+  hasSelection = false;
   errorMessage: string | null = null;
 
   showNewListForm = false;
@@ -28,15 +32,41 @@ export class TasksPage implements OnInit {
     private readonly collectionsApi: Collections,
     private readonly cdr: ChangeDetectorRef,
     private readonly transloco: TranslocoService,
+    private readonly router: Router,
   ) {}
+
+  private navSub?: Subscription;
 
   ngOnInit() {
     this.reload();
+    // Wide screens always show a list next to the sidebar, so a bare /tasks lands on the Inbox.
+    this.navSub = this.router.events.pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd)).subscribe((e) => {
+      const path = e.urlAfterRedirects.split(/[?#]/)[0];
+      if (path === '/tasks' && window.matchMedia('(min-width: 768px)').matches) {
+        this.router.navigate(['/tasks/all'], { replaceUrl: true });
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.navSub?.unsubscribe();
+  }
+
+  onSelectionChange(active: boolean) {
+    this.hasSelection = active;
+    // Counts in the sidebar go stale as tasks are checked off in the pane; refresh quietly on each navigation.
+    if (active) this.reload(true);
+    this.cdr.markForCheck();
   }
 
   /** The Family and Personal Inbox, shown as one combined tile. */
   get inboxes(): CollectionResponse[] {
     return this.lists.filter((l) => l.isInbox);
+  }
+
+  /** Open tasks across every list in the sidebar, for the "All" entry. */
+  get totalIncompleteCount(): number {
+    return this.lists.filter((l) => !l.isSystemManaged).reduce((sum, l) => sum + (l.incompleteCount ?? 0), 0);
   }
 
   get inboxNodeCount(): number {
@@ -52,8 +82,8 @@ export class TasksPage implements OnInit {
     return this.lists.filter((l) => l.scope === scope && !l.isInbox && !l.isSystemManaged);
   }
 
-  reload() {
-    this.loading = true;
+  reload(quiet = false) {
+    this.loading = !quiet;
     this.errorMessage = null;
     this.collectionsApi.list({ type: 'TaskList' }).subscribe({
       next: (lists) => {

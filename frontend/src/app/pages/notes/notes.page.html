@@ -18,6 +18,8 @@
   <app-empty-state *ngIf="notes.length === 0" class="col-span-full">{{ 'notes.empty' | transloco }}</app-empty-state>
 </div>
 
+<app-load-more class="mt-4 block" [visible]="!loading && noteList.hasMore" [loading]="noteList.loadingMore" (more)="loadMore()" />
+
 <app-modal-sheet *ngIf="showNewNoteForm" (dismissed)="closeNoteForm()">
   <form (ngSubmit)="submitNoteForm()" #form="ngForm" class="space-y-3">
     <h2 class="font-heading text-lg font-bold text-ink">{{ (editingNote ? 'notes.edit' : 'notes.add') | transloco }}</h2>

@@ -1,9 +1,9 @@
-<a routerLink="/tasks" class="text-sm font-extrabold text-coral hover:text-coral-strong">← {{ 'tasks.title' | transloco }}</a>
+<a routerLink="/tasks" class="text-sm md:hidden font-extrabold text-coral hover:text-coral-strong">← {{ 'tasks.title' | transloco }}</a>
 
 <div class="mt-2 flex items-center justify-between">
-  <h1 class="text-2xl font-extrabold text-ink">{{ isInboxView ? ('tasks.inbox' | transloco) : (list?.name ?? ('common.loading' | transloco)) }}</h1>
+  <h1 class="text-2xl font-extrabold text-ink">{{ isAllView ? ('tasks.all' | transloco) : isInboxView ? ('tasks.inbox' | transloco) : (list?.name ?? ('common.loading' | transloco)) }}</h1>
   <label class="flex items-center gap-2 text-sm font-bold text-ink-muted">
-    <input type="checkbox" [(ngModel)]="showCompleted" name="showCompleted" class="rounded-md accent-coral" />
+    <input type="checkbox" [(ngModel)]="showCompleted" (ngModelChange)="onShowCompletedChange()" name="showCompleted" class="rounded-md accent-coral" />
     {{ 'task_list.show_completed' | transloco }}
   </label>
 </div>
@@ -26,7 +26,7 @@
 
 <app-quick-add-bar
   class="mt-2 block"
-  [placeholder]="(isInboxView ? 'task_list.inbox_quick_add_placeholder' : 'task_list.quick_add_placeholder') | transloco"
+  [placeholder]="(isCombinedView ? 'task_list.inbox_quick_add_placeholder' : 'task_list.quick_add_placeholder') | transloco"
   (submitted)="submitQuickAdd($event)"
 />
 
@@ -34,7 +34,7 @@
 
 <div *ngIf="!loading" class="mt-4 space-y-4">
   <div *ngFor="let group of groupedTasks; trackBy: trackGroup">
-    <h2 *ngIf="groupedTasks.length > 1 || isInboxView" class="mb-1.5 flex items-center gap-2 text-xs font-extrabold uppercase tracking-wide text-ink-muted">
+    <h2 *ngIf="groupedTasks.length > 1" class="mb-1.5 flex items-center gap-2 text-xs font-extrabold uppercase tracking-wide text-ink-muted">
       {{ group.title ?? ('task_list.other' | transloco) }}
       <button
         *ngIf="group.sectionId"
@@ -57,6 +57,16 @@
       />
     </ul>
   </div>
+
+  <button
+    *ngIf="hasMore"
+    type="button"
+    (click)="loadMore()"
+    [disabled]="loadingMore"
+    class="w-full rounded-full border-2 border-border-soft px-4 py-2 text-sm font-extrabold text-ink-muted hover:bg-cork disabled:opacity-50"
+  >
+    {{ 'task_list.load_more' | transloco }} ({{ tasks.length }}/{{ total }})
+  </button>
 
   <app-empty-state *ngIf="visibleTasks.length === 0">{{ 'task_list.empty' | transloco }}</app-empty-state>
 </div>
@@ -111,7 +121,11 @@
     <div>
       <label for="collectionId" class="block text-sm font-bold text-ink">{{ 'task_list.list' | transloco }}</label>
       <select id="collectionId" name="collectionId" [(ngModel)]="newTask.collectionId" (ngModelChange)="onFormListChange()" required class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral">
-        <option *ngFor="let l of allLists" [ngValue]="l.id">{{ listLabel(l) }}</option>
+        <ng-container *ngFor="let scope of scopes">
+          <optgroup *ngIf="listsInScope(scope).length > 0" [label]="'tasks.scopes.' + scope | transloco">
+            <option *ngFor="let l of listsInScope(scope)" [ngValue]="l.id">{{ listLabel(l) }}</option>
+          </optgroup>
+        </ng-container>
       </select>
     </div>
     <div>

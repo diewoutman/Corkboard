@@ -25,13 +25,13 @@ export class NotesWidgetComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    forkJoin({ notes: this.nodesApi.list({ type: 'Note' }), members: this.familyMembersApi.list() }).subscribe({
+    forkJoin({
+      notes: this.nodesApi.listPage({ type: 'Note', isImportant: this.importantOnly ? true : undefined, sort: '-createdAt', pageSize: MAX_NOTES_SHOWN }),
+      members: this.familyMembersApi.list(),
+    }).subscribe({
       next: ({ notes, members }) => {
         this.members = members;
-        const filtered = this.importantOnly ? notes.filter((n) => n.isImportant) : notes;
-        this.notes = [...filtered]
-          .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-          .slice(0, MAX_NOTES_SHOWN);
+        this.notes = notes.items;
         this.loading = false;
         this.cdr.markForCheck();
       },

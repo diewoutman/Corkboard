@@ -7,6 +7,13 @@ const routes: Routes = [
   {
     path: '',
     component: TasksPage,
+    // The selected list renders in the shell's right-hand pane.
+    children: [
+      {
+        path: ':id',
+        loadChildren: () => import('../task-list/task-list.module').then((m) => m.TaskListPageModule),
+      },
+    ],
   },
 ];
 

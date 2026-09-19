@@ -68,7 +68,7 @@ export class TimelineWidgetComponent implements OnInit, OnChanges, AfterViewChec
       .pipe(
         switchMap((members) => {
           const assignedTo = this.assignedToMeOnly ? members.find((m) => m.linkedUserId === this.auth.current()?.userId)?.id : undefined;
-          return this.nodesApi.list({ type: 'Task', assignedTo }).pipe(
+          return this.nodesApi.list({ type: 'Task', assignedTo, isCompleted: false, dueUntil: endOfToday.toISOString() }).pipe(
             switchMap((tasks) =>
               this.calendarApi
                 .occurrences({ from: startOfToday.toISOString(), until: endOfToday.toISOString() })
