@@ -73,7 +73,8 @@ public class TokenService(CorkboardDbContext db, IOptions<JwtOptions> jwtOptions
             user.Email ?? string.Empty,
             membership?.FamilyId,
             membership?.Role.ToString(),
-            user.IsSystemOwner);
+            user.IsSystemOwner,
+            user.Language);
     }
 
     public async Task<ApiClientTokenResponse> CreateClientTokenAsync(ApiClient client, CancellationToken cancellationToken = default)

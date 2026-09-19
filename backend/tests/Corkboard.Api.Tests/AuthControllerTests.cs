@@ -4,6 +4,7 @@ using Corkboard.Contracts.Auth;
 using Corkboard.Domain.Entities;
 using Corkboard.Infrastructure.Identity;
 using Corkboard.Infrastructure.Persistence;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -187,5 +188,48 @@ public class AuthControllerTests : IDisposable
 
         var user = await UserManager.FindByEmailAsync("owner@example.com");
         Assert.Equal(0, user!.AccessFailedCount);
+    }
+
+    private AccountController CreateAccountController(Guid userId, params Claim[] extraClaims)
+    {
+        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, userId.ToString()) };
+        claims.AddRange(extraClaims);
+        return new AccountController(UserManager, TestTokenService(Db))
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(claims, "test")) },
+            },
+        };
+    }
+
+    [Fact]
+    public async Task UpdateLanguage_stores_the_language_and_returns_it_in_the_new_auth_response()
+    {
+        var auth = CreateController();
+        var registered = Assert.IsType<CreatedAtActionResult>((await auth.Register(new RegisterRequest("owner@example.com", "password1"), CancellationToken.None)).Result);
+        var userId = Assert.IsType<AuthResponse>(registered.Value).UserId;
+        Assert.Null(Assert.IsType<AuthResponse>(registered.Value).Language);
+
+        var result = await CreateAccountController(userId).UpdateLanguage(new UpdateLanguageRequest("nl"), CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal("nl", Assert.IsType<AuthResponse>(ok.Value).Language);
+        Assert.Equal("nl", (await UserManager.FindByIdAsync(userId.ToString()))!.Language);
+
+        // And it comes back on the next login.
+        var login = Assert.IsType<OkObjectResult>((await auth.Login(new LoginRequest("owner@example.com", "password1"), CancellationToken.None)).Result);
+        Assert.Equal("nl", Assert.IsType<AuthResponse>(login.Value).Language);
+    }
+
+    [Fact]
+    public async Task UpdateLanguage_refuses_a_client_credentials_token()
+    {
+        var controller = CreateAccountController(Guid.NewGuid(), new Claim(CorkboardClaimTypes.Scope, "nodes:read"));
+
+        var result = await controller.UpdateLanguage(new UpdateLanguageRequest("nl"), CancellationToken.None);
+
+        var problem = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status403Forbidden, problem.StatusCode);
     }
 }

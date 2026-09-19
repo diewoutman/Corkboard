@@ -16,4 +16,11 @@ public class ApplicationUser : IdentityUser<Guid>
     /// AuthController.Register), independent of any UserFamily/FamilyRole.
     /// </summary>
     public bool IsSystemOwner { get; set; }
+
+    /// <summary>
+    /// The user's chosen UI language (a code from <c>SupportedLanguages</c>), or null
+    /// while they haven't picked one — the client then falls back to the browser's
+    /// language. Stored per account so the choice follows them across devices.
+    /// </summary>
+    public string? Language { get; set; }
 }

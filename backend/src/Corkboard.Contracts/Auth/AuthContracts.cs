@@ -22,4 +22,14 @@ public record AuthResponse(
     string Email,
     Guid? FamilyId,
     string? Role,
-    bool IsSystemOwner);
+    bool IsSystemOwner,
+    string? Language = null);
+
+/// <summary>UI languages the frontend ships translations for — keep in sync with <c>frontend/src/assets/i18n</c>.</summary>
+public static class SupportedLanguages
+{
+    public const string Pattern = "^(en|nl)$";
+}
+
+public record UpdateLanguageRequest(
+    [Required, RegularExpression(SupportedLanguages.Pattern)] string Language);
