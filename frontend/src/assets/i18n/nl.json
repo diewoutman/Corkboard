@@ -8,7 +8,8 @@
   "common": {
     "cancel": "Annuleren",
     "create": "Aanmaken",
-    "save_changes": "Wijzigingen opslaan"
+    "save_changes": "Wijzigingen opslaan",
+    "loading": "Laden…"
   },
   "tasks": {
     "title": "Lijsten",
@@ -22,6 +23,124 @@
       "load": "Je lijsten konden niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
       "create": "De lijst kon niet worden aangemaakt.",
       "save": "De lijst kon niet worden opgeslagen."
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "daily": "Dagelijks",
+    "administration": "Administratie",
+    "more": "Meer",
+    "tasks": "Taken",
+    "notes": "Notities",
+    "calendar": "Agenda",
+    "role_hint_owner": "Eigenaar: kan gezinsleden beheren en inlogaccounts voor hen aanmaken",
+    "role_hint_member": "Iedereen met een login ziet alle taken, notities en de agenda van dit gezin — er is geen beperking per lijst"
+  },
+  "tiles": {
+    "tasks": {
+      "title": "Taken",
+      "description": "Lijsten en to-do's voor het hele gezin."
+    },
+    "notes": {
+      "title": "Notities",
+      "description": "Snelle notities en herinneringen om te bewaren."
+    },
+    "calendar": {
+      "title": "Agenda",
+      "description": "Afspraken, agenda's en weekroosters."
+    },
+    "contacts": {
+      "title": "Contacten",
+      "description": "Telefoonnummers, e-mailadressen en adressen, per huishouden."
+    },
+    "family": {
+      "title": "Gezin",
+      "description": "Beheer gezinsleden en hun logins."
+    }
+  },
+  "timeline": {
+    "segments": {
+      "anytime": "Hele dag",
+      "night": "Nacht",
+      "morning": "Ochtend",
+      "afternoon": "Middag",
+      "evening": "Avond"
+    },
+    "nothing": "Niets op de tijdlijn van vandaag.",
+    "nothing_planned": "Niets gepland."
+  },
+  "home": {
+    "welcome": "Welkom",
+    "scope": {
+      "family": "Gezin",
+      "personal": "Persoonlijk"
+    },
+    "hint_editable": "Sleep widgets om ze te herschikken, of gebruik ↔ om het formaat te wijzigen.",
+    "hint_readonly": "Alleen gezinsbeheerders kunnen het gezinsdashboard bewerken.",
+    "empty_editable": "Je dashboard is leeg — voeg een widget toe om te beginnen.",
+    "empty_readonly": "Nog geen widgets — vraag een gezinsbeheerder om er een in te stellen.",
+    "widget_titles": {
+      "navigation": "Navigatie",
+      "notes": "Notities",
+      "important_notes": "Belangrijke notities",
+      "tasks": "Taken",
+      "my_tasks": "Mijn taken",
+      "today": "Vandaag",
+      "upcoming": "Binnenkort",
+      "timeline": "Tijdlijn"
+    },
+    "widget_types": {
+      "navigation": "Navigatie",
+      "notes": "Notities",
+      "tasks": "Taken",
+      "today": "Vandaag",
+      "timeline": "Tijdlijn",
+      "upcoming": "Binnenkort",
+      "shortcut": "Snelkoppeling"
+    },
+    "form": {
+      "configure": "Widget instellen",
+      "add": "Widget toevoegen",
+      "add_widget": "Widget toevoegen",
+      "type": "Type",
+      "destination": "Bestemming",
+      "tile_order": "Volgorde van tegels",
+      "drag_to_reorder": "(sleep om te herschikken)",
+      "important_only": "Alleen notities tonen die als belangrijk zijn gemarkeerd",
+      "tasks_assigned_to_me": "Alles wat aan mij is toegewezen",
+      "tasks_specific_list": "Een specifieke lijst",
+      "choose_list": "Kies een lijst…",
+      "timeline_family": "Taken en afspraken van iedereen",
+      "timeline_mine": "Alleen aan mij toegewezen",
+      "timeline_segments": "Dagdelen (ochtend/middag/avond/nacht)",
+      "timeline_hourly": "Uur voor uur",
+      "show_panel": "Paneel tonen"
+    },
+    "notes": {
+      "none_important": "Geen belangrijke notities.",
+      "none": "Nog geen notities.",
+      "view_all": "Alle notities bekijken →"
+    },
+    "tasks": {
+      "assigned_to_me": "Aan mij toegewezen",
+      "nothing_here": "Niets hier.",
+      "view_all": "Alles bekijken →"
+    },
+    "today": {
+      "unassigned": "Niet toegewezen",
+      "nothing_due": "Vandaag niets te doen."
+    },
+    "upcoming": {
+      "overdue": "Te laat",
+      "today": "Vandaag",
+      "tomorrow": "Morgen"
+    },
+    "errors": {
+      "load": "Je dashboard kon niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
+      "reorder": "De nieuwe volgorde kon niet worden opgeslagen.",
+      "resize": "Het formaat van de widget kon niet worden gewijzigd.",
+      "remove": "De widget kon niet worden verwijderd.",
+      "save": "De widget kon niet worden opgeslagen."
     }
   }
 }

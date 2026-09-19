@@ -1,6 +1,7 @@
 import { registerLocaleData } from '@angular/common';
 import localeNl from '@angular/common/locales/nl';
-import { LOCALE_ID, NgModule, isDevMode, provideZoneChangeDetection } from '@angular/core';
+import { LOCALE_ID, NgModule, inject, isDevMode, provideAppInitializer, provideZoneChangeDetection } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { BrowserModule } from '@angular/platform-browser';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ServiceWorkerModule } from '@angular/service-worker';
@@ -9,7 +10,7 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { authInterceptor } from './core/auth-interceptor';
 import { IconComponent } from './shared/components/icon/icon.component';
-import { TranslocoPipe, provideTransloco } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService, provideTransloco } from '@jsverse/transloco';
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, detectLanguage } from './core/language';
 import { TranslocoHttpLoader } from './core/transloco-loader';
 
@@ -39,6 +40,8 @@ registerLocaleData(localeNl);
       },
       loader: TranslocoHttpLoader,
     }),
+    // Load the active language before the first render, so TranslocoService.translate() is safe to call synchronously anywhere (field initializers, getters).
+    provideAppInitializer(() => firstValueFrom(inject(TranslocoService).load(detectLanguage()))),
     // Read by the `date` pipe; fixed at boot, which is why Language.set() reloads.
     { provide: LOCALE_ID, useFactory: detectLanguage },
     // Angular is zoneless by default from v21+ regardless of the zone.js

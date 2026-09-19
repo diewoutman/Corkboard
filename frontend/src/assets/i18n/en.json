@@ -8,7 +8,8 @@
   "common": {
     "cancel": "Cancel",
     "create": "Create",
-    "save_changes": "Save changes"
+    "save_changes": "Save changes",
+    "loading": "Loading…"
   },
   "tasks": {
     "title": "Lists",
@@ -22,6 +23,124 @@
       "load": "Could not load your lists. Pull to refresh to try again.",
       "create": "Could not create that list.",
       "save": "Could not save that list."
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "daily": "Daily",
+    "administration": "Administration",
+    "more": "More",
+    "tasks": "Tasks",
+    "notes": "Notes",
+    "calendar": "Calendar",
+    "role_hint_owner": "Owner: can manage family members and create logins for them",
+    "role_hint_member": "Everyone with a login sees this family's full Tasks, Notes and Calendar — there is no per-list restriction"
+  },
+  "tiles": {
+    "tasks": {
+      "title": "Tasks",
+      "description": "Lists and to-dos for the whole family."
+    },
+    "notes": {
+      "title": "Notes",
+      "description": "Quick notes and reminders worth keeping."
+    },
+    "calendar": {
+      "title": "Calendar",
+      "description": "Events, calendars and weekly schedules."
+    },
+    "contacts": {
+      "title": "Contacts",
+      "description": "Phone numbers, emails and addresses, by household."
+    },
+    "family": {
+      "title": "Family",
+      "description": "Manage family members and their logins."
+    }
+  },
+  "timeline": {
+    "segments": {
+      "anytime": "All day",
+      "night": "Night",
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening"
+    },
+    "nothing": "Nothing on today's timeline.",
+    "nothing_planned": "Nothing planned."
+  },
+  "home": {
+    "welcome": "Welcome",
+    "scope": {
+      "family": "Family",
+      "personal": "Personal"
+    },
+    "hint_editable": "Drag widgets to reorder them, or use ↔ to resize.",
+    "hint_readonly": "Only family admins can edit the Family dashboard.",
+    "empty_editable": "Your dashboard is empty — add a widget to get started.",
+    "empty_readonly": "No widgets yet — ask a family admin to set one up.",
+    "widget_titles": {
+      "navigation": "Navigation",
+      "notes": "Notes",
+      "important_notes": "Important notes",
+      "tasks": "Tasks",
+      "my_tasks": "My tasks",
+      "today": "Today",
+      "upcoming": "Upcoming",
+      "timeline": "Timeline"
+    },
+    "widget_types": {
+      "navigation": "Navigation",
+      "notes": "Notes",
+      "tasks": "Tasks",
+      "today": "Today",
+      "timeline": "Timeline",
+      "upcoming": "Upcoming",
+      "shortcut": "Shortcut"
+    },
+    "form": {
+      "configure": "Configure widget",
+      "add": "Add a widget",
+      "add_widget": "Add widget",
+      "type": "Type",
+      "destination": "Destination",
+      "tile_order": "Tile order",
+      "drag_to_reorder": "(drag to reorder)",
+      "important_only": "Only show notes marked important",
+      "tasks_assigned_to_me": "Everything assigned to me",
+      "tasks_specific_list": "A specific list",
+      "choose_list": "Choose a list…",
+      "timeline_family": "Everyone's tasks and events",
+      "timeline_mine": "Only assigned to me",
+      "timeline_segments": "Dayparts (morning/afternoon/evening/night)",
+      "timeline_hourly": "Hour by hour",
+      "show_panel": "Show panel"
+    },
+    "notes": {
+      "none_important": "No important notes.",
+      "none": "No notes yet.",
+      "view_all": "View all notes →"
+    },
+    "tasks": {
+      "assigned_to_me": "Assigned to me",
+      "nothing_here": "Nothing here.",
+      "view_all": "View all →"
+    },
+    "today": {
+      "unassigned": "Unassigned",
+      "nothing_due": "Nothing due today."
+    },
+    "upcoming": {
+      "overdue": "Overdue",
+      "today": "Today",
+      "tomorrow": "Tomorrow"
+    },
+    "errors": {
+      "load": "Could not load your dashboard. Pull to refresh to try again.",
+      "reorder": "Could not save the new widget order.",
+      "resize": "Could not resize that widget.",
+      "remove": "Could not remove that widget.",
+      "save": "Could not save that widget."
     }
   }
 }

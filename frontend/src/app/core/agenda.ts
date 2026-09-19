@@ -105,6 +105,8 @@ export function groupByDay(items: AgendaItem[], days: Date[]): DayGroup[] {
 export interface TimelineSegment {
   key: string;
   label: string;
+  /** Translation key, for the named segments (dayparts, "All day"); the hourly slots use `label` (a locale-formatted hour). */
+  labelKey?: string;
   items: AgendaItem[];
 }
 
@@ -142,8 +144,8 @@ export function groupBySegment(items: AgendaItem[]): TimelineSegment[] {
     byKey.get(segmentKeyForHour(new Date(item.time).getHours()))!.push(item);
   }
 
-  const segments: TimelineSegment[] = DAY_SEGMENTS.map((s) => ({ key: s.key, label: s.label, items: byKey.get(s.key)!.sort(byTime) }));
-  if (anytime.length > 0) segments.unshift({ key: 'anytime', label: 'All day', items: anytime.sort(byTime) });
+  const segments: TimelineSegment[] = DAY_SEGMENTS.map((s) => ({ key: s.key, label: s.label, labelKey: `timeline.segments.${s.key}`, items: byKey.get(s.key)!.sort(byTime) }));
+  if (anytime.length > 0) segments.unshift({ key: 'anytime', label: 'All day', labelKey: 'timeline.segments.anytime', items: anytime.sort(byTime) });
   return segments;
 }
 
@@ -178,6 +180,6 @@ export function groupByHour(items: AgendaItem[]): TimelineSegment[] {
     label: hourLabel(h),
     items: byHour.get(h)!.sort(byTime),
   }));
-  if (anytime.length > 0) slots.unshift({ key: 'anytime', label: 'All day', items: anytime.sort(byTime) });
+  if (anytime.length > 0) slots.unshift({ key: 'anytime', label: 'All day', labelKey: 'timeline.segments.anytime', items: anytime.sort(byTime) });
   return slots;
 }

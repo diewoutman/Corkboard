@@ -1,5 +1,5 @@
 <div class="grid grid-cols-1 items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
-  <h1 class="text-2xl font-extrabold text-ink">{{ familyName ? familyName : 'Welcome' }} 👋</h1>
+  <h1 class="text-2xl font-extrabold text-ink">{{ familyName ? familyName : ('home.welcome' | transloco) }} 👋</h1>
   <app-segmented-control
     class="justify-self-start sm:justify-self-center"
     [options]="dashboardOptions"
@@ -8,7 +8,7 @@
   />
 </div>
 <p class="mt-1 text-sm font-semibold text-ink-muted">
-  {{ editableDashboard ? 'Drag widgets to reorder them, or use ↔ to resize.' : 'Only family admins can edit the Family dashboard.' }}
+  {{ (editableDashboard ? 'home.hint_editable' : 'home.hint_readonly') | transloco }}
 </p>
 
 <app-error-banner [message]="errorMessage" />
@@ -16,7 +16,7 @@
 <app-loading-indicator *ngIf="loading" class="mt-8" />
 
 <app-empty-state *ngIf="!loading && widgets.length === 0" class="mt-6">
-  {{ editableDashboard ? 'Your dashboard is empty — add a widget to get started.' : 'No widgets yet — ask a family admin to set one up.' }}
+  {{ (editableDashboard ? 'home.empty_editable' : 'home.empty_readonly') | transloco }}
 </app-empty-state>
 
 <div
@@ -71,40 +71,40 @@
 
 <app-modal-sheet *ngIf="showWidgetForm" (dismissed)="cancelWidgetForm()">
   <form (ngSubmit)="submitWidgetForm()" #form="ngForm" class="space-y-3">
-    <h2 class="font-heading text-lg font-bold text-ink">{{ editingWidgetId ? 'Configure widget' : 'Add a widget' }}</h2>
+    <h2 class="font-heading text-lg font-bold text-ink">{{ (editingWidgetId ? 'home.form.configure' : 'home.form.add') | transloco }}</h2>
 
     <div *ngIf="!editingWidgetId">
-      <label for="widgetType" class="block text-sm font-bold text-ink">Type</label>
+      <label for="widgetType" class="block text-sm font-bold text-ink">{{ 'home.form.type' | transloco }}</label>
       <select
         id="widgetType"
         name="widgetType"
         [(ngModel)]="widgetForm.type"
         class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       >
-        <option value="Navigation">Navigation</option>
-        <option value="Notes">Notes</option>
-        <option value="Tasks">Tasks</option>
-        <option value="Today">Today</option>
-        <option value="Timeline">Timeline</option>
-        <option value="Upcoming">Upcoming</option>
-        <option value="Shortcut">Shortcut</option>
+        <option value="Navigation">{{ 'home.widget_types.navigation' | transloco }}</option>
+        <option value="Notes">{{ 'home.widget_types.notes' | transloco }}</option>
+        <option value="Tasks">{{ 'home.widget_types.tasks' | transloco }}</option>
+        <option value="Today">{{ 'home.widget_types.today' | transloco }}</option>
+        <option value="Timeline">{{ 'home.widget_types.timeline' | transloco }}</option>
+        <option value="Upcoming">{{ 'home.widget_types.upcoming' | transloco }}</option>
+        <option value="Shortcut">{{ 'home.widget_types.shortcut' | transloco }}</option>
       </select>
     </div>
 
     <div *ngIf="widgetForm.type === 'Shortcut'">
-      <label for="shortcutTile" class="block text-sm font-bold text-ink">Destination</label>
+      <label for="shortcutTile" class="block text-sm font-bold text-ink">{{ 'home.form.destination' | transloco }}</label>
       <select
         id="shortcutTile"
         name="shortcutTile"
         [(ngModel)]="widgetForm.tileKey"
         class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       >
-        <option *ngFor="let tile of tileDefs" [value]="tile.key">{{ tile.title }}</option>
+        <option *ngFor="let tile of tileDefs" [value]="tile.key">{{ tile.titleKey | transloco }}</option>
       </select>
     </div>
 
     <div *ngIf="widgetForm.type === 'Navigation'">
-      <label class="block text-sm font-bold text-ink">Tile order <span class="font-semibold text-ink-muted">(drag to reorder)</span></label>
+      <label class="block text-sm font-bold text-ink">{{ 'home.form.tile_order' | transloco }} <span class="font-semibold text-ink-muted">{{ 'home.form.drag_to_reorder' | transloco }}</span></label>
       <ul cdkDropList (cdkDropListDropped)="dropTile($event)" class="mt-1 space-y-1">
         <li
           *ngFor="let key of widgetForm.tileOrder"
@@ -118,17 +118,17 @@
 
     <label *ngIf="widgetForm.type === 'Notes'" class="flex items-center gap-2 text-sm font-semibold text-ink-muted">
       <input type="checkbox" name="importantOnly" [(ngModel)]="widgetForm.importantOnly" class="rounded-md accent-coral" />
-      Only show notes marked important
+      {{ 'home.form.important_only' | transloco }}
     </label>
 
     <div *ngIf="widgetForm.type === 'Tasks'" class="space-y-2">
       <label class="flex items-center gap-2 text-sm font-semibold text-ink">
         <input type="radio" name="taskMode" value="assignedToMe" [(ngModel)]="widgetForm.taskMode" class="accent-coral" />
-        Everything assigned to me
+        {{ 'home.form.tasks_assigned_to_me' | transloco }}
       </label>
       <label class="flex items-center gap-2 text-sm font-semibold text-ink">
         <input type="radio" name="taskMode" value="list" [(ngModel)]="widgetForm.taskMode" class="accent-coral" />
-        A specific list
+        {{ 'home.form.tasks_specific_list' | transloco }}
       </label>
       <select
         *ngIf="widgetForm.taskMode === 'list'"
@@ -137,7 +137,7 @@
         required
         class="block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       >
-        <option value="" disabled>Choose a list…</option>
+        <option value="" disabled>{{ 'home.form.choose_list' | transloco }}</option>
         <option *ngFor="let list of taskLists" [value]="list.id">{{ list.name }}</option>
       </select>
     </div>
@@ -146,39 +146,39 @@
       <div class="space-y-2">
         <label class="flex items-center gap-2 text-sm font-semibold text-ink">
           <input type="radio" name="timelineScope" value="family" [(ngModel)]="widgetForm.timelineScope" class="accent-coral" />
-          Everyone's tasks and events
+          {{ 'home.form.timeline_family' | transloco }}
         </label>
         <label class="flex items-center gap-2 text-sm font-semibold text-ink">
           <input type="radio" name="timelineScope" value="assignedToMe" [(ngModel)]="widgetForm.timelineScope" class="accent-coral" />
-          Only assigned to me
+          {{ 'home.form.timeline_mine' | transloco }}
         </label>
       </div>
       <div class="space-y-2">
         <label class="flex items-center gap-2 text-sm font-semibold text-ink">
           <input type="radio" name="timelineLayout" value="segments" [(ngModel)]="widgetForm.timelineLayout" class="accent-coral" />
-          Dayparts (morning/afternoon/evening/night)
+          {{ 'home.form.timeline_segments' | transloco }}
         </label>
         <label class="flex items-center gap-2 text-sm font-semibold text-ink">
           <input type="radio" name="timelineLayout" value="hourly" [(ngModel)]="widgetForm.timelineLayout" class="accent-coral" />
-          Hour by hour
+          {{ 'home.form.timeline_hourly' | transloco }}
         </label>
       </div>
     </div>
 
     <label class="flex items-center gap-2 text-sm font-semibold text-ink-muted">
       <input type="checkbox" name="showPanel" [(ngModel)]="widgetForm.showPanel" class="rounded-md accent-coral" />
-      Show panel
+      {{ 'home.form.show_panel' | transloco }}
     </label>
 
     <div class="flex gap-2 pt-1">
       <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
-        {{ editingWidgetId ? 'Save changes' : 'Add widget' }}
+        {{ (editingWidgetId ? 'common.save_changes' : 'home.form.add_widget') | transloco }}
       </button>
       <button type="button" (click)="cancelWidgetForm()" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">
-        Cancel
+        {{ 'common.cancel' | transloco }}
       </button>
     </div>
   </form>
 </app-modal-sheet>
 
-<app-fab-button *ngIf="!showWidgetForm && editableDashboard" label="Add widget" (clicked)="openAddWidgetForm()" />
+<app-fab-button *ngIf="!showWidgetForm && editableDashboard" [label]="'home.form.add_widget' | transloco" (clicked)="openAddWidgetForm()" />

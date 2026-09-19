@@ -9,7 +9,7 @@
         <span
           *ngIf="auth.hasFamily()"
           class="rounded-full bg-badge-bg px-2.5 py-0.5 text-[10px] font-extrabold text-badge-text"
-          [title]="auth.isOwner() ? 'Owner: can manage family members and create logins for them' : 'Everyone with a login sees this family\'s full Tasks, Notes and Calendar — there is no per-list restriction'"
+          [title]="(auth.isOwner() ? 'nav.role_hint_owner' : 'nav.role_hint_member') | transloco"
         >{{ auth.role() }}</span>
       </div>
 
@@ -20,7 +20,7 @@
             [routerLink]="group.route"
             class="rounded-md px-1 py-1.5 hover:text-coral"
             [class.text-coral]="isGroupActive(group)"
-          >{{ group.label }}</a>
+          >{{ group.labelKey | transloco }}</a>
         </nav>
 
         <div class="relative">
@@ -68,7 +68,7 @@
           [routerLink]="child.route"
           routerLinkActive="bg-coral text-white"
           class="rounded-full px-3 py-1 text-xs font-extrabold text-ink-muted"
-        >{{ child.label }}</a>
+        >{{ child.labelKey | transloco }}</a>
       </div>
     </div>
   </header>
@@ -91,7 +91,7 @@
         <app-icon [path]="group.icon" sizeClass="h-5 w-5" />
         <span *ngIf="group.key === 'home' && dueTodayCount > 0" class="absolute -right-1.5 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-danger text-[9px] font-extrabold text-white">{{ dueTodayCount > 9 ? '9+' : dueTodayCount }}</span>
       </span>
-      {{ group.label }}
+      {{ group.labelKey | transloco }}
     </a>
   </nav>
 </div>

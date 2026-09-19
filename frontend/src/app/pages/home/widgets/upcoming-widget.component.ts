@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { forkJoin } from 'rxjs';
 import { AgendaItem, groupByDay, occurrenceToAgendaItem, taskToAgendaItem } from '../../../core/agenda';
 import { CalendarApi } from '../../../core/calendar';
@@ -31,6 +32,7 @@ export class UpcomingWidgetComponent implements OnInit {
     private readonly calendarApi: CalendarApi,
     private readonly familyMembersApi: FamilyMembers,
     private readonly cdr: ChangeDetectorRef,
+    private readonly transloco: TranslocoService,
   ) {}
 
   ngOnInit() {
@@ -83,8 +85,8 @@ export class UpcomingWidgetComponent implements OnInit {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const diffDays = Math.round((date.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Tomorrow';
-    return date.toLocaleDateString(undefined, { weekday: 'long' });
+    if (diffDays === 0) return this.transloco.translate('home.upcoming.today');
+    if (diffDays === 1) return this.transloco.translate('home.upcoming.tomorrow');
+    return date.toLocaleDateString(this.transloco.getActiveLang(), { weekday: 'long' });
   }
 }
