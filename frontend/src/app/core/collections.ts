@@ -1,10 +1,12 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { fetchAll } from './paging';
 import {
   CollectionResponse,
   CollectionType,
   CreateCollectionRequest,
+  SectionResponse,
   UpdateCollectionRequest,
 } from './models';
 
@@ -26,11 +28,7 @@ export class Collections {
   private readonly http = inject(HttpClient);
 
   list(filter: CollectionListFilter = {}) {
-    let params = new HttpParams();
-    for (const [key, value] of Object.entries(filter)) {
-      if (value != null) params = params.set(key, value);
-    }
-    return this.http.get<CollectionResponse[]>(`${environment.apiUrl}/collections`, { params });
+    return fetchAll<CollectionResponse>(this.http, `${environment.apiUrl}/collections`, { ...filter });
   }
 
   get(id: string) {
@@ -52,5 +50,23 @@ export class Collections {
   /** (Re)generates the calendar's iCal subscribe URL. */
   rotateFeedToken(id: string) {
     return this.http.post<CollectionResponse>(`${environment.apiUrl}/collections/${id}/feed-token`, {});
+  }
+
+  sections(collectionId: string) {
+    return fetchAll<SectionResponse>(this.http, `${environment.apiUrl}/collections/${collectionId}/sections`);
+  }
+
+  /** Returns the existing section when one with that name (any casing) already exists. */
+  createSection(collectionId: string, name: string) {
+    return this.http.post<SectionResponse>(`${environment.apiUrl}/collections/${collectionId}/sections`, { name });
+  }
+
+  updateSection(sectionId: string, request: { name: string; sortOrder: number }) {
+    return this.http.put<SectionResponse>(`${environment.apiUrl}/collections/sections/${sectionId}`, request);
+  }
+
+  /** Its tasks stay in the list, without a section. */
+  deleteSection(sectionId: string) {
+    return this.http.delete<void>(`${environment.apiUrl}/collections/sections/${sectionId}`);
   }
 }

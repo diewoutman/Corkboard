@@ -95,7 +95,7 @@ export interface CreateNodeRequest {
   // Note-only
   isImportant: boolean | null;
   priority: number | null;
-  category: string | null;
+  sectionId: string | null;
   location: string | null;
   allDay: boolean | null;
   recurrenceRule: string | null;
@@ -122,7 +122,7 @@ export interface UpdateNodeRequest {
   isImportant: boolean | null;
   isCompleted: boolean | null;
   priority: number | null;
-  category: string | null;
+  sectionId: string | null;
   location: string | null;
   allDay: boolean | null;
   recurrenceRule: string | null;
@@ -155,7 +155,7 @@ export interface NodeResponse {
   isCompleted: boolean | null;
   completedAt: string | null;
   priority: number | null;
-  category: string | null;
+  sectionId: string | null;
   location: string | null;
   allDay: boolean | null;
   recurrenceRule: string | null;
@@ -188,6 +188,9 @@ export interface CreateCollectionRequest {
   city: string | null;
   postalCode: string | null;
   country: string | null;
+  /** Defaults to Family. Personal lists are visible to their creator only (Task lists only). */
+  scope?: CollectionScope;
+  isSystemManaged?: boolean;
 }
 
 export interface UpdateCollectionRequest {
@@ -215,6 +218,20 @@ export interface CollectionResponse {
   city: string | null;
   postalCode: string | null;
   country: string | null;
+  scope: CollectionScope;
+  /** The scope's fixed, non-deletable landing list — quick-add puts new tasks here. */
+  isInbox: boolean;
+  /** Managed from elsewhere (recipes, shopping…): hidden from the tasks UI. */
+  isSystemManaged: boolean;
+}
+
+export type CollectionScope = 'Family' | 'Personal';
+
+export interface SectionResponse {
+  id: string;
+  collectionId: string;
+  name: string;
+  sortOrder: number;
 }
 
 export interface OccurrenceResponse {

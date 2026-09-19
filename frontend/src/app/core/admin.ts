@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { fetchPage } from './paging';
 import { AdminFamilySummaryResponse, AdminStatsResponse, FamilyResponse, UpdateFamilyRequest } from './models';
 
 /** System-owner-only — see AdminShellComponent and AdminController. */
@@ -12,8 +13,8 @@ export class Admin {
     return this.http.get<AdminStatsResponse>(`${environment.apiUrl}/admin/stats`);
   }
 
-  listFamilies() {
-    return this.http.get<AdminFamilySummaryResponse[]>(`${environment.apiUrl}/admin/families`);
+  listFamilies(page = 1) {
+    return fetchPage<AdminFamilySummaryResponse>(this.http, `${environment.apiUrl}/admin/families`, {}, page);
   }
 
   getFamily(id: string) {

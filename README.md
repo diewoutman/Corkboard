@@ -111,6 +111,21 @@ The first account you register becomes the instance's system owner and
 walks through a first-run wizard (register → create family → add family
 members) before landing on the dashboard.
 
+### Push notifications (optional)
+
+Reminders are sent with Web Push and stay off until you give the server a VAPID key pair:
+
+```bash
+npx web-push generate-vapid-keys
+dotnet user-secrets set Push:PublicKey  <public key>  --project backend/src/Corkboard.Api
+dotnet user-secrets set Push:PrivateKey <private key> --project backend/src/Corkboard.Api
+```
+
+(In Docker use the `Push__PublicKey` / `Push__PrivateKey` environment variables.) Browsers only
+allow push on an HTTPS origin — `localhost` counts, but a home-server deployment needs a reverse
+proxy with a valid certificate. On iPhone/iPad the app must first be added to the Home Screen.
+Devices opt in under *account menu → Notifications*.
+
 ### Running tests
 
 ```bash

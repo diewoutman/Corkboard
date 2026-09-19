@@ -13,10 +13,10 @@ public class ApiClientService(CorkboardDbContext db) : IApiClientService
     private const int HashSizeBytes = 32;
     private const int SaltSizeBytes = 16;
 
-    public async Task<IReadOnlyList<ApiClientResponse>> ListAsync(CancellationToken cancellationToken)
+    public async Task<PagedResult<ApiClientResponse>> ListAsync(PageRequest page, CancellationToken cancellationToken)
     {
-        var clients = await db.ApiClients.AsNoTracking().OrderBy(c => c.Name).ToListAsync(cancellationToken);
-        return clients.Select(ToResponse).ToList();
+        var clients = await db.ApiClients.AsNoTracking().OrderBy(c => c.Name).ThenBy(c => c.Id).ToPagedAsync(page, cancellationToken);
+        return new PagedResult<ApiClientResponse>(clients.Items.Select(ToResponse).ToList(), clients.TotalCount);
     }
 
     public async Task<Result<CreatedApiClientResponse>> CreateAsync(Guid createdByUserId, CreateApiClientRequest request, CancellationToken cancellationToken)
@@ -63,21 +63,21 @@ public class ApiClientService(CorkboardDbContext db) : IApiClientService
         return Result.Success();
     }
 
-    public async Task<Result<IReadOnlyList<ApiCallLogEntryResponse>>> GetCallLogAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<Result<PagedResult<ApiCallLogEntryResponse>>> GetCallLogAsync(Guid id, PageRequest page, CancellationToken cancellationToken)
     {
         if (!await db.ApiClients.AnyAsync(c => c.Id == id, cancellationToken))
         {
-            return Result<IReadOnlyList<ApiCallLogEntryResponse>>.Failure(Error.NotFound());
+            return Result<PagedResult<ApiCallLogEntryResponse>>.Failure(Error.NotFound());
         }
 
         var cutoff = DateTimeOffset.UtcNow.AddHours(-48);
         var entries = await db.ApiCallLogs
             .Where(l => l.ApiClientId == id && l.Timestamp >= cutoff)
-            .OrderByDescending(l => l.Timestamp)
+            .OrderByDescending(l => l.Timestamp).ThenBy(l => l.Id)
             .Select(l => new ApiCallLogEntryResponse(l.Method, l.Path, l.StatusCode, l.DurationMs, l.Timestamp))
-            .ToListAsync(cancellationToken);
+            .ToPagedAsync(page, cancellationToken);
 
-        return Result<IReadOnlyList<ApiCallLogEntryResponse>>.Success(entries);
+        return Result<PagedResult<ApiCallLogEntryResponse>>.Success(entries);
     }
 
     public async Task<ApiClient?> ValidateCredentialsAsync(string clientId, string clientSecret, CancellationToken cancellationToken)

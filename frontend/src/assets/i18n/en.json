@@ -3,9 +3,11 @@
     "menu": "Account menu",
     "admin_console": "Admin console",
     "language": "Language",
-    "log_out": "Log out"
+    "log_out": "Log out",
+    "notifications": "Notifications"
   },
   "common": {
+    "load_more": "Load more",
     "cancel": "Cancel",
     "create": "Create",
     "save_changes": "Save changes",
@@ -30,8 +32,27 @@
     "errors": {
       "load": "Could not load your lists. Pull to refresh to try again.",
       "create": "Could not create that list.",
-      "save": "Could not save that list."
-    }
+      "save": "Could not save that list.",
+      "delete": "The list could not be deleted."
+    },
+    "inbox": "Inbox",
+    "all": "All tasks",
+    "inbox_family": "Family inbox",
+    "inbox_personal": "Personal inbox",
+    "scopes": {
+      "Family": "Family",
+      "Personal": "Personal"
+    },
+    "scope_hint": {
+      "Family": "Shared with everyone in the family.",
+      "Personal": "Only you can see this list."
+    },
+    "list_scope": "Who can see it",
+    "empty_scope": "No lists here yet.",
+    "delete_list": "Delete list",
+    "delete_list_confirm": "Delete this list and the {{count}} tasks in it? This can’t be undone.",
+    "delete_list_yes": "Yes, delete",
+    "moved_error": "The task could not be moved."
   },
   "nav": {
     "home": "Home",
@@ -220,6 +241,7 @@
     }
   },
   "task_list": {
+    "load_more": "Load more",
     "show_completed": "Show completed",
     "quick_add_placeholder": "Add a task… try \"Buy milk tomorrow 5pm #Groceries\"",
     "other": "Other",
@@ -236,24 +258,56 @@
       "medium": "Medium",
       "high": "High"
     },
-    "category": "Category",
-    "category_hint": "(optional — groups the list, e.g. for a shopping list)",
-    "category_placeholder": "e.g. Produce, Dairy, Household…",
     "repeat": "Repeat",
     "repeat_hint": "(optional — completing it rolls the due date forward instead of finishing it)",
     "repeats": {
       "never": "Never",
       "daily": "Daily",
       "weekly": "Weekly",
-      "monthly": "Monthly"
+      "monthly": "Monthly",
+      "weekdays": "Every weekday",
+      "yearly": "Yearly",
+      "custom": "Custom…"
     },
     "errors": {
       "load": "Could not load this list. Pull to refresh to try again.",
       "update": "Could not update that task.",
       "delete": "Could not delete that task.",
       "create": "Could not create that task.",
-      "save": "Could not save that task."
-    }
+      "save": "Could not save that task.",
+      "section": "Could not delete that section."
+    },
+    "due_time": "Time",
+    "due_time_hint": "(optional)",
+    "repeat_every": "Every",
+    "repeat_unit": "Unit",
+    "repeat_weekdays": "Weekdays",
+    "units": {
+      "day": "day(s)",
+      "week": "week(s)",
+      "month": "month(s)",
+      "year": "year(s)"
+    },
+    "weekdays": {
+      "MO": "Mon",
+      "TU": "Tue",
+      "WE": "Wed",
+      "TH": "Thu",
+      "FR": "Fri",
+      "SA": "Sat",
+      "SU": "Sun"
+    },
+    "monthly_modes": {
+      "date": "On the same date",
+      "nth_weekday": "On the same weekday (e.g. 3rd Friday)"
+    },
+    "add_to": "Add to",
+    "inbox_quick_add_placeholder": "Capture a task… try \"Call the dentist tomorrow 5pm\"",
+    "list": "List",
+    "section": "Section",
+    "section_hint": "(optional — groups the list, e.g. for a shopping list)",
+    "section_placeholder": "e.g. Produce, Dairy, Household…",
+    "delete_section": "Delete section (its tasks stay in the list)"
   },
   "family": {
     "intro": "Everyone with a login sees this family's full Tasks, Notes and Calendar — there's no per-list sharing yet.",
@@ -342,8 +396,12 @@
       "no_date": "Couldn't find a date/time in \"{{text}}\" — try e.g. \"tomorrow 5pm\".",
       "create_event": "Could not create that event.",
       "save_event": "Could not save that event.",
-      "remove_event": "Could not remove that event."
-    }
+      "remove_event": "Could not remove that event.",
+      "delete_source": "It could not be deleted."
+    },
+    "delete_source": "Delete",
+    "delete_source_confirm": "Also delete all events in it?",
+    "delete_source_yes": "Yes, delete"
   },
   "contacts": {
     "households": "Households",
@@ -376,6 +434,37 @@
       "save_household": "Could not save that household.",
       "delete": "Could not delete that contact.",
       "save": "Could not save that contact."
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "intro": "Get a reminder on this device when a task or appointment is due — even when the app is closed.",
+    "on": "Reminders are on for this device.",
+    "off": "Reminders are off for this device.",
+    "enable": "Turn on reminders",
+    "disable": "Turn off reminders",
+    "lead": "Remind me",
+    "lead_hint": "Items with only a date (no time) are reminded at 9:00 that day. Each device has its own setting.",
+    "leads": {
+      "0": "At the time",
+      "5": "5 minutes before",
+      "10": "10 minutes before",
+      "15": "15 minutes before",
+      "30": "30 minutes before",
+      "60": "1 hour before",
+      "1440": "1 day before"
+    },
+    "status": {
+      "unsupported": "This browser can't receive push notifications here. (They are also off in the development server.)",
+      "ios-needs-install": "On iPhone and iPad, notifications only work once Qorkboard is on your Home Screen: tap the Share button, choose \"Add to Home Screen\", then open the app from there and come back to this page.",
+      "server-disabled": "Push notifications aren't set up on this server yet — ask whoever runs it to configure the VAPID keys.",
+      "denied": "Notifications are blocked for this site. Allow them in your browser settings, then reload this page."
+    },
+    "errors": {
+      "load": "Could not check the notification settings.",
+      "enable": "Could not turn on reminders. Did you allow notifications?",
+      "disable": "Could not turn off reminders.",
+      "save": "Could not save that setting."
     }
   }
 }

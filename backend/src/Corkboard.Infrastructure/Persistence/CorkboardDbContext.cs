@@ -32,6 +32,10 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
 
     public DbSet<Collection> Collections => Set<Collection>();
     public DbSet<CollectionAddress> CollectionAddresses => Set<CollectionAddress>();
+    public DbSet<Section> Sections => Set<Section>();
+
+    public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
+    public DbSet<SentReminder> SentReminders => Set<SentReminder>();
 
     public DbSet<DashboardWidget> DashboardWidgets => Set<DashboardWidget>();
 
@@ -105,7 +109,45 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(c => c.FeedToken).IsUnique().HasFilter("\"FeedToken\" IS NOT NULL");
+            entity.HasIndex(c => new { c.FamilyId, c.Scope, c.OwnerUserId });
+
+            // One Personal Inbox per user — enforced in the database because Inboxes are created lazily.
+            entity.HasIndex(c => new { c.FamilyId, c.OwnerUserId }).IsUnique().HasDatabaseName("IX_Collections_PersonalInbox")
+                .HasFilter("\"IsInbox\" AND \"Scope\" = 1");
         });
+
+        builder.Entity<PushSubscription>(entity =>
+        {
+            entity.HasIndex(p => p.Endpoint).IsUnique();
+            entity.HasIndex(p => p.UserId);
+            entity.Property(p => p.Endpoint).HasMaxLength(2048);
+            entity.Property(p => p.UserAgent).HasMaxLength(500);
+        });
+
+        builder.Entity<SentReminder>(entity =>
+        {
+            entity.HasKey(r => new { r.PushSubscriptionId, r.NodeId, r.OccurrenceStart });
+            entity.HasOne(r => r.PushSubscription).WithMany().HasForeignKey(r => r.PushSubscriptionId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(r => r.Node).WithMany().HasForeignKey(r => r.NodeId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(r => r.OccurrenceStart);
+        });
+
+        builder.Entity<Section>(entity =>
+        {
+            entity.HasOne(s => s.Collection)
+                .WithMany(c => c.Sections)
+                .HasForeignKey(s => s.CollectionId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(s => s.CollectionId);
+            entity.Property(s => s.Name).HasMaxLength(200);
+        });
+
+        // Deleting a Section keeps its Tasks — they just fall back to "no section".
+        builder.Entity<TaskNode>()
+            .HasOne(t => t.Section)
+            .WithMany()
+            .HasForeignKey(t => t.SectionId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.Entity<CollectionAddress>(entity =>
         {

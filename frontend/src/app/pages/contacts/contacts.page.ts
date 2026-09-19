@@ -6,6 +6,7 @@ import { extractErrorMessage } from '../../core/http-error';
 import { CollectionResponse, NodeResponse } from '../../core/models';
 import { NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
 import { PALETTE } from '../../core/colors';
+import { PagedList } from '../../core/paging';
 
 @Component({
   selector: 'app-contacts',
@@ -15,8 +16,10 @@ import { PALETTE } from '../../core/colors';
 })
 export class ContactsPage implements OnInit {
   households: CollectionResponse[] = [];
-  contacts: NodeResponse[] = [];
+  readonly contactList = new PagedList<NodeResponse>((page) => this.nodesApi.listPage({ type: 'Contact', sort: 'name', page }));
   selectedContactId: string | null = null;
+  /** The contact just saved, which may sit on a page that isn't loaded yet. */
+  private savedContact: NodeResponse | null = null;
 
   loading = true;
   errorMessage: string | null = null;
@@ -42,17 +45,20 @@ export class ContactsPage implements OnInit {
     this.reload();
   }
 
-  reload() {
-    this.loading = true;
+  get contacts(): NodeResponse[] {
+    return this.contactList.items;
+  }
+
+  reload(quiet = false) {
+    this.loading = !quiet;
     this.errorMessage = null;
     forkJoin({
       households: this.collectionsApi.list({ type: 'Household' }),
-      contacts: this.nodesApi.list({ type: 'Contact' }),
+      contacts: this.contactList.first(),
     }).subscribe({
-      next: ({ households, contacts }) => {
+      next: ({ households }) => {
         this.households = households.sort((a, b) => a.name.localeCompare(b.name));
-        this.contacts = this.sortContacts(contacts);
-        if (!this.contacts.some((c) => c.id === this.selectedContactId)) {
+        if (!this.selectedContact) {
           this.selectedContactId = this.contacts[0]?.id ?? null;
         }
         this.loading = false;
@@ -67,7 +73,7 @@ export class ContactsPage implements OnInit {
   }
 
   get selectedContact(): NodeResponse | null {
-    return this.contacts.find((c) => c.id === this.selectedContactId) ?? null;
+    return this.contacts.find((c) => c.id === this.selectedContactId) ?? (this.savedContact?.id === this.selectedContactId ? this.savedContact : null);
   }
 
   selectContact(contact: NodeResponse) {
@@ -178,11 +184,8 @@ export class ContactsPage implements OnInit {
   deleteContact(contact: NodeResponse) {
     this.nodesApi.delete(contact.id).subscribe({
       next: () => {
-        this.contacts = this.contacts.filter((c) => c.id !== contact.id);
-        if (this.selectedContactId === contact.id) {
-          this.selectedContactId = this.contacts[0]?.id ?? null;
-        }
-        this.cdr.markForCheck();
+        if (this.selectedContactId === contact.id) this.selectedContactId = null; // reload() picks the first contact
+        this.reload(true);
       },
       error: () => {
         this.errorMessage = this.transloco.translate('contacts.errors.delete');
@@ -237,7 +240,7 @@ export class ContactsPage implements OnInit {
       assignedFamilyMemberIds: [],
       collectionId: this.contactForm.householdId || null,
       priority: null,
-      category: null,
+      sectionId: null,
       location: null,
       allDay: null,
       recurrenceRule: null,
@@ -261,13 +264,11 @@ export class ContactsPage implements OnInit {
 
     request$.subscribe({
       next: (saved) => {
-        this.contacts = this.sortContacts(
-          this.editingContactId ? this.contacts.map((c) => (c.id === saved.id ? saved : c)) : [...this.contacts, saved],
-        );
+        this.savedContact = saved;
         this.selectedContactId = saved.id;
         this.showContactForm = false;
         this.editingContactId = null;
-        this.cdr.markForCheck();
+        this.reload(true);
       },
       error: (err) => {
         this.errorMessage = extractErrorMessage(err, this.transloco.translate('contacts.errors.save'));
@@ -276,8 +277,20 @@ export class ContactsPage implements OnInit {
     });
   }
 
-  private sortContacts(contacts: NodeResponse[]): NodeResponse[] {
-    return [...contacts].sort((a, b) => (a.lastName ?? '').localeCompare(b.lastName ?? '') || (a.firstName ?? '').localeCompare(b.firstName ?? ''));
+  loadMore() {
+    this.contactList.loadingMore = true;
+    this.contactList.more().subscribe({
+      next: () => this.finishLoadMore(),
+      error: () => {
+        this.errorMessage = this.transloco.translate('contacts.errors.load');
+        this.finishLoadMore();
+      },
+    });
+  }
+
+  private finishLoadMore() {
+    this.contactList.loadingMore = false;
+    this.cdr.markForCheck();
   }
 
   private emptyHouseholdForm() {

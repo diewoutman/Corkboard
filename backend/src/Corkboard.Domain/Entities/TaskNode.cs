@@ -7,8 +7,9 @@ public class TaskNode : Node
     public DateTimeOffset? CompletedAt { get; set; }
     public int? Priority { get; set; }
 
-    /// <summary>Free-text grouping label (e.g. "Produce", "Household") — lets a TaskList double as a categorized shopping list.</summary>
-    public string? Category { get; set; }
+    /// <summary>Optional Section (Todoist-style category) within the Task's Collection.</summary>
+    public Guid? SectionId { get; set; }
+    public Section? Section { get; set; }
 
     /// <summary>
     /// Same RRULE format and column as Appointment.RecurrenceRule (TPH siblings

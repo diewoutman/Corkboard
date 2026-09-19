@@ -1,39 +1,72 @@
-<a routerLink="/tasks" class="text-sm font-extrabold text-coral hover:text-coral-strong">← {{ 'tasks.title' | transloco }}</a>
+<a routerLink="/tasks" class="text-sm md:hidden font-extrabold text-coral hover:text-coral-strong">← {{ 'tasks.title' | transloco }}</a>
 
 <div class="mt-2 flex items-center justify-between">
-  <h1 class="text-2xl font-extrabold text-ink">{{ list?.name ?? ('common.loading' | transloco) }}</h1>
+  <h1 class="text-2xl font-extrabold text-ink">{{ isAllView ? ('tasks.all' | transloco) : isInboxView ? ('tasks.inbox' | transloco) : (list?.name ?? ('common.loading' | transloco)) }}</h1>
   <label class="flex items-center gap-2 text-sm font-bold text-ink-muted">
-    <input type="checkbox" [(ngModel)]="showCompleted" name="showCompleted" class="rounded-md accent-coral" />
+    <input type="checkbox" [(ngModel)]="showCompleted" (ngModelChange)="onShowCompletedChange()" name="showCompleted" class="rounded-md accent-coral" />
     {{ 'task_list.show_completed' | transloco }}
   </label>
 </div>
 
 <app-error-banner [message]="errorMessage" />
 
+<div *ngIf="isInboxView && inboxes.length > 1" class="mt-4 flex items-center gap-2 text-sm font-bold text-ink-muted" role="group" [attr.aria-label]="'task_list.add_to' | transloco">
+  {{ 'task_list.add_to' | transloco }}
+  <button
+    *ngFor="let inbox of inboxes"
+    type="button"
+    (click)="quickAddTargetId = inbox.id"
+    [attr.aria-pressed]="quickAddTargetId === inbox.id"
+    class="rounded-full border-2 px-3 py-1 text-xs font-extrabold"
+    [class]="quickAddTargetId === inbox.id ? 'border-coral bg-coral text-white' : 'border-border-soft text-ink-muted hover:bg-cork'"
+  >
+    {{ listLabel(inbox) }}
+  </button>
+</div>
+
 <app-quick-add-bar
-  class="mt-4 block"
-  [placeholder]="'task_list.quick_add_placeholder' | transloco"
+  class="mt-2 block"
+  [placeholder]="(isCombinedView ? 'task_list.inbox_quick_add_placeholder' : 'task_list.quick_add_placeholder') | transloco"
   (submitted)="submitQuickAdd($event)"
 />
 
 <app-loading-indicator *ngIf="loading" class="mt-8" />
 
 <div *ngIf="!loading" class="mt-4 space-y-4">
-  <div *ngFor="let group of groupedTasks">
-    <h2 *ngIf="groupedTasks.length > 1" class="mb-1.5 text-xs font-extrabold uppercase tracking-wide text-ink-muted">
-      {{ group.category ?? ('task_list.other' | transloco) }}
+  <div *ngFor="let group of groupedTasks; trackBy: trackGroup">
+    <h2 *ngIf="groupedTasks.length > 1" class="mb-1.5 flex items-center gap-2 text-xs font-extrabold uppercase tracking-wide text-ink-muted">
+      {{ group.title ?? ('task_list.other' | transloco) }}
+      <button
+        *ngIf="group.sectionId"
+        type="button"
+        (click)="deleteSection(group.sectionId)"
+        class="normal-case opacity-60 hover:text-danger hover:opacity-100"
+        [attr.aria-label]="'task_list.delete_section' | transloco"
+        [title]="'task_list.delete_section' | transloco"
+      >✕</button>
     </h2>
     <ul class="flex flex-col gap-2">
       <app-task-row
         *ngFor="let task of group.tasks"
         [task]="task"
         [members]="members"
+        [origin]="originOf(task)"
         (toggleDone)="toggleDone(task)"
         (delete)="deleteTask(task)"
         (edit)="openEditTaskForm(task)"
       />
     </ul>
   </div>
+
+  <button
+    *ngIf="hasMore"
+    type="button"
+    (click)="loadMore()"
+    [disabled]="loadingMore"
+    class="w-full rounded-full border-2 border-border-soft px-4 py-2 text-sm font-extrabold text-ink-muted hover:bg-cork disabled:opacity-50"
+  >
+    {{ 'task_list.load_more' | transloco }} ({{ tasks.length }}/{{ total }})
+  </button>
 
   <app-empty-state *ngIf="visibleTasks.length === 0">{{ 'task_list.empty' | transloco }}</app-empty-state>
 </div>
@@ -64,13 +97,7 @@
     <div class="grid grid-cols-2 gap-3">
       <div>
         <label for="dueDate" class="block text-sm font-bold text-ink">{{ 'task_list.due_date' | transloco }}</label>
-        <input
-          id="dueDate"
-          type="date"
-          name="dueDate"
-          [(ngModel)]="newTask.dueDate"
-          class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-        />
+        <input id="dueDate" type="date" name="dueDate" [(ngModel)]="newTask.dueDate" class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral" />
       </div>
       <div>
         <label for="priority" class="block text-sm font-bold text-ink">{{ 'task_list.priority' | transloco }}</label>
@@ -87,33 +114,73 @@
         </select>
       </div>
     </div>
+    <div *ngIf="newTask.dueDate">
+      <label for="dueTime" class="block text-sm font-bold text-ink">{{ 'task_list.due_time' | transloco }} <span class="font-semibold text-ink-muted">{{ 'task_list.due_time_hint' | transloco }}</span></label>
+      <input id="dueTime" type="time" name="dueTime" [(ngModel)]="newTask.dueTime" class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral" />
+    </div>
     <div>
-      <label for="category" class="block text-sm font-bold text-ink">{{ 'task_list.category' | transloco }} <span class="font-semibold text-ink-muted">{{ 'task_list.category_hint' | transloco }}</span></label>
+      <label for="collectionId" class="block text-sm font-bold text-ink">{{ 'task_list.list' | transloco }}</label>
+      <select id="collectionId" name="collectionId" [(ngModel)]="newTask.collectionId" (ngModelChange)="onFormListChange()" required class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral">
+        <ng-container *ngFor="let scope of scopes">
+          <optgroup *ngIf="listsInScope(scope).length > 0" [label]="'tasks.scopes.' + scope | transloco">
+            <option *ngFor="let l of listsInScope(scope)" [ngValue]="l.id">{{ listLabel(l) }}</option>
+          </optgroup>
+        </ng-container>
+      </select>
+    </div>
+    <div>
+      <label for="section" class="block text-sm font-bold text-ink">{{ 'task_list.section' | transloco }} <span class="font-semibold text-ink-muted">{{ 'task_list.section_hint' | transloco }}</span></label>
       <input
-        id="category"
-        name="category"
-        list="knownCategories"
-        [placeholder]="'task_list.category_placeholder' | transloco"
-        [(ngModel)]="newTask.category"
+        id="section"
+        name="section"
+        list="knownSections"
+        [placeholder]="'task_list.section_placeholder' | transloco"
+        [(ngModel)]="newTask.section"
         class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       />
-      <datalist id="knownCategories">
-        <option *ngFor="let category of knownCategories" [value]="category"></option>
+      <datalist id="knownSections">
+        <option *ngFor="let section of formSections" [value]="section.name"></option>
       </datalist>
     </div>
     <div>
       <label for="repeat" class="block text-sm font-bold text-ink">{{ 'task_list.repeat' | transloco }} <span class="font-semibold text-ink-muted">{{ 'task_list.repeat_hint' | transloco }}</span></label>
-      <select
-        id="repeat"
-        name="repeat"
-        [(ngModel)]="newTask.repeat"
-        class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-      >
+      <select id="repeat" name="repeat" [(ngModel)]="newTask.repeat.preset" class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral">
         <option value="never">{{ 'task_list.repeats.never' | transloco }}</option>
         <option value="daily">{{ 'task_list.repeats.daily' | transloco }}</option>
+        <option value="weekdays">{{ 'task_list.repeats.weekdays' | transloco }}</option>
         <option value="weekly">{{ 'task_list.repeats.weekly' | transloco }}</option>
         <option value="monthly">{{ 'task_list.repeats.monthly' | transloco }}</option>
+        <option value="yearly">{{ 'task_list.repeats.yearly' | transloco }}</option>
+        <option value="custom">{{ 'task_list.repeats.custom' | transloco }}</option>
       </select>
+      <div *ngIf="newTask.repeat.preset === 'custom'" class="mt-2 space-y-2">
+        <div class="flex items-center gap-2 text-sm font-bold text-ink">
+          {{ 'task_list.repeat_every' | transloco }}
+          <input type="number" min="1" name="repeatInterval" [(ngModel)]="newTask.repeat.interval" [attr.aria-label]="'task_list.repeat_every' | transloco" class="w-20 rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral" />
+          <select name="repeatUnit" [(ngModel)]="newTask.repeat.unit" [attr.aria-label]="'task_list.repeat_unit' | transloco" class="rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral">
+            <option value="day">{{ 'task_list.units.day' | transloco }}</option>
+            <option value="week">{{ 'task_list.units.week' | transloco }}</option>
+            <option value="month">{{ 'task_list.units.month' | transloco }}</option>
+            <option value="year">{{ 'task_list.units.year' | transloco }}</option>
+          </select>
+        </div>
+        <div *ngIf="newTask.repeat.unit === 'week'" class="flex flex-wrap gap-1.5" role="group" [attr.aria-label]="'task_list.repeat_weekdays' | transloco">
+          <button
+            *ngFor="let code of weekdayCodes"
+            type="button"
+            (click)="toggleWeekday(code)"
+            [attr.aria-pressed]="newTask.repeat.weekdays.includes(code)"
+            class="rounded-full border-2 px-3 py-1 text-xs font-extrabold"
+            [class]="newTask.repeat.weekdays.includes(code) ? 'border-coral bg-coral text-white' : 'border-border-soft text-ink-muted hover:bg-cork'"
+          >
+            {{ 'task_list.weekdays.' + code | transloco }}
+          </button>
+        </div>
+        <select *ngIf="newTask.repeat.unit === 'month'" name="monthlyMode" [(ngModel)]="newTask.repeat.monthlyMode" class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral">
+          <option value="date">{{ 'task_list.monthly_modes.date' | transloco }}</option>
+          <option value="nthWeekday">{{ 'task_list.monthly_modes.nth_weekday' | transloco }}</option>
+        </select>
+      </div>
     </div>
     <app-assignee-chip-group [members]="members" [selectedIds]="newTask.assignedFamilyMemberIds" (toggled)="toggleAssignee($event)" />
 

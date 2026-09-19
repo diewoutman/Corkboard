@@ -216,6 +216,14 @@
         >
           <button sourceRowActions type="button" (click)="getFeedUrl(calendar)" class="font-extrabold text-coral hover:text-coral-strong">{{ 'calendar.subscribe' | transloco }}</button>
           <button sourceRowActions type="button" (click)="startImport(calendar.id)" class="font-extrabold text-coral hover:text-coral-strong">{{ 'calendar.import_ics' | transloco }}</button>
+          <ng-container sourceRowActions>
+            <button *ngIf="confirmDeleteId !== calendar.id" type="button" (click)="confirmDeleteId = calendar.id" class="font-extrabold text-danger hover:underline">{{ 'calendar.delete_source' | transloco }}</button>
+            <ng-container *ngIf="confirmDeleteId === calendar.id">
+              <span class="font-bold text-ink">{{ 'calendar.delete_source_confirm' | transloco }}</span>
+              <button type="button" (click)="deleteCalendar(calendar)" class="font-extrabold text-danger hover:underline">{{ 'calendar.delete_source_yes' | transloco }}</button>
+              <button type="button" (click)="confirmDeleteId = null" class="font-bold text-ink-muted hover:underline">{{ 'common.cancel' | transloco }}</button>
+            </ng-container>
+          </ng-container>
           <input
             *ngIf="importingCalendarId === calendar.id"
             type="file"
@@ -256,6 +264,14 @@
         >
           <a sourceRowActions [routerLink]="['/calendar/schedules', schedule.id]" class="font-extrabold text-coral hover:text-coral-strong">{{ 'calendar.edit_schedule' | transloco }}</a>
           <button sourceRowActions type="button" (click)="getFeedUrl(schedule)" class="font-extrabold text-coral hover:text-coral-strong">{{ 'calendar.subscribe' | transloco }}</button>
+          <ng-container sourceRowActions>
+            <button *ngIf="confirmDeleteId !== schedule.id" type="button" (click)="confirmDeleteId = schedule.id" class="font-extrabold text-danger hover:underline">{{ 'calendar.delete_source' | transloco }}</button>
+            <ng-container *ngIf="confirmDeleteId === schedule.id">
+              <span class="font-bold text-ink">{{ 'calendar.delete_source_confirm' | transloco }}</span>
+              <button type="button" (click)="deleteCalendar(schedule)" class="font-extrabold text-danger hover:underline">{{ 'calendar.delete_source_yes' | transloco }}</button>
+              <button type="button" (click)="confirmDeleteId = null" class="font-bold text-ink-muted hover:underline">{{ 'common.cancel' | transloco }}</button>
+            </ng-container>
+          </ng-container>
         </app-calendar-source-row>
 
         <li *ngIf="schedules.length === 0" class="text-sm font-semibold text-ink-muted">{{ 'calendar.no_schedules' | transloco }}</li>

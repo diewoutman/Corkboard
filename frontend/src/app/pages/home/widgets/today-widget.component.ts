@@ -28,7 +28,7 @@ export class TodayWidgetComponent implements OnInit {
     const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000);
 
     forkJoin({
-      tasks: this.nodesApi.list({ type: 'Task' }),
+      tasks: this.nodesApi.list({ type: 'Task', isCompleted: false, dueUntil: endOfToday.toISOString() }),
       occurrences: this.calendarApi.occurrences({ from: startOfToday.toISOString(), until: endOfToday.toISOString() }),
       members: this.familyMembersApi.list(),
     }).subscribe({

@@ -162,6 +162,15 @@ never reaches the user; each `CollectionType` gets its own user-facing framing:
 
 - **`TaskList`** — "a Task list is a Collection of Task Nodes". `/tasks` lists a
   family's `TaskList` Collections, `/tasks/{id}` shows the Tasks inside one.
+  Every Collection has a **scope**: `Family` (shared) or `Personal` (only its
+  `OwnerUserId` sees it — enforced in the collection and node services, so API
+  clients, which authenticate as themselves, never see Personal lists; only Task
+  lists can be Personal). Each user has one fixed, non-deletable Personal **Inbox**
+  (`IsInbox`, created lazily on first list; quick-add lands there; `/tasks/inbox`);
+  there is no Family Inbox. `IsSystemManaged` lists are normal
+  lists hidden from the tasks UI. Inside a list, Tasks group into **Sections**
+  (`Section` entity with `SortOrder`, one level; `Task.SectionId`, replacing the old
+  free-text `Category`). Moving a task between lists just changes its `CollectionId`.
 - **`Calendar`** — "a Calendar is a Collection of Appointment Nodes". `/calendar`
   renders a month grid overlaying every `Calendar` Collection's Appointments (each
   toggleable, color-coded); creating an event picks which Calendar it belongs to.
@@ -304,11 +313,15 @@ boundary doesn't pay for itself.
 ### 3.3 TickerQ usage
 
 TickerQ (in-process, EF-Core-backed scheduler) is the natural fit for:
-- **Reminders/notifications** — "task due tomorrow," "appointment in 1 hour" —
-  scheduled per-Node at creation/update time. For a recurring Appointment, the
-  reminder job is (re)scheduled against the *next* computed occurrence rather than
-  a stored row (see below).
+- **Reminders/notifications** — implemented as Web Push (see below), but not via a
+  TickerQ job per Node: a once-a-minute `ReminderWorker` (a plain `BackgroundService`)
+  looks at what is due and a `SentReminder` row per device + occurrence prevents
+  duplicates. That sidesteps rescheduling on every edit/complete and handles recurring
+  items for free (each occurrence is simply due once), at the cost of a cheap query per
+  minute.
 - **Digests** — e.g. a daily/weekly "what's coming up" push or email per Family.
+
+**Web Push reminders — implemented.** A device opts in on `/notifications` (per device: on/off and a lead time; permission is only requested from a button, and iOS is told to add the app to the Home Screen first). `PushSubscription` rows hold the browser's endpoint and keys. `ReminderService` reminds for tasks with a due time and for appointments (each occurrence) `LeadMinutes` before, and for date-only tasks / all-day appointments at 09:00 local. Recipients: the Personal list's owner; otherwise the assigned members that have a login; **items nobody is assigned to go to the whole family** (a product choice — change `ReminderService.Recipients` to alter it). Endpoints must be public https URLs, since the server POSTs to them. A 404/410 from the push service deletes the subscription. It stays off until `Push:PublicKey` and `Push:PrivateKey` are set (`npx web-push generate-vapid-keys`; keep the private key secret, e.g. via the `Push__PrivateKey` environment variable), and browsers only allow push on an HTTPS origin. Not built: a per-task custom reminder, a daily digest, and an e-mail/in-app fallback for devices that can't do push.
 
 **Recurrence: computed on read, not precomputed — implemented.** A recurring
 `Appointment` stores only its `RecurrenceRule` on the base Node, as a real RFC 5545
@@ -336,7 +349,7 @@ confusion.
 Because TickerQ persists jobs via EF Core against the same Postgres database, no
 extra moving parts (no Redis/Hangfire dashboard/separate worker infra) are needed for
 a single-instance, family-scale deployment. TickerQ itself isn't used for
-recurrence — see above — only reminders/digests remain on the "not yet built" list.
+recurrence — see above — only digests remain on the "not yet built" list.
 
 **iCal (RFC 5545) interop — implemented, one-way each direction.** Both directions
 go through `Ical.Net`, not hand-rolled `.ics` text:
@@ -556,6 +569,16 @@ frontend/                # Angular 22 + Tailwind CSS PWA (service worker) — no
 **API surface implemented so far** (all family-scoped ones require a JWT with a
 `family_id` claim, obtained from `POST /api/families`):
 
+**Every endpoint that returns a list is paged — there is no way to fetch "everything".**
+`?page=` (1-based, default 1) and `?pageSize=` (1–50, default 50; out-of-range → 400).
+The body stays a plain JSON array of that page; the total number of matches is in the
+`X-Total-Count` response header (exposed via CORS). A page past the end is an empty
+array. Every list pages in SQL (`ToPagedAsync`: count + skip/take on an ordered query that
+ends on a unique key), except calendar occurrences, which are expanded from recurrence
+rules in memory and can only be cut afterwards. API clients that
+want everything must loop over pages; the Angular client does this in `core/paging.ts`
+(`fetchAll`, which stops after page 1 when everything fits). Screens with long lists use `PagedList` + a "Load more" button instead (tasks, notes, contacts, admin families, call log); home widgets and the due-today badge ask the server for exactly what they show (filter + sort + `pageSize`, or `pageSize=1` for a bare count).
+
 | Endpoint | Purpose |
 |---|---|
 | `GET /api/setup/status` | Anonymous — whether this instance has any Family yet, drives the client's first-run wizard framing |
@@ -563,7 +586,8 @@ frontend/                # Angular 22 + Tailwind CSS PWA (service worker) — no
 | `POST /api/families`, `GET /api/families/mine` | One-time family setup (creates Family + Owner FamilyMember, returns a fresh token) |
 | `GET/POST /api/family-members`, `GET/PUT/DELETE /api/family-members/{id}` | FamilyMember CRUD — responses include `LinkedUserEmail`/`LinkedUserRole` when a member has a login |
 | `POST /api/family-members/{id}/account` | Owner-only — creates a login for a FamilyMember that doesn't have one yet and links it, in one call |
-| `GET/POST /api/nodes`, `PUT/DELETE /api/nodes/{id}` | Node CRUD across all four types (incl. Contact), with `?type=`/`?assignedTo=`/`?collectionId=`/`?from=`/`?until=` filters on the list endpoint |
+| `GET/POST /api/nodes`, `PUT/DELETE /api/nodes/{id}` | Node CRUD across all four types (incl. Contact), with `?type=`/`?assignedTo=`/`?collectionId=`/`?from=`/`?until=` filters on the list endpoint, plus `?isCompleted=`/`?scope=`/`?sectionId=`/`?priority=`/`?search=`, `?sort=` (`createdAt`|`updatedAt`|`title`|`due`|`until`|`priority`|`important`|`name`, `-` prefix = descending), `?dueFrom=`/`?dueUntil=` (due window on `until`; overdue included, undated never match), `?isImportant=` (paging: see below) |
+| `GET/POST /api/collections/{id}/sections`, `PUT/DELETE /api/collections/sections/{sectionId}` | Sections of a list; POST returns the existing section on a case-insensitive name match |
 | `GET/POST /api/collections`, `PUT/DELETE /api/collections/{id}` | Collection CRUD (Task lists, Calendars, Schedules, Households), with `?type=`/`?parentCollectionId=` filters — list responses include `NodeCount`/`IncompleteCount` |
 | `POST /api/collections/{id}/feed-token` | (Re)generates a Calendar's iCal feed URL |
 | `GET /api/calendar-feed/{collectionId}/{token}.ics` | Anonymous — the actual iCal subscribe feed |
@@ -623,8 +647,8 @@ in dev, and being explicit about `--launch-profile http` rather than relying on
 `dotnet run`'s default profile selection (which happens to pick "http" here since it's
 listed first in `launchSettings.json`, but that's not something to depend on silently).
 
-Not yet done: no automated tests, no reminder jobs wired to TickerQ yet (the
-scheduler itself is running, just unused — see §3.3), no recurrence expansion on
+Not yet done: no automated tests, reminders run in a `BackgroundService`, not TickerQ (the
+scheduler itself is running, only used for the API-call-log purge — see §3.3), no recurrence expansion on
 the `/api/nodes` list endpoint (an Appointment's `RecurrenceRule` is stored and
 returned but not yet expanded into occurrences — see the `AppointmentException`
 design note in §3.3), and end-to-end verification against a live Postgres hasn't

@@ -14,14 +14,12 @@ public class DashboardService(CorkboardDbContext db) : IDashboardService
     /// <summary>Fixed number of columns the dashboard lays widgets out in — the client mirrors this.</summary>
     public const int ColumnCount = 3;
 
-    public async Task<IReadOnlyList<DashboardWidgetResponse>> ListAsync(Guid familyId, Guid userId, DashboardWidgetScope scope, CancellationToken cancellationToken)
+    public async Task<PagedResult<DashboardWidgetResponse>> ListAsync(Guid familyId, Guid userId, DashboardWidgetScope scope, PageRequest page, CancellationToken cancellationToken)
     {
         var domainScope = (DomainWidgetScope)scope;
-        var widgets = await ScopedQuery(familyId, userId, domainScope).AsNoTracking()
-            .OrderBy(w => w.SortOrder)
-            .ToListAsync(cancellationToken);
+        var widgets = ScopedQuery(familyId, userId, domainScope).AsNoTracking().OrderBy(w => w.SortOrder).ThenBy(w => w.Id);
 
-        if (widgets.Count == 0 && domainScope == DomainWidgetScope.Personal)
+        if (domainScope == DomainWidgetScope.Personal && !await widgets.AnyAsync(cancellationToken))
         {
             // First visit — seed the one widget every earlier version of this page always showed.
             // Family dashboards start empty instead — they're opt-in, set up by an admin.
@@ -40,10 +38,10 @@ public class DashboardService(CorkboardDbContext db) : IDashboardService
             };
             db.DashboardWidgets.Add(seeded);
             await db.SaveChangesAsync(cancellationToken);
-            widgets = [seeded];
         }
 
-        return widgets.Select(ToResponse).ToList();
+        var result = await widgets.ToPagedAsync(page, cancellationToken);
+        return new PagedResult<DashboardWidgetResponse>(result.Items.Select(ToResponse).ToList(), result.TotalCount);
     }
 
     public async Task<Result<DashboardWidgetResponse>> CreateAsync(Guid familyId, Guid userId, bool isAdmin, CreateDashboardWidgetRequest request, CancellationToken cancellationToken)
@@ -53,7 +51,7 @@ public class DashboardService(CorkboardDbContext db) : IDashboardService
             return Result<DashboardWidgetResponse>.Failure(AdminOnlyError);
         }
 
-        if (!await CollectionValidation.ExistsAsync(db, familyId, request.CollectionId, cancellationToken))
+        if (!await CollectionValidation.SharedExistsAsync(db, familyId, request.CollectionId, cancellationToken))
         {
             return Result<DashboardWidgetResponse>.Failure(InvalidCollectionError);
         }
@@ -87,7 +85,7 @@ public class DashboardService(CorkboardDbContext db) : IDashboardService
 
     public async Task<Result<DashboardWidgetResponse>> UpdateAsync(Guid familyId, Guid userId, bool isAdmin, Guid id, UpdateDashboardWidgetRequest request, CancellationToken cancellationToken)
     {
-        if (!await CollectionValidation.ExistsAsync(db, familyId, request.CollectionId, cancellationToken))
+        if (!await CollectionValidation.SharedExistsAsync(db, familyId, request.CollectionId, cancellationToken))
         {
             return Result<DashboardWidgetResponse>.Failure(InvalidCollectionError);
         }

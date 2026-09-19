@@ -1,3 +1,4 @@
+using Corkboard.Application.Common;
 using Corkboard.Api.Common;
 using Corkboard.Application.FamilyMembers;
 using Corkboard.Contracts.ApiClients;
@@ -12,11 +13,11 @@ namespace Corkboard.Api.Controllers;
 public class FamilyMembersController(IFamilyMemberService familyMemberService) : FamilyScopedControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<FamilyMemberResponse>>> List(CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<FamilyMemberResponse>>> List([FromQuery] PageQuery paging, CancellationToken cancellationToken)
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        return Ok(await familyMemberService.ListAsync(familyId, cancellationToken));
+        return this.PagedOk(await familyMemberService.ListAsync(familyId, paging.ToRequest(), cancellationToken));
     }
 
     [HttpGet("{id:guid}")]

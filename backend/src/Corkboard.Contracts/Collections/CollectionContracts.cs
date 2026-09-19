@@ -11,7 +11,11 @@ public record CreateCollectionRequest(
     [StringLength(200)] string? Street,
     [StringLength(100)] string? City,
     [StringLength(20)] string? PostalCode,
-    [StringLength(100)] string? Country);
+    [StringLength(100)] string? Country,
+    /// <summary>Personal lists are visible to their creator only. Only Task lists can be Personal.</summary>
+    CollectionScope Scope = CollectionScope.Family,
+    /// <summary>Hidden from the tasks UI — for lists managed from elsewhere (e.g. recipes, shopping).</summary>
+    bool IsSystemManaged = false);
 
 public record UpdateCollectionRequest(
     [Required, StringLength(200, MinimumLength = 1)] string Name,
@@ -42,4 +46,14 @@ public record CollectionResponse(
     string? Street,
     string? City,
     string? PostalCode,
-    string? Country);
+    string? Country,
+    CollectionScope Scope,
+    /// <summary>The scope's fixed, non-deletable landing list — where quick-add puts new tasks.</summary>
+    bool IsInbox,
+    bool IsSystemManaged);
+
+public record SectionResponse(Guid Id, Guid CollectionId, string Name, int SortOrder);
+
+public record CreateSectionRequest([Required, StringLength(200, MinimumLength = 1)] string Name);
+
+public record UpdateSectionRequest([Required, StringLength(200, MinimumLength = 1)] string Name, int SortOrder);

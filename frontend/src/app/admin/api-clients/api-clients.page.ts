@@ -1,4 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { of } from 'rxjs';
+import { PagedList } from '../../core/paging';
 import { ApiClients } from '../../core/api-clients';
 import { extractErrorMessage } from '../../core/http-error';
 import { API_SCOPE_AREAS, ApiCallLogEntryResponse, ApiClientResponse, CreatedApiClientResponse } from '../../core/models';
@@ -23,7 +25,7 @@ export class ApiClientsPage implements OnInit {
   justCreated: CreatedApiClientResponse | null = null;
 
   expandedClientId: string | null = null;
-  callLog: ApiCallLogEntryResponse[] = [];
+  callLog = new PagedList<ApiCallLogEntryResponse>(() => of({ items: [], total: 0 }));
   callLogLoading = false;
 
   constructor(
@@ -114,11 +116,10 @@ export class ApiClientsPage implements OnInit {
     }
 
     this.expandedClientId = client.id;
-    this.callLog = [];
+    this.callLog = new PagedList<ApiCallLogEntryResponse>((page) => this.apiClientsApi.callLog(client.id, page));
     this.callLogLoading = true;
-    this.apiClientsApi.callLog(client.id).subscribe({
-      next: (entries) => {
-        this.callLog = entries;
+    this.callLog.first().subscribe({
+      next: () => {
         this.callLogLoading = false;
         this.cdr.markForCheck();
       },
@@ -128,6 +129,23 @@ export class ApiClientsPage implements OnInit {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  loadMoreCallLog() {
+    const log = this.callLog;
+    log.loadingMore = true;
+    log.more().subscribe({
+      next: () => this.finishCallLogPage(log),
+      error: () => {
+        this.errorMessage = 'Could not load more of the call log.';
+        this.finishCallLogPage(log);
+      },
+    });
+  }
+
+  private finishCallLogPage(log: PagedList<ApiCallLogEntryResponse>) {
+    log.loadingMore = false;
+    this.cdr.markForCheck();
   }
 
   private emptyCreateForm(): { name: string; scopeAreas: Record<string, boolean> } {

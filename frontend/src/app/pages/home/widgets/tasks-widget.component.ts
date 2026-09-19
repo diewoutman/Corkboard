@@ -47,14 +47,19 @@ export class TasksWidgetComponent implements OnInit {
       next: ({ list, assignedTo, members }) => {
         this.listName = list?.name ?? null;
         this.members = members;
+        // The server filters and sorts; one page of exactly what the widget shows.
         this.nodesApi
-          .list({ type: 'Task', collectionId: this.collectionId ?? undefined, assignedTo: assignedTo ?? undefined })
+          .listPage({
+            type: 'Task',
+            collectionId: this.collectionId ?? undefined,
+            assignedTo: assignedTo ?? undefined,
+            isCompleted: false,
+            sort: 'due',
+            pageSize: MAX_TASKS_SHOWN,
+          })
           .subscribe({
-            next: (tasks) => {
-              this.tasks = tasks
-                .filter((t) => !t.isCompleted)
-                .sort((a, b) => (a.until ?? a.createdAt).localeCompare(b.until ?? b.createdAt))
-                .slice(0, MAX_TASKS_SHOWN);
+            next: ({ items }) => {
+              this.tasks = items;
               this.loading = false;
               this.cdr.markForCheck();
             },

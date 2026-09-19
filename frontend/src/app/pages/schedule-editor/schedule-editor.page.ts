@@ -158,7 +158,7 @@ export class ScheduleEditorPage implements OnInit {
           isImportant: null,
           isCompleted: null,
           priority: null,
-          category: null,
+          sectionId: null,
           allDay: false,
           ...NULL_CONTACT_FIELDS,
         })
@@ -167,7 +167,7 @@ export class ScheduleEditorPage implements OnInit {
           ...payload,
           collectionId: this.scheduleId,
           priority: null,
-          category: null,
+          sectionId: null,
           allDay: false,
           ...NULL_CONTACT_FIELDS,
           ...NULL_NOTE_FIELDS,

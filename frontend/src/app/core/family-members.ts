@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { fetchAll } from './paging';
 import {
   CreateFamilyMemberAccountRequest,
   CreateFamilyMemberRequest,
@@ -13,7 +14,7 @@ export class FamilyMembers {
   private readonly http = inject(HttpClient);
 
   list() {
-    return this.http.get<FamilyMemberResponse[]>(`${environment.apiUrl}/family-members`);
+    return fetchAll<FamilyMemberResponse>(this.http, `${environment.apiUrl}/family-members`);
   }
 
   create(request: CreateFamilyMemberRequest) {

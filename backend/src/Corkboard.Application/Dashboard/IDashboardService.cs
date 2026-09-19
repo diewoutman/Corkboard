@@ -6,7 +6,7 @@ namespace Corkboard.Application.Dashboard;
 public interface IDashboardService
 {
     /// <summary>Personal is scoped to the caller specifically; Family is shared by the whole Family.</summary>
-    Task<IReadOnlyList<DashboardWidgetResponse>> ListAsync(Guid familyId, Guid userId, DashboardWidgetScope scope, CancellationToken cancellationToken);
+    Task<PagedResult<DashboardWidgetResponse>> ListAsync(Guid familyId, Guid userId, DashboardWidgetScope scope, PageRequest page, CancellationToken cancellationToken);
 
     /// <summary>isAdmin gates creating a Family-scope widget (Owner/Adult only) — ignored for Personal.</summary>
     Task<Result<DashboardWidgetResponse>> CreateAsync(Guid familyId, Guid userId, bool isAdmin, CreateDashboardWidgetRequest request, CancellationToken cancellationToken);

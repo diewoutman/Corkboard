@@ -21,11 +21,11 @@ public class AdminController(IAdminService adminService, IFamilyService familySe
     }
 
     [HttpGet("families")]
-    public async Task<ActionResult<IReadOnlyList<AdminFamilySummaryResponse>>> Families(CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<AdminFamilySummaryResponse>>> Families([FromQuery] PageQuery paging, CancellationToken cancellationToken)
     {
         if (!CurrentUserIsSystemOwner) return SystemOwnerOnlyProblem();
 
-        return Ok(await adminService.ListFamiliesAsync(cancellationToken));
+        return this.PagedOk(await adminService.ListFamiliesAsync(paging.ToRequest(), cancellationToken));
     }
 
     [HttpGet("families/{id:guid}")]

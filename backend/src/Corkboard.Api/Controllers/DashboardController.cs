@@ -1,3 +1,4 @@
+using Corkboard.Application.Common;
 using Corkboard.Api.Common;
 using Corkboard.Application.Dashboard;
 using Corkboard.Contracts.ApiClients;
@@ -12,11 +13,11 @@ namespace Corkboard.Api.Controllers;
 public class DashboardController(IDashboardService dashboardService) : FamilyScopedControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<DashboardWidgetResponse>>> List([FromQuery] DashboardWidgetScope scope, CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<DashboardWidgetResponse>>> List([FromQuery] DashboardWidgetScope scope, [FromQuery] PageQuery paging, CancellationToken cancellationToken)
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        return Ok(await dashboardService.ListAsync(familyId, CurrentUserId, scope, cancellationToken));
+        return this.PagedOk(await dashboardService.ListAsync(familyId, CurrentUserId, scope, paging.ToRequest(), cancellationToken));
     }
 
     [HttpPost]

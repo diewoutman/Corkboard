@@ -1,3 +1,4 @@
+using Corkboard.Application.Common;
 using Corkboard.Api.Common;
 using Corkboard.Application.ApiClients;
 using Corkboard.Contracts.ApiClients;
@@ -11,11 +12,11 @@ namespace Corkboard.Api.Controllers;
 public class AdminApiClientsController(IApiClientService apiClientService) : SystemOwnerControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<ApiClientResponse>>> List(CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<ApiClientResponse>>> List([FromQuery] PageQuery paging, CancellationToken cancellationToken)
     {
         if (!CurrentUserIsSystemOwner) return SystemOwnerOnlyProblem();
 
-        return Ok(await apiClientService.ListAsync(cancellationToken));
+        return this.PagedOk(await apiClientService.ListAsync(paging.ToRequest(), cancellationToken));
     }
 
     [HttpPost]
@@ -28,12 +29,12 @@ public class AdminApiClientsController(IApiClientService apiClientService) : Sys
     }
 
     [HttpGet("{id:guid}/call-log")]
-    public async Task<ActionResult<IReadOnlyList<ApiCallLogEntryResponse>>> CallLog(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<ApiCallLogEntryResponse>>> CallLog(Guid id, [FromQuery] PageQuery paging, CancellationToken cancellationToken)
     {
         if (!CurrentUserIsSystemOwner) return SystemOwnerOnlyProblem();
 
-        var result = await apiClientService.GetCallLogAsync(id, cancellationToken);
-        return result.ToActionResult(this);
+        var result = await apiClientService.GetCallLogAsync(id, paging.ToRequest(), cancellationToken);
+        return result.IsSuccess ? this.PagedOk(result.Value) : result.Error!.ToActionResult<IReadOnlyList<ApiCallLogEntryResponse>>(this);
     }
 
     [HttpDelete("{id:guid}")]
