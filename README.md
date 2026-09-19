@@ -86,6 +86,7 @@ frontend/                     # Angular 22 + Tailwind CSS PWA
   src/app/admin/                # system-owner-only shell: stats, families, api-clients
   e2e/                         # Playwright specs
 docker-compose.yml            # Postgres (dev database)
+docker/                        # Dockerfile for a combined frontend+API self-hosting image
 ```
 
 ## Getting started
@@ -129,6 +130,13 @@ npm --prefix frontend run screenshots
 It drives the seeded dev family (starting the dev stack itself if it isn't
 already running), populates a small deterministic set of demo data, and
 writes PNGs to `docs/screenshots/`. Rerun it after any meaningful UI change.
+
+## Self-hosting (Docker image)
+
+For running Qorkboard somewhere other than a dev machine (a home
+server/NAS), `docker/` builds one image with the frontend and API combined —
+see [`docker/README.md`](docker/README.md). You host Postgres yourself; the
+image just connects to it.
 
 ## Status
 

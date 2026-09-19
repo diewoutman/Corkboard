@@ -1,0 +1,16 @@
+# Applies to `docker build -f docker/Dockerfile .` (BuildKit looks for
+# <dockerfile>.dockerignore next to the Dockerfile before the context root).
+**/bin/
+**/obj/
+**/node_modules/
+frontend/www/
+frontend/.angular/
+frontend/test-results/
+frontend/e2e/
+backend/tests/
+.git/
+.idea/
+.vscode/
+graphify-out/
+docs/
+*.md

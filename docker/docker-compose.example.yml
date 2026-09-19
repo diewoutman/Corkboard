@@ -1,0 +1,38 @@
+# Example of running the built image against a Postgres instance you already
+# host yourself. Not wired into the repo's root docker-compose.yml (that one
+# is only for local development). Copy/adjust and drop the postgres: block if
+# you're pointing at an existing external server instead.
+services:
+  corkboard:
+    image: corkboard:latest
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=corkboard;Username=corkboard;Password=CHANGE_ME"
+      Jwt__SigningKey: "CHANGE_ME_32_BYTES_MINIMUM_RANDOM_SECRET"
+      ApplyMigrationsOnStartup: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: corkboard
+      POSTGRES_USER: corkboard
+      POSTGRES_PASSWORD: CHANGE_ME
+    volumes:
+      - corkboard-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U corkboard -d corkboard"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  corkboard-postgres-data:
