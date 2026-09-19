@@ -9,10 +9,11 @@ test('a list can be renamed via its edit button', async ({ authedPage: page }) =
   await page.getByLabel('List name').fill(originalName);
   await page.getByRole('button', { name: 'Create' }).click();
 
-  const card = page.locator('a').filter({ hasText: originalName });
-  await expect(card).toBeVisible();
+  const item = page.locator('li').filter({ hasText: originalName });
+  await expect(item).toBeVisible();
 
-  await card.getByRole('button', { name: 'Edit list' }).click();
+  await item.hover(); // the ✎ only shows on hover
+  await item.getByRole('button', { name: 'Edit list' }).click();
 
   await expect(page.getByRole('heading', { name: 'Edit list' })).toBeVisible();
   await expect(page.getByLabel('List name')).toHaveValue(originalName);

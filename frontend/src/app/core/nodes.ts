@@ -32,6 +32,35 @@ export interface NodeListFilter {
   pageSize?: number;
 }
 
+/** An update request that changes nothing except `overrides` — PUT replaces the whole node, so everything else is copied over. */
+export function toUpdateRequest(task: NodeResponse, overrides: Partial<UpdateNodeRequest>): UpdateNodeRequest {
+  return {
+    title: task.title,
+    description: task.description,
+    from: task.from,
+    until: task.until,
+    assignedFamilyMemberIds: task.assignedFamilyMemberIds,
+    collectionId: task.collectionId,
+    isImportant: task.isImportant,
+    isCompleted: task.isCompleted,
+    priority: task.priority,
+    sectionId: task.sectionId,
+    location: task.location,
+    allDay: task.allDay,
+    recurrenceRule: task.recurrenceRule,
+    firstName: task.firstName,
+    lastName: task.lastName,
+    dateOfBirth: task.dateOfBirth,
+    street: task.street,
+    city: task.city,
+    postalCode: task.postalCode,
+    country: task.country,
+    phoneNumbers: task.phoneNumbers,
+    emails: task.emails,
+    ...overrides,
+  };
+}
+
 /** Spread into a Create/UpdateNodeRequest for any non-Contact node type. */
 export const NULL_CONTACT_FIELDS = {
   firstName: null,

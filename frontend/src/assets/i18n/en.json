@@ -32,7 +32,8 @@
     "errors": {
       "load": "Could not load your lists. Pull to refresh to try again.",
       "create": "Could not create that list.",
-      "save": "Could not save that list."
+      "save": "Could not save that list.",
+      "delete": "The list could not be deleted."
     },
     "inbox": "Inbox",
     "all": "All tasks",
@@ -47,7 +48,11 @@
       "Personal": "Only you can see this list."
     },
     "list_scope": "Who can see it",
-    "empty_scope": "No lists here yet."
+    "empty_scope": "No lists here yet.",
+    "delete_list": "Delete list",
+    "delete_list_confirm": "Delete this list and the {{count}} tasks in it? This can’t be undone.",
+    "delete_list_yes": "Yes, delete",
+    "moved_error": "The task could not be moved."
   },
   "nav": {
     "home": "Home",
@@ -391,8 +396,12 @@
       "no_date": "Couldn't find a date/time in \"{{text}}\" — try e.g. \"tomorrow 5pm\".",
       "create_event": "Could not create that event.",
       "save_event": "Could not save that event.",
-      "remove_event": "Could not remove that event."
-    }
+      "remove_event": "Could not remove that event.",
+      "delete_source": "It could not be deleted."
+    },
+    "delete_source": "Delete",
+    "delete_source_confirm": "Also delete all events in it?",
+    "delete_source_yes": "Yes, delete"
   },
   "contacts": {
     "households": "Households",

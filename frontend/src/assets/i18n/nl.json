@@ -32,7 +32,8 @@
     "errors": {
       "load": "Je lijsten konden niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
       "create": "De lijst kon niet worden aangemaakt.",
-      "save": "De lijst kon niet worden opgeslagen."
+      "save": "De lijst kon niet worden opgeslagen.",
+      "delete": "De lijst kon niet worden verwijderd."
     },
     "inbox": "Inbox",
     "all": "Alle taken",
@@ -47,7 +48,11 @@
       "Personal": "Alleen jij ziet deze lijst."
     },
     "list_scope": "Wie ziet het",
-    "empty_scope": "Nog geen lijsten."
+    "empty_scope": "Nog geen lijsten.",
+    "delete_list": "Lijst verwijderen",
+    "delete_list_confirm": "Deze lijst en de {{count}} taken erin verwijderen? Dit kan niet ongedaan worden gemaakt.",
+    "delete_list_yes": "Ja, verwijderen",
+    "moved_error": "De taak kon niet worden verplaatst."
   },
   "nav": {
     "home": "Home",
@@ -391,8 +396,12 @@
       "no_date": "Geen datum of tijd gevonden in \"{{text}}\" — probeer bijv. \"morgen 17:00\".",
       "create_event": "De afspraak kon niet worden aangemaakt.",
       "save_event": "De afspraak kon niet worden opgeslagen.",
-      "remove_event": "De afspraak kon niet worden verwijderd."
-    }
+      "remove_event": "De afspraak kon niet worden verwijderd.",
+      "delete_source": "Het kon niet worden verwijderd."
+    },
+    "delete_source": "Verwijderen",
+    "delete_source_confirm": "Ook alle afspraken hierin verwijderen?",
+    "delete_source_yes": "Ja, verwijderen"
   },
   "contacts": {
     "households": "Huishoudens",

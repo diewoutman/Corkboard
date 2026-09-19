@@ -1,12 +1,13 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { ActivatedRoute } from '@angular/router';
-import { Observable, forkJoin, of, switchMap } from 'rxjs';
+import { Observable, Subscription, forkJoin, of, switchMap } from 'rxjs';
 import { Collections } from '../../core/collections';
 import { FamilyMembers } from '../../core/family-members';
 import { extractErrorMessage } from '../../core/http-error';
 import { CollectionResponse, CollectionScope, FamilyMemberResponse, NodeResponse, SectionResponse, UpdateNodeRequest } from '../../core/models';
-import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
+import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes, toUpdateRequest } from '../../core/nodes';
+import { TaskEvents } from '../../core/task-events';
 import { parseQuickAdd } from '../../core/quick-add';
 import { RepeatSpec, WEEKDAY_CODES, WeekdayCode, buildRule, emptyRepeat, joinDue, parseRule, splitDue } from '../../core/recurrence';
 
@@ -23,7 +24,8 @@ interface TaskGroup {
   styleUrls: ['./task-list.page.scss'],
   standalone: false,
 })
-export class TaskListPage implements OnInit {
+export class TaskListPage implements OnInit, OnDestroy {
+  private moveSub?: Subscription;
   listId!: string;
   /** True for the combined Family + Personal Inbox at /tasks/inbox, which has no single list of its own. */
   isInboxView = false;
@@ -65,9 +67,11 @@ export class TaskListPage implements OnInit {
     private readonly collectionsApi: Collections,
     private readonly cdr: ChangeDetectorRef,
     private readonly transloco: TranslocoService,
+    private readonly events: TaskEvents,
   ) {}
 
   ngOnInit() {
+    this.moveSub = this.events.moved.subscribe(() => this.reload(true));
     // The shell reuses this component when another list is picked in the sidebar, so follow the param.
     this.route.paramMap.subscribe((params) => {
       this.listId = params.get('id')!;
@@ -82,6 +86,10 @@ export class TaskListPage implements OnInit {
   }
 
   /** Views that span several lists have no single list of their own. */
+  ngOnDestroy() {
+    this.moveSub?.unsubscribe();
+  }
+
   get isCombinedView(): boolean {
     return this.isInboxView || this.isAllView;
   }
@@ -292,7 +300,7 @@ export class TaskListPage implements OnInit {
   }
 
   toggleDone(task: NodeResponse) {
-    this.nodesApi.update(task.id, this.toUpdateRequest(task, { isCompleted: !task.isCompleted })).subscribe({
+    this.nodesApi.update(task.id, toUpdateRequest(task, { isCompleted: !task.isCompleted })).subscribe({
       next: (updated) => {
         // With more pages still on the server, a changed task shifts every later page: start over from page 1.
         if (this.hasMore) return this.reload(true);
@@ -364,7 +372,7 @@ export class TaskListPage implements OnInit {
           editing
             ? this.nodesApi.update(
                 editing.id,
-                this.toUpdateRequest(editing, {
+                toUpdateRequest(editing, {
                   title: this.newTask.title,
                   description: this.newTask.description || null,
                   until,
@@ -452,34 +460,6 @@ export class TaskListPage implements OnInit {
     const known = (collectionId === this.list?.id ? this.sections : this.formSections).find((s) => s.name.toLowerCase() === trimmed.toLowerCase());
     if (known) return of(known.id);
     return this.collectionsApi.createSection(collectionId, trimmed).pipe(switchMap((section) => of(section.id)));
-  }
-
-  private toUpdateRequest(task: NodeResponse, overrides: Partial<UpdateNodeRequest>): UpdateNodeRequest {
-    return {
-      title: task.title,
-      description: task.description,
-      from: task.from,
-      until: task.until,
-      assignedFamilyMemberIds: task.assignedFamilyMemberIds,
-      collectionId: task.collectionId,
-      isImportant: task.isImportant,
-      isCompleted: task.isCompleted,
-      priority: task.priority,
-      sectionId: task.sectionId,
-      location: task.location,
-      allDay: task.allDay,
-      recurrenceRule: task.recurrenceRule,
-      firstName: task.firstName,
-      lastName: task.lastName,
-      dateOfBirth: task.dateOfBirth,
-      street: task.street,
-      city: task.city,
-      postalCode: task.postalCode,
-      country: task.country,
-      phoneNumbers: task.phoneNumbers,
-      emails: task.emails,
-      ...overrides,
-    };
   }
 
   private sortTasks(tasks: NodeResponse[]): NodeResponse[] {

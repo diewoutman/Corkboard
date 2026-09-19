@@ -7,6 +7,9 @@ import { FamilyMemberResponse, NodeResponse } from '../../../core/models';
 import { memberColor, memberName } from '../../../core/member-lookup';
 import { MemberBadgeComponent } from '../member-badge/member-badge.component';
 
+/** dataTransfer type a dragged task carries (its NodeResponse as JSON); the tasks sidebar accepts it as a drop. */
+export const TASK_DRAG_TYPE = 'application/x-corkboard-task';
+
 /**
  * A single task row in Task-list's grouped-by-category view: checkbox, title, due badge, assignees.
  * `host: display:contents` so this component's own element doesn't sit between the `<ul>` it's
@@ -22,6 +25,10 @@ import { MemberBadgeComponent } from '../member-badge/member-badge.component';
     <li
       class="flex items-start gap-3 rounded-2xl bg-white px-4 py-3 shadow-sticker-sm"
       [class.opacity-55]="task.isCompleted"
+      [class.opacity-40]="dragging"
+      draggable="true"
+      (dragstart)="onDragStart($event)"
+      (dragend)="dragging = false"
     >
       <input
         type="checkbox"
@@ -57,6 +64,28 @@ import { MemberBadgeComponent } from '../member-badge/member-badge.component';
   `,
 })
 export class TaskRowComponent {
+  /** The original row dims while it is being dragged, so the list underneath the pointer stays readable. */
+  dragging = false;
+
+  onDragStart(event: DragEvent) {
+    const transfer = event.dataTransfer;
+    if (!transfer) return;
+
+    transfer.setData(TASK_DRAG_TYPE, JSON.stringify(this.task));
+    transfer.effectAllowed = 'move';
+
+    // The browser's drag image is a snapshot of the row at full opacity, which hides the drop target — swap in a see-through copy.
+    const row = event.currentTarget as HTMLElement;
+    const ghost = row.cloneNode(true) as HTMLElement;
+    ghost.style.cssText = `position:fixed;top:-1000px;left:0;width:${row.offsetWidth}px;opacity:0.45;pointer-events:none`;
+    document.body.appendChild(ghost);
+    transfer.setDragImage(ghost, event.offsetX, event.offsetY);
+    setTimeout(() => {
+      ghost.remove();
+      this.dragging = true;
+    });
+  }
+
   @Input({ required: true }) task!: NodeResponse;
   @Input() members: FamilyMemberResponse[] = [];
   /** Which list the task comes from, when a view mixes several (the combined Inbox). */
