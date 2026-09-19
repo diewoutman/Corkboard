@@ -12,7 +12,7 @@
 
   <!-- All-day strip -->
   <div class="flex border-b-2 border-cork" *ngIf="hasAnyAllDay()">
-    <div class="w-12 shrink-0 py-1 pr-1 text-right text-[9px] font-bold text-ink-muted">All day</div>
+    <div class="w-12 shrink-0 py-1 pr-1 text-right text-[9px] font-bold text-ink-muted">{{ 'timeline.segments.anytime' | transloco }}</div>
     <div class="grid flex-1" [style.grid-template-columns]="'repeat(' + columns.length + ', minmax(0, 1fr))'">
       <div *ngFor="let column of columns; trackBy: trackByDayKey" class="space-y-0.5 border-l-2 border-cork p-0.5">
         <span

@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -21,6 +22,7 @@ import { ModalSheetComponent } from '../../shared/components/modal-sheet/modal-s
 
 @NgModule({
   imports: [
+    TranslocoPipe,
     CommonModule,
     FormsModule,
     CalendarPageRoutingModule,

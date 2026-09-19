@@ -42,7 +42,8 @@
     "notes": "Notities",
     "calendar": "Agenda",
     "role_hint_owner": "Eigenaar: kan gezinsleden beheren en inlogaccounts voor hen aanmaken",
-    "role_hint_member": "Iedereen met een login ziet alle taken, notities en de agenda van dit gezin — er is geen beperking per lijst"
+    "role_hint_member": "Iedereen met een login ziet alle taken, notities en de agenda van dit gezin — er is geen beperking per lijst",
+    "family": "Gezin"
   },
   "tiles": {
     "tasks": {
@@ -292,6 +293,56 @@
       "save": "Het onderdeel kon niet worden opgeslagen.",
       "add": "Het onderdeel kon niet worden toegevoegd.",
       "remove": "Het onderdeel kon niet worden verwijderd."
+    }
+  },
+  "weekdays_short": {
+    "mo": "Ma",
+    "tu": "Di",
+    "we": "Wo",
+    "th": "Do",
+    "fr": "Vr",
+    "sa": "Za",
+    "su": "Zo"
+  },
+  "calendar": {
+    "views": {
+      "month": "Maand",
+      "week": "Week",
+      "day": "Dag"
+    },
+    "quick_add_placeholder": "Voeg een afspraak toe… probeer \"Tandarts morgen 15:00\"",
+    "previous": "Vorige",
+    "next": "Volgende",
+    "grid_hint": "Sleep over het raster om een afspraak toe te voegen, of sleep een afspraak om die te verplaatsen.",
+    "add_event": "Afspraak toevoegen",
+    "edit_event": "Afspraak bewerken",
+    "event": "Afspraak",
+    "start": "Start",
+    "end": "Einde",
+    "nothing_on_day": "Niets op deze dag.",
+    "add_calendar_hint": "Voeg een agenda toe in de zijbalk om afspraken toe te voegen.",
+    "calendars": "Agenda's",
+    "schedules": "Roosters",
+    "subscribe": "Abonneerlink",
+    "import_ics": ".ics importeren",
+    "no_calendars": "Nog geen agenda's.",
+    "no_schedules": "Nog geen roosters.",
+    "edit_schedule": "Rooster bewerken",
+    "calendar_name_placeholder": "bijv. Gezin, Werk…",
+    "calendar_color": "Kleur van de agenda",
+    "schedule_name_placeholder": "bijv. Schoolrooster…",
+    "schedule_color": "Kleur van het rooster",
+    "errors": {
+      "load_calendars": "Je agenda's konden niet worden geladen.",
+      "load": "Je agenda kon niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
+      "create_calendar": "De agenda kon niet worden aangemaakt.",
+      "subscribe": "Er kon geen abonneerlink voor deze agenda worden opgehaald.",
+      "load_event": "De afspraak kon niet worden geladen.",
+      "reschedule": "De afspraak kon niet worden verplaatst.",
+      "no_date": "Geen datum of tijd gevonden in \"{{text}}\" — probeer bijv. \"morgen 17:00\".",
+      "create_event": "De afspraak kon niet worden aangemaakt.",
+      "save_event": "De afspraak kon niet worden opgeslagen.",
+      "remove_event": "De afspraak kon niet worden verwijderd."
     }
   }
 }

@@ -42,7 +42,8 @@
     "notes": "Notes",
     "calendar": "Calendar",
     "role_hint_owner": "Owner: can manage family members and create logins for them",
-    "role_hint_member": "Everyone with a login sees this family's full Tasks, Notes and Calendar — there is no per-list restriction"
+    "role_hint_member": "Everyone with a login sees this family's full Tasks, Notes and Calendar — there is no per-list restriction",
+    "family": "Family"
   },
   "tiles": {
     "tasks": {
@@ -292,6 +293,56 @@
       "save": "Could not save that entry.",
       "add": "Could not add that entry.",
       "remove": "Could not remove that entry."
+    }
+  },
+  "weekdays_short": {
+    "mo": "Mon",
+    "tu": "Tue",
+    "we": "Wed",
+    "th": "Thu",
+    "fr": "Fri",
+    "sa": "Sat",
+    "su": "Sun"
+  },
+  "calendar": {
+    "views": {
+      "month": "Month",
+      "week": "Week",
+      "day": "Day"
+    },
+    "quick_add_placeholder": "Add an event… try \"Dentist tomorrow 3pm\"",
+    "previous": "Previous",
+    "next": "Next",
+    "grid_hint": "Drag on the grid to add an event, or drag an event to reschedule it.",
+    "add_event": "Add event",
+    "edit_event": "Edit event",
+    "event": "Event",
+    "start": "Start",
+    "end": "End",
+    "nothing_on_day": "Nothing on this day.",
+    "add_calendar_hint": "Add a calendar in the sidebar to start adding events.",
+    "calendars": "Calendars",
+    "schedules": "Schedules",
+    "subscribe": "Subscribe link",
+    "import_ics": "Import .ics",
+    "no_calendars": "No calendars yet.",
+    "no_schedules": "No schedules yet.",
+    "edit_schedule": "Edit schedule",
+    "calendar_name_placeholder": "e.g. Family, Work…",
+    "calendar_color": "Calendar color",
+    "schedule_name_placeholder": "e.g. School schedule…",
+    "schedule_color": "Schedule color",
+    "errors": {
+      "load_calendars": "Could not load your calendars.",
+      "load": "Could not load your calendar. Pull to refresh to try again.",
+      "create_calendar": "Could not create that calendar.",
+      "subscribe": "Could not get a subscribe link for that calendar.",
+      "load_event": "Could not load that event.",
+      "reschedule": "Could not reschedule that event.",
+      "no_date": "Couldn't find a date/time in \"{{text}}\" — try e.g. \"tomorrow 5pm\".",
+      "create_event": "Could not create that event.",
+      "save_event": "Could not save that event.",
+      "remove_event": "Could not remove that event."
     }
   }
 }
