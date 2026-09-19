@@ -9,7 +9,12 @@
     "cancel": "Annuleren",
     "create": "Aanmaken",
     "save_changes": "Wijzigingen opslaan",
-    "loading": "Laden…"
+    "loading": "Laden…",
+    "add": "Toevoegen",
+    "edit": "Bewerken",
+    "delete": "Verwijderen",
+    "name": "Naam",
+    "color": "Kleur"
   },
   "tasks": {
     "title": "Lijsten",
@@ -142,5 +147,27 @@
       "remove": "De widget kon niet worden verwijderd.",
       "save": "De widget kon niet worden opgeslagen."
     }
+  },
+  "roles": {
+    "Owner": "Eigenaar",
+    "Adult": "Volwassene",
+    "Member": "Lid"
+  },
+  "shared": {
+    "assigned_to": "Toegewezen aan",
+    "overdue": "Te laat",
+    "empty": "Leeg",
+    "list_left": "{{left}} van {{total}} over",
+    "due": "Uiterlijk {{date}}",
+    "repeats_hint": "Herhaalt — afronden schuift de deadline door",
+    "mark_important": "Markeren als belangrijk",
+    "unmark_important": "Niet meer als belangrijk markeren",
+    "widget_resize": "Formaat van widget wijzigen",
+    "widget_configure": "Widget instellen",
+    "widget_remove": "Widget verwijderen",
+    "every_other_week": "Om de week",
+    "ends": "Eindigt {{date}}",
+    "nothing_yet": "Nog niets.",
+    "more": "+{{count}} meer"
   }
 }

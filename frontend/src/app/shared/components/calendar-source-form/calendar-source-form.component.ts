@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { FormsModule } from '@angular/forms';
 import { ColorPickerFieldComponent } from '../color-picker-field/color-picker-field.component';
 
@@ -13,13 +14,13 @@ let nextId = 0;
 @Component({
   selector: 'app-calendar-source-form',
   standalone: true,
-  imports: [FormsModule, ColorPickerFieldComponent],
+  imports: [FormsModule, ColorPickerFieldComponent, TranslocoPipe],
   host: { class: 'block rounded-2xl bg-white p-2.5 shadow-sticker-sm' },
   template: `
     <form (ngSubmit)="submitted.emit()" #form="ngForm" class="space-y-2">
       <div class="flex items-end gap-2">
         <div class="flex-1">
-          <label [for]="id" class="block text-xs font-bold text-ink">Name</label>
+          <label [for]="id" class="block text-xs font-bold text-ink">{{ 'common.name' | transloco }}</label>
           <input
             [id]="id"
             [name]="id"
@@ -30,20 +31,20 @@ let nextId = 0;
             class="mt-1 block w-full rounded-lg border-2 border-border-soft px-2 py-1.5 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
           />
         </div>
-        <app-color-picker-field [label]="colorLabel" size="sm" [value]="color" (valueChange)="colorChange.emit($event)" />
+        <app-color-picker-field [label]="colorLabel || ('common.color' | transloco)" size="sm" [value]="color" (valueChange)="colorChange.emit($event)" />
       </div>
       <div class="flex gap-2">
         <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-full bg-coral px-3 py-1.5 text-xs font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
-          Add
+          {{ 'common.add' | transloco }}
         </button>
-        <button type="button" (click)="cancelled.emit()" class="rounded-full px-3 py-1.5 text-xs font-bold text-ink-muted hover:bg-cork">Cancel</button>
+        <button type="button" (click)="cancelled.emit()" class="rounded-full px-3 py-1.5 text-xs font-bold text-ink-muted hover:bg-cork">{{ 'common.cancel' | transloco }}</button>
       </div>
     </form>
   `,
 })
 export class CalendarSourceFormComponent {
   @Input() namePlaceholder = '';
-  @Input() colorLabel = 'Color';
+  @Input() colorLabel = '';
   @Input() name = '';
   @Output() nameChange = new EventEmitter<string>();
   @Input() color = '#ec5542';

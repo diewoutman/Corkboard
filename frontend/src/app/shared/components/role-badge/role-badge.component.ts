@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { FamilyRole } from '../../../core/models';
 
 /**
@@ -9,11 +10,12 @@ import { FamilyRole } from '../../../core/models';
 @Component({
   selector: 'app-role-badge',
   standalone: true,
+  imports: [TranslocoPipe],
   template: `
     <span
       class="rounded-full px-2 py-0.5 text-[10px] font-extrabold"
       [class]="role === 'Owner' ? 'bg-owner-bg text-owner-text' : 'bg-adult-bg text-adult-text'"
-    >{{ role }}</span>
+    >{{ ('roles.' + role) | transloco }}</span>
   `,
 })
 export class RoleBadgeComponent {

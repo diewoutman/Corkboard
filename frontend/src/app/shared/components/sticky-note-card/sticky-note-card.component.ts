@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { FamilyMemberResponse, NodeResponse } from '../../../core/models';
 import { memberColor, memberName } from '../../../core/member-lookup';
 import { MemberBadgeComponent } from '../member-badge/member-badge.component';
@@ -10,7 +11,7 @@ const NOTE_ROTATIONS = ['-rotate-1', 'rotate-1', '-rotate-[0.5deg]', 'rotate-[1.
 @Component({
   selector: 'app-sticky-note-card',
   standalone: true,
-  imports: [MemberBadgeComponent],
+  imports: [MemberBadgeComponent, TranslocoPipe],
   template: `
     <div [class]="colorClass + ' ' + rotationClass" class="relative rounded-2xl p-4 shadow-[0_5px_0_0_rgba(0,0,0,0.06)]">
       @if (interactive) {
@@ -22,10 +23,10 @@ const NOTE_ROTATIONS = ['-rotate-1', 'rotate-1', '-rotate-[0.5deg]', 'rotate-[1.
             [class.opacity-100]="note.isImportant"
             [class.text-ink]="!note.isImportant"
             class="opacity-60 hover:text-coral hover:opacity-100"
-            [attr.aria-label]="note.isImportant ? 'Unmark as important' : 'Mark as important'"
+            [attr.aria-label]="(note.isImportant ? 'shared.unmark_important' : 'shared.mark_important') | transloco"
           >★</button>
-          <button type="button" (click)="edit.emit()" class="text-ink opacity-50 hover:text-coral hover:opacity-100" aria-label="Edit">✎</button>
-          <button type="button" (click)="delete.emit()" class="text-ink opacity-50 hover:text-danger hover:opacity-100" aria-label="Delete">✕</button>
+          <button type="button" (click)="edit.emit()" class="text-ink opacity-50 hover:text-coral hover:opacity-100" [attr.aria-label]="'common.edit' | transloco">✎</button>
+          <button type="button" (click)="delete.emit()" class="text-ink opacity-50 hover:text-danger hover:opacity-100" [attr.aria-label]="'common.delete' | transloco">✕</button>
         </div>
       } @else if (note.isImportant) {
         <span class="absolute right-3 top-3 text-coral" aria-hidden="true">★</span>

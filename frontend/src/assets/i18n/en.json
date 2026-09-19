@@ -9,7 +9,12 @@
     "cancel": "Cancel",
     "create": "Create",
     "save_changes": "Save changes",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "name": "Name",
+    "color": "Color"
   },
   "tasks": {
     "title": "Lists",
@@ -142,5 +147,27 @@
       "remove": "Could not remove that widget.",
       "save": "Could not save that widget."
     }
+  },
+  "roles": {
+    "Owner": "Owner",
+    "Adult": "Adult",
+    "Member": "Member"
+  },
+  "shared": {
+    "assigned_to": "Assigned to",
+    "overdue": "Overdue",
+    "empty": "Empty",
+    "list_left": "{{left}} of {{total}} left",
+    "due": "Due {{date}}",
+    "repeats_hint": "Repeats — completing it rolls the due date forward",
+    "mark_important": "Mark as important",
+    "unmark_important": "Unmark as important",
+    "widget_resize": "Resize widget",
+    "widget_configure": "Configure widget",
+    "widget_remove": "Remove widget",
+    "every_other_week": "Every other week",
+    "ends": "Ends {{date}}",
+    "nothing_yet": "Nothing yet.",
+    "more": "+{{count}} more"
   }
 }

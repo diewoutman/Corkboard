@@ -1,4 +1,5 @@
 import { Component, EventEmitter, HostBinding, Input, Output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 /**
  * Home dashboard's per-widget chrome: title row with resize (↔) / configure (⚙) / remove (✕)
@@ -25,16 +26,17 @@ import { Component, EventEmitter, HostBinding, Input, Output } from '@angular/co
 @Component({
   selector: 'app-widget-card',
   standalone: true,
+  imports: [TranslocoPipe],
   template: `
     <div [class]="showPanel ? 'mb-2 flex items-center justify-between gap-2' : 'mb-1 flex items-center gap-2'">
       <ng-content select="[widgetCardTitle]"></ng-content>
       @if (editable) {
         <div [class]="showPanel ? 'hidden items-center gap-2.5 group-hover:flex' : 'ml-auto hidden items-center gap-2.5 group-hover:flex'">
           @if (resizable) {
-            <button type="button" (click)="resized.emit()" class="text-ink-muted hover:text-coral" aria-label="Resize widget" title="Resize widget">↔</button>
+            <button type="button" (click)="resized.emit()" class="text-ink-muted hover:text-coral" [attr.aria-label]="'shared.widget_resize' | transloco" [title]="'shared.widget_resize' | transloco">↔</button>
           }
-          <button type="button" (click)="configure.emit()" class="text-xs font-bold text-coral hover:text-coral-strong" aria-label="Configure widget" title="Configure widget">⚙</button>
-          <button type="button" (click)="remove.emit()" class="text-ink-muted hover:text-danger" aria-label="Remove widget" title="Remove widget">✕</button>
+          <button type="button" (click)="configure.emit()" class="text-xs font-bold text-coral hover:text-coral-strong" [attr.aria-label]="'shared.widget_configure' | transloco" [title]="'shared.widget_configure' | transloco">⚙</button>
+          <button type="button" (click)="remove.emit()" class="text-ink-muted hover:text-danger" [attr.aria-label]="'shared.widget_remove' | transloco" [title]="'shared.widget_remove' | transloco">✕</button>
         </div>
       }
     </div>

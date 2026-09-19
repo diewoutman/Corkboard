@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { FamilyMemberResponse } from '../../../core/models';
 
 /**
@@ -9,9 +10,10 @@ import { FamilyMemberResponse } from '../../../core/models';
 @Component({
   selector: 'app-assignee-chip-group',
   standalone: true,
+  imports: [TranslocoPipe],
   template: `
     <div>
-      <label class="block text-sm font-bold text-ink">Assigned to</label>
+      <label class="block text-sm font-bold text-ink">{{ 'shared.assigned_to' | transloco }}</label>
       <div class="mt-1 flex flex-wrap gap-2">
         @for (member of members; track member.id) {
           <label class="flex items-center gap-1.5 rounded-full border-2 border-border-soft px-2.5 py-1 text-xs font-bold text-ink has-checked:border-coral has-checked:bg-pastel-coral">

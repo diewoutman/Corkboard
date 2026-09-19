@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { isLightColor } from '../../../core/colors';
 
 /**
@@ -10,6 +11,7 @@ import { isLightColor } from '../../../core/colors';
 @Component({
   selector: 'app-list-card',
   standalone: true,
+  imports: [TranslocoPipe],
   template: `
     <div
       [style.background]="color"
@@ -21,12 +23,12 @@ import { isLightColor } from '../../../core/colors';
         type="button"
         (click)="$event.preventDefault(); $event.stopPropagation(); edit.emit()"
         class="absolute right-3 top-3 opacity-60 hover:opacity-100"
-        aria-label="Edit list"
+        [attr.aria-label]="'tasks.edit_list' | transloco"
       >✎</button>
       <span class="pr-6 font-heading text-lg font-bold">{{ name }}</span>
       @if (nodeCount > 0) {
         <div>
-          <span class="text-sm font-extrabold" [class.opacity-95]="!isLight" [class.opacity-80]="isLight">{{ incompleteCount ?? 0 }} of {{ nodeCount }} left</span>
+          <span class="text-sm font-extrabold" [class.opacity-95]="!isLight" [class.opacity-80]="isLight">{{ 'shared.list_left' | transloco: { left: incompleteCount ?? 0, total: nodeCount } }}</span>
           <div class="mt-1.5 h-1.5 overflow-hidden rounded-full" [class.bg-white/30]="!isLight" [class.bg-ink/15]="isLight">
             <div
               class="h-full rounded-full"
@@ -37,7 +39,7 @@ import { isLightColor } from '../../../core/colors';
           </div>
         </div>
       } @else {
-        <span class="text-sm font-extrabold" [class.opacity-90]="!isLight" [class.opacity-70]="isLight">Empty</span>
+        <span class="text-sm font-extrabold" [class.opacity-90]="!isLight" [class.opacity-70]="isLight">{{ 'shared.empty' | transloco }}</span>
       }
     </div>
   `,

@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { MemberAvatarComponent, MemberAvatarSize } from '../member-avatar/member-avatar.component';
 
 /**
@@ -9,7 +10,7 @@ import { MemberAvatarComponent, MemberAvatarSize } from '../member-avatar/member
 @Component({
   selector: 'app-entity-detail-header',
   standalone: true,
-  imports: [MemberAvatarComponent],
+  imports: [MemberAvatarComponent, TranslocoPipe],
   template: `
     <div class="flex items-start justify-between gap-2">
       <div class="flex items-center gap-3">
@@ -18,7 +19,7 @@ import { MemberAvatarComponent, MemberAvatarSize } from '../member-avatar/member
       </div>
       <div class="flex shrink-0 items-center gap-3">
         <button type="button" (click)="edit.emit()" class="text-xs font-extrabold text-coral hover:text-coral-strong">{{ editLabel }}</button>
-        <button type="button" (click)="remove.emit()" class="text-ink-muted hover:text-danger" aria-label="Delete">✕</button>
+        <button type="button" (click)="remove.emit()" class="text-ink-muted hover:text-danger" [attr.aria-label]="'common.delete' | transloco">✕</button>
       </div>
     </div>
   `,

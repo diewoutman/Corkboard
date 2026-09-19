@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FamilyMemberResponse, NodeResponse } from '../../../core/models';
 import { memberColor, memberName } from '../../../core/member-lookup';
@@ -14,7 +15,7 @@ import { MemberBadgeComponent } from '../member-badge/member-badge.component';
   selector: 'app-schedule-entry-row',
   standalone: true,
   host: { class: 'contents' },
-  imports: [DatePipe, MemberBadgeComponent],
+  imports: [DatePipe, MemberBadgeComponent, TranslocoPipe],
   template: `
     <li class="rounded-xl border-2 border-border-soft px-2 py-1.5">
       <div class="flex items-start justify-between gap-1">
@@ -28,14 +29,14 @@ import { MemberBadgeComponent } from '../member-badge/member-badge.component';
           }
           @if (biweekly || until) {
             <p class="text-xs text-ink-muted/80">
-              @if (biweekly) {<span>Every other week</span>}
+              @if (biweekly) {<span>{{ 'shared.every_other_week' | transloco }}</span>}
               @if (biweekly && until) {<span> · </span>}
-              @if (until) {<span>Ends {{ until }}</span>}
+              @if (until) {<span>{{ 'shared.ends' | transloco: { date: until } }}</span>}
             </p>
           }
         </div>
-        <button type="button" (click)="edit.emit()" class="shrink-0 text-ink-muted hover:text-coral" aria-label="Edit">✎</button>
-        <button type="button" (click)="delete.emit()" class="shrink-0 text-ink-muted hover:text-danger" aria-label="Delete">✕</button>
+        <button type="button" (click)="edit.emit()" class="shrink-0 text-ink-muted hover:text-coral" [attr.aria-label]="'common.edit' | transloco">✎</button>
+        <button type="button" (click)="delete.emit()" class="shrink-0 text-ink-muted hover:text-danger" [attr.aria-label]="'common.delete' | transloco">✕</button>
       </div>
       <div class="mt-1 flex flex-wrap gap-1">
         @for (memberId of entry.assignedFamilyMemberIds; track memberId) {

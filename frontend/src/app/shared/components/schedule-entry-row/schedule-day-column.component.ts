@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { FamilyMemberResponse, NodeResponse } from '../../../core/models';
 import { ScheduleEntryRowComponent } from './schedule-entry-row.component';
 
@@ -6,7 +7,7 @@ import { ScheduleEntryRowComponent } from './schedule-entry-row.component';
 @Component({
   selector: 'app-schedule-day-column',
   standalone: true,
-  imports: [ScheduleEntryRowComponent],
+  imports: [ScheduleEntryRowComponent, TranslocoPipe],
   template: `
     <div class="rounded-2xl border-2 border-border-soft bg-white p-3 shadow-sticker-sm">
       <h2 class="text-sm font-bold text-ink">{{ label }}</h2>
@@ -15,7 +16,7 @@ import { ScheduleEntryRowComponent } from './schedule-entry-row.component';
           <app-schedule-entry-row [entry]="entry" [members]="members" (delete)="deleteEntry.emit(entry)" (edit)="editEntry.emit(entry)" />
         }
         @if (entries.length === 0) {
-          <li class="text-xs text-ink-muted">Nothing yet.</li>
+          <li class="text-xs text-ink-muted">{{ 'shared.nothing_yet' | transloco }}</li>
         }
       </ul>
     </div>

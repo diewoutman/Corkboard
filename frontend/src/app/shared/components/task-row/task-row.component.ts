@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { dueClass } from '../../../core/task-due';
 import { FamilyMemberResponse, NodeResponse } from '../../../core/models';
@@ -15,7 +16,7 @@ import { MemberBadgeComponent } from '../member-badge/member-badge.component';
   selector: 'app-task-row',
   standalone: true,
   host: { class: 'contents' },
-  imports: [DatePipe, MemberBadgeComponent],
+  imports: [DatePipe, MemberBadgeComponent, TranslocoPipe],
   template: `
     <li
       class="flex items-start gap-3 rounded-2xl bg-white px-4 py-3 shadow-sticker-sm"
@@ -36,18 +37,18 @@ import { MemberBadgeComponent } from '../member-badge/member-badge.component';
         }
         <div class="mt-1 flex flex-wrap items-center gap-2">
           @if (task.until) {
-            <span class="text-xs" [class]="dueClassFor(task)">Due {{ task.until | date: 'mediumDate' }}</span>
+            <span class="text-xs" [class]="dueClassFor(task)">{{ 'shared.due' | transloco: { date: (task.until | date: 'mediumDate') } }}</span>
           }
           @if (task.recurrenceRule) {
-            <span class="text-xs text-ink-muted" title="Repeats — completing it rolls the due date forward">🔁</span>
+            <span class="text-xs text-ink-muted" [title]="'shared.repeats_hint' | transloco">🔁</span>
           }
           @for (memberId of task.assignedFamilyMemberIds; track memberId) {
             <app-member-badge [name]="memberName(members, memberId)" [color]="memberColor(members, memberId)" />
           }
         </div>
       </div>
-      <button type="button" (click)="edit.emit()" class="shrink-0 text-ink-muted hover:text-coral" aria-label="Edit">✎</button>
-      <button type="button" (click)="delete.emit()" class="shrink-0 text-ink-muted hover:text-danger" aria-label="Delete">✕</button>
+      <button type="button" (click)="edit.emit()" class="shrink-0 text-ink-muted hover:text-coral" [attr.aria-label]="'common.edit' | transloco">✎</button>
+      <button type="button" (click)="delete.emit()" class="shrink-0 text-ink-muted hover:text-danger" [attr.aria-label]="'common.delete' | transloco">✕</button>
     </li>
   `,
 })
