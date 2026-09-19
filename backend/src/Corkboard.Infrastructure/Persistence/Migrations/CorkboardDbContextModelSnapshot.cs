@@ -161,12 +161,24 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                     b.Property<string>("FeedToken")
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsInbox")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsSystemManaged")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("OwnerUserId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid?>("ParentCollectionId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("Scope")
+                        .HasColumnType("integer");
 
                     b.Property<int>("Type")
                         .HasColumnType("integer");
@@ -182,7 +194,14 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ParentCollectionId");
 
+                    b.HasIndex("FamilyId", "OwnerUserId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Collections_PersonalInbox")
+                        .HasFilter("\"IsInbox\" AND \"Scope\" = 1");
+
                     b.HasIndex("FamilyId", "Type");
+
+                    b.HasIndex("FamilyId", "Scope", "OwnerUserId");
 
                     b.ToTable("Collections");
                 });
@@ -424,6 +443,98 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                     b.HasIndex("FamilyMemberId");
 
                     b.ToTable("NodeAssignments");
+                });
+
+            modelBuilder.Entity("Corkboard.Domain.Entities.PushSubscription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Auth")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Endpoint")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<DateTimeOffset>("LastSeenAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("LeadMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("P256dh")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Endpoint")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PushSubscriptions");
+                });
+
+            modelBuilder.Entity("Corkboard.Domain.Entities.Section", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CollectionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CollectionId");
+
+                    b.ToTable("Sections");
+                });
+
+            modelBuilder.Entity("Corkboard.Domain.Entities.SentReminder", b =>
+                {
+                    b.Property<Guid>("PushSubscriptionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("NodeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("OccurrenceStart")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("PushSubscriptionId", "NodeId", "OccurrenceStart");
+
+                    b.HasIndex("NodeId");
+
+                    b.HasIndex("OccurrenceStart");
+
+                    b.ToTable("SentReminders");
                 });
 
             modelBuilder.Entity("Corkboard.Domain.Entities.UserFamily", b =>
@@ -890,9 +1001,6 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                 {
                     b.HasBaseType("Corkboard.Domain.Entities.Node");
 
-                    b.Property<string>("Category")
-                        .HasColumnType("text");
-
                     b.Property<DateTimeOffset?>("CompletedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -904,6 +1012,11 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("RecurrenceRule")
                         .HasColumnType("text");
+
+                    b.Property<Guid?>("SectionId")
+                        .HasColumnType("uuid");
+
+                    b.HasIndex("SectionId");
 
                     b.ToTable("Nodes", t =>
                         {
@@ -1046,6 +1159,36 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                     b.Navigation("Node");
                 });
 
+            modelBuilder.Entity("Corkboard.Domain.Entities.Section", b =>
+                {
+                    b.HasOne("Corkboard.Domain.Entities.Collection", "Collection")
+                        .WithMany("Sections")
+                        .HasForeignKey("CollectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Collection");
+                });
+
+            modelBuilder.Entity("Corkboard.Domain.Entities.SentReminder", b =>
+                {
+                    b.HasOne("Corkboard.Domain.Entities.Node", "Node")
+                        .WithMany()
+                        .HasForeignKey("NodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Corkboard.Domain.Entities.PushSubscription", "PushSubscription")
+                        .WithMany()
+                        .HasForeignKey("PushSubscriptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Node");
+
+                    b.Navigation("PushSubscription");
+                });
+
             modelBuilder.Entity("Corkboard.Domain.Entities.UserFamily", b =>
                 {
                     b.HasOne("Corkboard.Domain.Entities.Family", "Family")
@@ -1129,6 +1272,16 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                     b.Navigation("Parent");
                 });
 
+            modelBuilder.Entity("Corkboard.Domain.Entities.TaskNode", b =>
+                {
+                    b.HasOne("Corkboard.Domain.Entities.Section", "Section")
+                        .WithMany()
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Section");
+                });
+
             modelBuilder.Entity("Corkboard.Domain.Entities.Collection", b =>
                 {
                     b.Navigation("Address");
@@ -1136,6 +1289,8 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                     b.Navigation("ChildCollections");
 
                     b.Navigation("Nodes");
+
+                    b.Navigation("Sections");
                 });
 
             modelBuilder.Entity("Corkboard.Domain.Entities.Family", b =>

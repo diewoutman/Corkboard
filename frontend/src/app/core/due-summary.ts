@@ -8,10 +8,11 @@ export class DueSummary {
 
   /** Count of incomplete Tasks due today or earlier — the nagging badge the app doesn't otherwise have (no push/email infra exists yet). */
   dueTodayCount() {
-    const endOfToday = new Date();
-    endOfToday.setHours(23, 59, 59, 999);
+    const startOfTomorrow = new Date();
+    startOfTomorrow.setHours(24, 0, 0, 0);
+    // Only the total matters, so ask for a page of one and read the count from the header.
     return this.nodesApi
-      .list({ type: 'Task' })
-      .pipe(map((tasks) => tasks.filter((t) => !t.isCompleted && t.until && new Date(t.until) <= endOfToday).length));
+      .listPage({ type: 'Task', isCompleted: false, dueUntil: startOfTomorrow.toISOString(), pageSize: 1 })
+      .pipe(map((page) => page.total));
   }
 }

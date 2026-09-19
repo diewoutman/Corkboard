@@ -7,3 +7,10 @@ public enum CollectionType
     Schedule,
     Household,
 }
+
+/// <summary>Family lists are shared with the whole family; Personal lists are visible to their owner only.</summary>
+public enum CollectionScope
+{
+    Family,
+    Personal,
+}

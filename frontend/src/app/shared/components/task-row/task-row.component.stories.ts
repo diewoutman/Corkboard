@@ -25,7 +25,7 @@ function task(overrides: Partial<NodeResponse>): NodeResponse {
     isCompleted: false,
     completedAt: null,
     priority: null,
-    category: null,
+    sectionId: null,
     location: null,
     allDay: null,
     recurrenceRule: null,

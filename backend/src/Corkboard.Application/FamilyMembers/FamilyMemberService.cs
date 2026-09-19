@@ -12,12 +12,14 @@ namespace Corkboard.Application.FamilyMembers;
 
 public class FamilyMemberService(CorkboardDbContext db, UserManager<ApplicationUser> userManager) : IFamilyMemberService
 {
-    public async Task<IReadOnlyList<FamilyMemberResponse>> ListAsync(Guid familyId, CancellationToken cancellationToken)
+    public async Task<PagedResult<FamilyMemberResponse>> ListAsync(Guid familyId, PageRequest page, CancellationToken cancellationToken)
     {
-        var members = await db.FamilyMembers.AsNoTracking().Where(m => m.FamilyId == familyId).ToListAsync(cancellationToken);
-        var linkedAccounts = await GetLinkedAccountsAsync(familyId, members, cancellationToken);
+        var members = await db.FamilyMembers.AsNoTracking().Where(m => m.FamilyId == familyId)
+            .OrderBy(m => m.DisplayName).ThenBy(m => m.Id)
+            .ToPagedAsync(page, cancellationToken);
+        var linkedAccounts = await GetLinkedAccountsAsync(familyId, members.Items, cancellationToken);
 
-        return members.Select(m => ToResponseValue(m, linkedAccounts)).ToList();
+        return new PagedResult<FamilyMemberResponse>(members.Items.Select(m => ToResponseValue(m, linkedAccounts)).ToList(), members.TotalCount);
     }
 
     public async Task<Result<FamilyMemberResponse>> GetAsync(Guid familyId, Guid id, CancellationToken cancellationToken)

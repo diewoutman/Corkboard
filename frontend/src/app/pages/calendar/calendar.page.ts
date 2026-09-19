@@ -323,6 +323,27 @@ export class CalendarPage implements OnInit {
       });
   }
 
+  /** Which calendar/schedule is waiting on "are you sure?" — deleting one removes its events too. */
+  confirmDeleteId: string | null = null;
+
+  deleteCalendar(calendar: CollectionResponse) {
+    this.collectionsApi.delete(calendar.id).subscribe({
+      next: () => {
+        this.confirmDeleteId = null;
+        this.calendars = this.calendars.filter((c) => c.id !== calendar.id);
+        this.hiddenCalendarIds.delete(calendar.id);
+        if (this.newEvent.calendarId === calendar.id) this.newEvent.calendarId = this.eventableCalendars[0]?.id ?? '';
+        this.loadOccurrences();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.confirmDeleteId = null;
+        this.errorMessage = extractErrorMessage(err, this.transloco.translate('calendar.errors.delete_source'));
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
   getFeedUrl(calendar: CollectionResponse) {
     this.collectionsApi.rotateFeedToken(calendar.id).subscribe({
       next: (updated) => {
@@ -437,7 +458,7 @@ export class CalendarPage implements OnInit {
               isImportant: null,
               isCompleted: null,
               priority: null,
-              category: null,
+              sectionId: null,
               location: node.location,
               allDay: node.allDay,
               recurrenceRule: node.recurrenceRule,
@@ -477,7 +498,7 @@ export class CalendarPage implements OnInit {
         assignedFamilyMemberIds: [],
         collectionId: calendarId,
         priority: null,
-        category: null,
+        sectionId: null,
         location: null,
         allDay: !parsed.hasTime,
         recurrenceRule: null,
@@ -513,7 +534,7 @@ export class CalendarPage implements OnInit {
           isImportant: null,
           isCompleted: null,
           priority: null,
-          category: null,
+          sectionId: null,
           location: this.newEvent.location || null,
           allDay: this.newEvent.allDay,
           recurrenceRule,
@@ -528,7 +549,7 @@ export class CalendarPage implements OnInit {
           assignedFamilyMemberIds: this.newEvent.assignedFamilyMemberIds,
           collectionId: this.newEvent.calendarId,
           priority: null,
-          category: null,
+          sectionId: null,
           location: this.newEvent.location || null,
           allDay: this.newEvent.allDay,
           recurrenceRule,

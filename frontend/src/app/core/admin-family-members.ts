@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { fetchAll } from './paging';
 import {
   CreateFamilyMemberAccountRequest,
   CreateFamilyMemberRequest,
@@ -18,7 +19,7 @@ export class AdminFamilyMembers {
   private readonly http = inject(HttpClient);
 
   list(familyId: string) {
-    return this.http.get<FamilyMemberResponse[]>(`${environment.apiUrl}/admin/families/${familyId}/members`);
+    return fetchAll<FamilyMemberResponse>(this.http, `${environment.apiUrl}/admin/families/${familyId}/members`);
   }
 
   create(familyId: string, request: CreateFamilyMemberRequest) {

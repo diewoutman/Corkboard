@@ -10,7 +10,7 @@ public interface ICalendarService
     /// — into concrete occurrences, across all the family's calendars unless
     /// calendarId narrows it to one. This is what the calendar grid renders.
     /// </summary>
-    Task<IReadOnlyList<OccurrenceResponse>> GetOccurrencesAsync(Guid familyId, DateTimeOffset from, DateTimeOffset until, Guid? calendarId, CancellationToken cancellationToken);
+    Task<PagedResult<OccurrenceResponse>> GetOccurrencesAsync(Guid familyId, DateTimeOffset from, DateTimeOffset until, Guid? calendarId, PageRequest page, CancellationToken cancellationToken);
 
     /// <summary>Skips or overrides one occurrence of a recurring Appointment.</summary>
     Task<Result> SetOccurrenceExceptionAsync(Guid familyId, Guid appointmentId, DateOnly date, SetOccurrenceExceptionRequest request, CancellationToken cancellationToken);

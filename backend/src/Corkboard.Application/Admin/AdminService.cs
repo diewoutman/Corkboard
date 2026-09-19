@@ -1,3 +1,4 @@
+using Corkboard.Application.Common;
 using Corkboard.Contracts.Admin;
 using Corkboard.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -14,13 +15,13 @@ public class AdminService(CorkboardDbContext db) : IAdminService
         await db.FamilyMembers.CountAsync(cancellationToken),
         await db.Nodes.CountAsync(cancellationToken));
 
-    public async Task<IReadOnlyList<AdminFamilySummaryResponse>> ListFamiliesAsync(CancellationToken cancellationToken) =>
+    public async Task<PagedResult<AdminFamilySummaryResponse>> ListFamiliesAsync(PageRequest page, CancellationToken cancellationToken) =>
         await db.Families
             .AsNoTracking()
-            .OrderBy(f => f.Name)
+            .OrderBy(f => f.Name).ThenBy(f => f.Id)
             .Select(f => new AdminFamilySummaryResponse(
                 f.Id, f.Name, f.TimeZone, f.CreatedAt,
                 f.Members.Count,
                 db.Nodes.Count(n => n.FamilyId == f.Id)))
-            .ToListAsync(cancellationToken);
+            .ToPagedAsync(page, cancellationToken);
 }

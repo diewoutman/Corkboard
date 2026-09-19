@@ -5,7 +5,7 @@ namespace Corkboard.Application.FamilyMembers;
 
 public interface IFamilyMemberService
 {
-    Task<IReadOnlyList<FamilyMemberResponse>> ListAsync(Guid familyId, CancellationToken cancellationToken);
+    Task<PagedResult<FamilyMemberResponse>> ListAsync(Guid familyId, PageRequest page, CancellationToken cancellationToken);
 
     Task<Result<FamilyMemberResponse>> GetAsync(Guid familyId, Guid id, CancellationToken cancellationToken);
 

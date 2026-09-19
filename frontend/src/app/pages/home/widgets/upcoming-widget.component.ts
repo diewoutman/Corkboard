@@ -41,7 +41,7 @@ export class UpcomingWidgetComponent implements OnInit {
     const rangeEnd = new Date(startOfToday.getTime() + DAYS_AHEAD * 24 * 60 * 60 * 1000);
 
     forkJoin({
-      tasks: this.nodesApi.list({ type: 'Task' }),
+      tasks: this.nodesApi.list({ type: 'Task', isCompleted: false, dueUntil: rangeEnd.toISOString() }),
       occurrences: this.calendarApi.occurrences({ from: startOfToday.toISOString(), until: rangeEnd.toISOString() }),
       members: this.familyMembersApi.list(),
     }).subscribe({

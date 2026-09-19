@@ -12,6 +12,7 @@ using Corkboard.Application.Dashboard;
 using Corkboard.Application.Families;
 using Corkboard.Application.FamilyMembers;
 using Corkboard.Application.Nodes;
+using Corkboard.Application.Notifications;
 using Corkboard.Domain.Entities;
 using Corkboard.Infrastructure.Ics;
 using Corkboard.Infrastructure.Identity;
@@ -155,7 +156,7 @@ var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(ClientCorsPolicy, policy =>
-        policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod());
+        policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().WithExposedHeaders("X-Total-Count"));
 });
 
 builder.Services.Configure<JwtOptions>(jwtSection);
@@ -169,6 +170,12 @@ builder.Services.AddScoped<IFamilyMemberService, FamilyMemberService>();
 builder.Services.AddScoped<IApiClientService, ApiClientService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<ApiCallLogCleanupJob>();
+
+builder.Services.Configure<PushOptions>(builder.Configuration.GetSection(PushOptions.SectionName));
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<ReminderService>();
+builder.Services.AddSingleton<IPushSender, WebPushSender>();
+builder.Services.AddHostedService<ReminderWorker>();
 
 builder.Services.AddSingleton<RecurrenceExpansionService>();
 builder.Services.AddSingleton<IcsExportService>();

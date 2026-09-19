@@ -19,12 +19,14 @@ import { isLightColor } from '../../../core/colors';
       [class.text-ink]="isLight"
       class="relative flex min-h-[92px] flex-col justify-between gap-2 rounded-3xl p-5 shadow-sticker transition hover:brightness-105"
     >
-      <button
-        type="button"
-        (click)="$event.preventDefault(); $event.stopPropagation(); edit.emit()"
-        class="absolute right-3 top-3 opacity-60 hover:opacity-100"
-        [attr.aria-label]="'tasks.edit_list' | transloco"
-      >✎</button>
+      @if (editable) {
+        <button
+          type="button"
+          (click)="$event.preventDefault(); $event.stopPropagation(); edit.emit()"
+          class="absolute right-3 top-3 opacity-60 hover:opacity-100"
+          [attr.aria-label]="'tasks.edit_list' | transloco"
+        >✎</button>
+      }
       <span class="pr-6 font-heading text-lg font-bold">{{ name }}</span>
       @if (nodeCount > 0) {
         <div>
@@ -46,6 +48,8 @@ import { isLightColor } from '../../../core/colors';
 })
 export class ListCardComponent {
   @Input() name = '';
+  /** Hidden for tiles that aren't a list of their own to edit (the combined Inbox). */
+  @Input() editable = true;
   @Input() color = '';
   @Input() nodeCount = 0;
   @Input() incompleteCount: number | null = 0;

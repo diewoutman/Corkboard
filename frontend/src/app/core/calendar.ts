@@ -1,6 +1,7 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { fetchAll } from './paging';
 import { ImportIcsResult, OccurrenceResponse, SetOccurrenceExceptionRequest } from './models';
 
 export interface OccurrenceFilter {
@@ -14,11 +15,7 @@ export class CalendarApi {
   private readonly http = inject(HttpClient);
 
   occurrences(filter: OccurrenceFilter) {
-    let params = new HttpParams();
-    for (const [key, value] of Object.entries(filter)) {
-      if (value != null) params = params.set(key, value);
-    }
-    return this.http.get<OccurrenceResponse[]>(`${environment.apiUrl}/calendar/occurrences`, { params });
+    return fetchAll<OccurrenceResponse>(this.http, `${environment.apiUrl}/calendar/occurrences`, { ...filter });
   }
 
   /** Skip just this one occurrence of a recurring Appointment. */
