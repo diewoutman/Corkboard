@@ -11,14 +11,15 @@ namespace Corkboard.Application.Nodes;
 
 public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recurrence) : INodeService
 {
-    public async Task<IReadOnlyList<NodeResponse>> ListAsync(Guid familyId, NodeListFilter filter, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<NodeResponse>> ListAsync(Guid familyId, Guid userId, NodeListFilter filter, CancellationToken cancellationToken)
     {
         var query = db.Nodes
             .AsNoTracking()
             .Include(n => n.Assignments)
             .Include(n => ((Contact)n).PhoneNumbers)
             .Include(n => ((Contact)n).Emails)
-            .Where(n => n.FamilyId == familyId);
+            .Where(n => n.FamilyId == familyId)
+            .Where(VisibleTo(userId));
 
         query = filter.Type switch
         {
@@ -53,13 +54,14 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
         return nodes.Select(ToResponse).ToList();
     }
 
-    public async Task<Result<NodeResponse>> GetAsync(Guid familyId, Guid id, CancellationToken cancellationToken)
+    public async Task<Result<NodeResponse>> GetAsync(Guid familyId, Guid userId, Guid id, CancellationToken cancellationToken)
     {
         var node = await db.Nodes
             .AsNoTracking()
             .Include(n => n.Assignments)
             .Include(n => ((Contact)n).PhoneNumbers)
             .Include(n => ((Contact)n).Emails)
+            .Where(VisibleTo(userId))
             .FirstOrDefaultAsync(n => n.FamilyId == familyId && n.Id == id, cancellationToken);
 
         return node is null ? Result<NodeResponse>.Failure(Error.NotFound()) : Result<NodeResponse>.Success(ToResponse(node));
@@ -70,7 +72,19 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
         var assignedIds = await ValidateFamilyMemberIds(familyId, request.AssignedFamilyMemberIds, cancellationToken);
         if (assignedIds is null) return Result<NodeResponse>.Failure(InvalidAssigneesError);
 
-        if (!await CollectionValidation.ExistsAsync(db, familyId, request.CollectionId, cancellationToken)) return Result<NodeResponse>.Failure(InvalidCollectionError);
+        if (!await CollectionValidation.ExistsAsync(db, familyId, userId, request.CollectionId, cancellationToken)) return Result<NodeResponse>.Failure(InvalidCollectionError);
+
+        if (request.Type == ContractNodeType.Task && !await SectionBelongsToAsync(request.SectionId, request.CollectionId, cancellationToken)) return Result<NodeResponse>.Failure(InvalidSectionError);
+
+        // Tasks in a Personal list default to their owner, so they show up under "assigned to me".
+        if (request.Type == ContractNodeType.Task && assignedIds.Count == 0 && request.CollectionId is { } listId
+            && await db.Collections.AnyAsync(c => c.Id == listId && c.Scope == CollectionScope.Personal, cancellationToken))
+        {
+            var ownerMemberId = await db.FamilyMembers
+                .Where(m => m.FamilyId == familyId && m.LinkedUserId == userId)
+                .Select(m => (Guid?)m.Id).FirstOrDefaultAsync(cancellationToken);
+            if (ownerMemberId is { } id) assignedIds = [id];
+        }
 
         if (request.Type == ContractNodeType.Contact && string.IsNullOrWhiteSpace(request.FirstName))
         {
@@ -85,7 +99,7 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
             {
                 Title = request.Title,
                 Priority = request.Priority,
-                Category = NormalizeCategory(request.Category),
+                SectionId = request.SectionId,
                 RecurrenceRule = request.RecurrenceRule,
             },
             ContractNodeType.Appointment => new Appointment
@@ -128,19 +142,22 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
         return Result<NodeResponse>.Success(ToResponse(node));
     }
 
-    public async Task<Result<NodeResponse>> UpdateAsync(Guid familyId, Guid id, UpdateNodeRequest request, CancellationToken cancellationToken)
+    public async Task<Result<NodeResponse>> UpdateAsync(Guid familyId, Guid userId, Guid id, UpdateNodeRequest request, CancellationToken cancellationToken)
     {
         var node = await db.Nodes
             .Include(n => n.Assignments)
             .Include(n => ((Contact)n).PhoneNumbers)
             .Include(n => ((Contact)n).Emails)
+            .Where(VisibleTo(userId))
             .FirstOrDefaultAsync(n => n.FamilyId == familyId && n.Id == id, cancellationToken);
         if (node is null) return Result<NodeResponse>.Failure(Error.NotFound());
 
         var assignedIds = await ValidateFamilyMemberIds(familyId, request.AssignedFamilyMemberIds, cancellationToken);
         if (assignedIds is null) return Result<NodeResponse>.Failure(InvalidAssigneesError);
 
-        if (!await CollectionValidation.ExistsAsync(db, familyId, request.CollectionId, cancellationToken)) return Result<NodeResponse>.Failure(InvalidCollectionError);
+        if (!await CollectionValidation.ExistsAsync(db, familyId, userId, request.CollectionId, cancellationToken)) return Result<NodeResponse>.Failure(InvalidCollectionError);
+
+        if (node is TaskNode && !await SectionBelongsToAsync(request.SectionId, request.CollectionId, cancellationToken)) return Result<NodeResponse>.Failure(InvalidSectionError);
 
         if (node is Contact && string.IsNullOrWhiteSpace(request.FirstName))
         {
@@ -161,7 +178,7 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
                 break;
             case TaskNode task:
                 task.Priority = request.Priority;
-                task.Category = NormalizeCategory(request.Category);
+                task.SectionId = request.SectionId;
                 task.RecurrenceRule = request.RecurrenceRule;
 
                 // Completing a recurring Task rolls Until forward to the next occurrence
@@ -228,9 +245,9 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
         return Result<NodeResponse>.Success(ToResponse(node));
     }
 
-    public async Task<Result> DeleteAsync(Guid familyId, Guid id, CancellationToken cancellationToken)
+    public async Task<Result> DeleteAsync(Guid familyId, Guid userId, Guid id, CancellationToken cancellationToken)
     {
-        var node = await db.Nodes.FirstOrDefaultAsync(n => n.FamilyId == familyId && n.Id == id, cancellationToken);
+        var node = await db.Nodes.Where(VisibleTo(userId)).FirstOrDefaultAsync(n => n.FamilyId == familyId && n.Id == id, cancellationToken);
         if (node is null) return Result.Failure(Error.NotFound());
 
         db.Nodes.Remove(node);
@@ -260,8 +277,19 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
     private static Error InvalidContactError => Error.BadRequest(
         "Invalid contact", "A Contact requires a FirstName.");
 
-    private static string? NormalizeCategory(string? category) =>
-        string.IsNullOrWhiteSpace(category) ? null : category.Trim();
+    private static Error InvalidSectionError => Error.BadRequest(
+        "Invalid section", "SectionId must be a Section of the Task's own list.");
+
+    /// <summary>Null section is always fine; otherwise it has to live in the Task's list (so moving lists means picking a section there, or none).</summary>
+    private async Task<bool> SectionBelongsToAsync(Guid? sectionId, Guid? collectionId, CancellationToken cancellationToken)
+    {
+        if (sectionId is not { } id) return true;
+        return collectionId is { } listId && await db.Sections.AnyAsync(s => s.Id == id && s.CollectionId == listId, cancellationToken);
+    }
+
+    /// <summary>Nodes outside any list, in a Family list, or in the caller's own Personal list.</summary>
+    private static System.Linq.Expressions.Expression<Func<Node, bool>> VisibleTo(Guid userId) =>
+        n => n.Collection == null || n.Collection.Scope == CollectionScope.Family || n.Collection.OwnerUserId == userId;
 
     private static string BuildContactTitle(string firstName, string? lastName) =>
         string.IsNullOrWhiteSpace(lastName) ? firstName.Trim() : $"{firstName.Trim()} {lastName.Trim()}";
@@ -276,7 +304,7 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
                 task.Id, ContractNodeType.Task, task.Title, task.Description, task.From, task.Until,
                 task.CreatedAt, task.UpdatedAt, task.CreatedByUserId, assignedIds, task.CollectionId,
                 IsImportant: null,
-                task.IsCompleted, task.CompletedAt, task.Priority, task.Category,
+                task.IsCompleted, task.CompletedAt, task.Priority, task.SectionId,
                 Location: null, AllDay: null, task.RecurrenceRule,
                 FirstName: null, LastName: null, DateOfBirth: null,
                 Street: null, City: null, PostalCode: null, Country: null,
@@ -285,7 +313,7 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
                 appointment.Id, ContractNodeType.Appointment, appointment.Title, appointment.Description, appointment.From, appointment.Until,
                 appointment.CreatedAt, appointment.UpdatedAt, appointment.CreatedByUserId, assignedIds, appointment.CollectionId,
                 IsImportant: null,
-                IsCompleted: null, CompletedAt: null, Priority: null, Category: null,
+                IsCompleted: null, CompletedAt: null, Priority: null, SectionId: null,
                 appointment.Location, appointment.AllDay, appointment.RecurrenceRule,
                 FirstName: null, LastName: null, DateOfBirth: null,
                 Street: null, City: null, PostalCode: null, Country: null,
@@ -294,7 +322,7 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
                 contact.Id, ContractNodeType.Contact, contact.Title, contact.Description, contact.From, contact.Until,
                 contact.CreatedAt, contact.UpdatedAt, contact.CreatedByUserId, assignedIds, contact.CollectionId,
                 IsImportant: null,
-                IsCompleted: null, CompletedAt: null, Priority: null, Category: null,
+                IsCompleted: null, CompletedAt: null, Priority: null, SectionId: null,
                 Location: null, AllDay: null, RecurrenceRule: null,
                 contact.FirstName, contact.LastName, contact.DateOfBirth,
                 contact.Street, contact.City, contact.PostalCode, contact.Country,
@@ -304,7 +332,7 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
                 note.Id, ContractNodeType.Note, note.Title, note.Description, note.From, note.Until,
                 note.CreatedAt, note.UpdatedAt, note.CreatedByUserId, assignedIds, note.CollectionId,
                 note.IsImportant,
-                IsCompleted: null, CompletedAt: null, Priority: null, Category: null,
+                IsCompleted: null, CompletedAt: null, Priority: null, SectionId: null,
                 Location: null, AllDay: null, RecurrenceRule: null,
                 FirstName: null, LastName: null, DateOfBirth: null,
                 Street: null, City: null, PostalCode: null, Country: null,

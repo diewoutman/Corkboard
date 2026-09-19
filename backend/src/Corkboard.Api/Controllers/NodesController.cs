@@ -30,7 +30,7 @@ public class NodesController(INodeService nodeService) : FamilyScopedControllerB
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
         var filter = new NodeListFilter(type, assignedTo, collectionId, from, until);
-        return Ok(await nodeService.ListAsync(familyId, filter, cancellationToken));
+        return Ok(await nodeService.ListAsync(familyId, CurrentUserId, filter, cancellationToken));
     }
 
     [HttpGet("{id:guid}")]
@@ -38,7 +38,7 @@ public class NodesController(INodeService nodeService) : FamilyScopedControllerB
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var result = await nodeService.GetAsync(familyId, id, cancellationToken);
+        var result = await nodeService.GetAsync(familyId, CurrentUserId, id, cancellationToken);
         return result.ToActionResult(this);
     }
 
@@ -56,7 +56,7 @@ public class NodesController(INodeService nodeService) : FamilyScopedControllerB
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var result = await nodeService.UpdateAsync(familyId, id, request, cancellationToken);
+        var result = await nodeService.UpdateAsync(familyId, CurrentUserId, id, request, cancellationToken);
         return result.ToActionResult(this);
     }
 
@@ -65,7 +65,7 @@ public class NodesController(INodeService nodeService) : FamilyScopedControllerB
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var result = await nodeService.DeleteAsync(familyId, id, cancellationToken);
+        var result = await nodeService.DeleteAsync(familyId, CurrentUserId, id, cancellationToken);
         return result.ToActionResult(this);
     }
 }

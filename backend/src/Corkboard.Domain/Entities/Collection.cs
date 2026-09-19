@@ -15,6 +15,23 @@ public class Collection
     public required string Name { get; set; }
     public CollectionType Type { get; set; }
 
+    /// <summary>Family = shared with everyone; Personal = only <see cref="OwnerUserId"/> can see it.</summary>
+    public CollectionScope Scope { get; set; } = CollectionScope.Family;
+
+    /// <summary>Set for Personal Collections: the Identity user who owns (and alone sees) it.</summary>
+    public Guid? OwnerUserId { get; set; }
+
+    /// <summary>
+    /// The fixed, non-deletable landing list of its scope — quick-add goes here. Each
+    /// Family has one Family Inbox and each user one Personal Inbox (created lazily).
+    /// </summary>
+    public bool IsInbox { get; set; }
+
+    /// <summary>Managed from somewhere else (e.g. recipes, shopping later): a normal list underneath, hidden from the tasks UI.</summary>
+    public bool IsSystemManaged { get; set; }
+
+    public List<Section> Sections { get; set; } = [];
+
     /// <summary>Color-coding, e.g. a hex string — same idea as FamilyMember.Color.</summary>
     public required string Color { get; set; }
 

@@ -32,6 +32,7 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
 
     public DbSet<Collection> Collections => Set<Collection>();
     public DbSet<CollectionAddress> CollectionAddresses => Set<CollectionAddress>();
+    public DbSet<Section> Sections => Set<Section>();
 
     public DbSet<DashboardWidget> DashboardWidgets => Set<DashboardWidget>();
 
@@ -105,7 +106,31 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(c => c.FeedToken).IsUnique().HasFilter("\"FeedToken\" IS NOT NULL");
+            entity.HasIndex(c => new { c.FamilyId, c.Scope, c.OwnerUserId });
+
+            // One Inbox per Family and one per user — enforced in the database because Inboxes are created lazily.
+            entity.HasIndex(c => c.FamilyId).IsUnique().HasDatabaseName("IX_Collections_FamilyInbox")
+                .HasFilter("\"IsInbox\" AND \"Scope\" = 0");
+            entity.HasIndex(c => new { c.FamilyId, c.OwnerUserId }).IsUnique().HasDatabaseName("IX_Collections_PersonalInbox")
+                .HasFilter("\"IsInbox\" AND \"Scope\" = 1");
         });
+
+        builder.Entity<Section>(entity =>
+        {
+            entity.HasOne(s => s.Collection)
+                .WithMany(c => c.Sections)
+                .HasForeignKey(s => s.CollectionId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(s => s.CollectionId);
+            entity.Property(s => s.Name).HasMaxLength(200);
+        });
+
+        // Deleting a Section keeps its Tasks — they just fall back to "no section".
+        builder.Entity<TaskNode>()
+            .HasOne(t => t.Section)
+            .WithMany()
+            .HasForeignKey(t => t.SectionId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.Entity<CollectionAddress>(entity =>
         {

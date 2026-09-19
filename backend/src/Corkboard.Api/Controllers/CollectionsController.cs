@@ -20,7 +20,7 @@ public class CollectionsController(ICollectionService collectionService) : Famil
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var projections = await collectionService.ListAsync(familyId, type, parentCollectionId, cancellationToken);
+        var projections = await collectionService.ListAsync(familyId, CurrentUserId, type, parentCollectionId, cancellationToken);
         return Ok(projections.Select(ToResponse).ToList());
     }
 
@@ -29,7 +29,7 @@ public class CollectionsController(ICollectionService collectionService) : Famil
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var result = await collectionService.GetAsync(familyId, id, cancellationToken);
+        var result = await collectionService.GetAsync(familyId, CurrentUserId, id, cancellationToken);
         return result.Map(ToResponse).ToActionResult(this);
     }
 
@@ -47,7 +47,7 @@ public class CollectionsController(ICollectionService collectionService) : Famil
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var result = await collectionService.UpdateAsync(familyId, id, request, cancellationToken);
+        var result = await collectionService.UpdateAsync(familyId, CurrentUserId, id, request, cancellationToken);
         return result.Map(ToResponse).ToActionResult(this);
     }
 
@@ -62,7 +62,7 @@ public class CollectionsController(ICollectionService collectionService) : Famil
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var result = await collectionService.RotateFeedTokenAsync(familyId, id, cancellationToken);
+        var result = await collectionService.RotateFeedTokenAsync(familyId, CurrentUserId, id, cancellationToken);
         return result.Map(ToResponse).ToActionResult(this);
     }
 
@@ -72,7 +72,44 @@ public class CollectionsController(ICollectionService collectionService) : Famil
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var result = await collectionService.DeleteAsync(familyId, id, cancellationToken);
+        var result = await collectionService.DeleteAsync(familyId, CurrentUserId, id, cancellationToken);
+        return result.ToActionResult(this);
+    }
+
+    [HttpGet("{id:guid}/sections")]
+    public async Task<ActionResult<IReadOnlyList<SectionResponse>>> ListSections(Guid id, CancellationToken cancellationToken)
+    {
+        if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
+
+        return Ok(await collectionService.ListSectionsAsync(familyId, CurrentUserId, id, cancellationToken));
+    }
+
+    /// <summary>Creates a Section, or returns the existing one with the same name (case-insensitive) — quick-add's "#tag" relies on that.</summary>
+    [HttpPost("{id:guid}/sections")]
+    public async Task<ActionResult<SectionResponse>> CreateSection(Guid id, CreateSectionRequest request, CancellationToken cancellationToken)
+    {
+        if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
+
+        var result = await collectionService.CreateSectionAsync(familyId, CurrentUserId, id, request, cancellationToken);
+        return result.ToActionResult(this);
+    }
+
+    [HttpPut("sections/{sectionId:guid}")]
+    public async Task<ActionResult<SectionResponse>> UpdateSection(Guid sectionId, UpdateSectionRequest request, CancellationToken cancellationToken)
+    {
+        if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
+
+        var result = await collectionService.UpdateSectionAsync(familyId, CurrentUserId, sectionId, request, cancellationToken);
+        return result.ToActionResult(this);
+    }
+
+    /// <summary>Its Tasks stay in the list, without a section.</summary>
+    [HttpDelete("sections/{sectionId:guid}")]
+    public async Task<IActionResult> DeleteSection(Guid sectionId, CancellationToken cancellationToken)
+    {
+        if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
+
+        var result = await collectionService.DeleteSectionAsync(familyId, CurrentUserId, sectionId, cancellationToken);
         return result.ToActionResult(this);
     }
 
@@ -80,5 +117,6 @@ public class CollectionsController(ICollectionService collectionService) : Famil
         p.Id, p.Name, (CollectionType)p.Type, p.Color, p.ParentCollectionId, p.CreatedAt,
         p.NodeCount, p.IncompleteCount,
         p.FeedToken is null ? null : $"{Request.Scheme}://{Request.Host}/api/calendar-feed/{p.Id}/{p.FeedToken}.ics",
-        p.Street, p.City, p.PostalCode, p.Country);
+        p.Street, p.City, p.PostalCode, p.Country,
+        (Corkboard.Contracts.Collections.CollectionScope)p.Scope, p.IsInbox, p.IsSystemManaged);
 }

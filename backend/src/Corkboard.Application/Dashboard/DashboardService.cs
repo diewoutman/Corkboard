@@ -53,7 +53,7 @@ public class DashboardService(CorkboardDbContext db) : IDashboardService
             return Result<DashboardWidgetResponse>.Failure(AdminOnlyError);
         }
 
-        if (!await CollectionValidation.ExistsAsync(db, familyId, request.CollectionId, cancellationToken))
+        if (!await CollectionValidation.SharedExistsAsync(db, familyId, request.CollectionId, cancellationToken))
         {
             return Result<DashboardWidgetResponse>.Failure(InvalidCollectionError);
         }
@@ -87,7 +87,7 @@ public class DashboardService(CorkboardDbContext db) : IDashboardService
 
     public async Task<Result<DashboardWidgetResponse>> UpdateAsync(Guid familyId, Guid userId, bool isAdmin, Guid id, UpdateDashboardWidgetRequest request, CancellationToken cancellationToken)
     {
-        if (!await CollectionValidation.ExistsAsync(db, familyId, request.CollectionId, cancellationToken))
+        if (!await CollectionValidation.SharedExistsAsync(db, familyId, request.CollectionId, cancellationToken))
         {
             return Result<DashboardWidgetResponse>.Failure(InvalidCollectionError);
         }
