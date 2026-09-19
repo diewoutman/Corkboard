@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -11,6 +12,7 @@ import { ErrorBannerComponent } from '../../shared/components/error-banner/error
 
 @NgModule({
   imports: [
+    TranslocoPipe,
     CommonModule,
     FormsModule,
     LoginPageRoutingModule,

@@ -14,7 +14,9 @@
     "edit": "Bewerken",
     "delete": "Verwijderen",
     "name": "Naam",
-    "color": "Kleur"
+    "color": "Kleur",
+    "title": "Titel",
+    "generic_error": "Er ging iets mis. Probeer het opnieuw."
   },
   "tasks": {
     "title": "Lijsten",
@@ -169,5 +171,50 @@
     "ends": "Eindigt {{date}}",
     "nothing_yet": "Nog niets.",
     "more": "+{{count}} meer"
+  },
+  "login": {
+    "first_run_title": "Welkom! Laten we je account aanmaken",
+    "first_run_description": "Deze Qorkboard is nog niet ingesteld. Maak eerst je account aan — daarna stel je je gezin in.",
+    "log_in": "Inloggen",
+    "email": "E-mail",
+    "password": "Wachtwoord",
+    "create_account": "Account aanmaken en doorgaan"
+  },
+  "setup": {
+    "title": "Stel je gezin in",
+    "description": "Eenmalige instelling — dit maakt je gezin aan, met jou als eerste lid.",
+    "family_name": "Gezinsnaam",
+    "family_name_placeholder": "bijv. Familie Jansen",
+    "time_zone": "Tijdzone",
+    "display_name": "Je weergavenaam",
+    "display_name_placeholder": "bijv. Wouter",
+    "your_color": "Je kleur",
+    "create_family": "Gezin aanmaken"
+  },
+  "members": {
+    "title": "Voeg je gezin toe",
+    "description": "Voeg de rest van je gezin toe, zodat je notities, taken en afspraken aan hen kunt toewijzen. Je kunt later altijd meer leden toevoegen.",
+    "remove": "Verwijderen",
+    "name_placeholder": "bijv. Kinderen, partner, opa of oma…",
+    "add": "Gezinslid toevoegen",
+    "finish": "Instellen afronden",
+    "errors": {
+      "load": "Je gezinsleden konden niet worden geladen.",
+      "add": "Het gezinslid kon niet worden toegevoegd.",
+      "remove": "Het gezinslid kon niet worden verwijderd."
+    }
+  },
+  "notes": {
+    "empty": "Nog geen notities.",
+    "add": "Notitie toevoegen",
+    "edit": "Notitie bewerken",
+    "note": "Notitie",
+    "errors": {
+      "load": "Je notities konden niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
+      "update": "De notitie kon niet worden bijgewerkt.",
+      "delete": "De notitie kon niet worden verwijderd.",
+      "create": "De notitie kon niet worden aangemaakt.",
+      "save": "De notitie kon niet worden opgeslagen."
+    }
   }
 }

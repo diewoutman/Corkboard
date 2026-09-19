@@ -14,7 +14,9 @@
     "edit": "Edit",
     "delete": "Delete",
     "name": "Name",
-    "color": "Color"
+    "color": "Color",
+    "title": "Title",
+    "generic_error": "Something went wrong. Please try again."
   },
   "tasks": {
     "title": "Lists",
@@ -169,5 +171,50 @@
     "ends": "Ends {{date}}",
     "nothing_yet": "Nothing yet.",
     "more": "+{{count}} more"
+  },
+  "login": {
+    "first_run_title": "Welcome! Let's create your account",
+    "first_run_description": "Nobody's set up this Qorkboard yet. Create your account first — you'll set up your family next.",
+    "log_in": "Log in",
+    "email": "Email",
+    "password": "Password",
+    "create_account": "Create account and continue"
+  },
+  "setup": {
+    "title": "Set up your family",
+    "description": "One-time setup — this creates your family and you as its first member.",
+    "family_name": "Family name",
+    "family_name_placeholder": "e.g. The Smiths",
+    "time_zone": "Time zone",
+    "display_name": "Your display name",
+    "display_name_placeholder": "e.g. Wouter",
+    "your_color": "Your color",
+    "create_family": "Create family"
+  },
+  "members": {
+    "title": "Add your family",
+    "description": "Add the rest of your family so you can assign notes, tasks, and appointments to them. You can always add more later.",
+    "remove": "Remove",
+    "name_placeholder": "e.g. Kids, partner, grandparent…",
+    "add": "Add family member",
+    "finish": "Finish setup",
+    "errors": {
+      "load": "Could not load your family members.",
+      "add": "Could not add that family member.",
+      "remove": "Could not remove that family member."
+    }
+  },
+  "notes": {
+    "empty": "No notes here yet.",
+    "add": "Add note",
+    "edit": "Edit note",
+    "note": "Note",
+    "errors": {
+      "load": "Could not load your notes. Pull to refresh to try again.",
+      "update": "Could not update that note.",
+      "delete": "Could not delete that note.",
+      "create": "Could not create that note.",
+      "save": "Could not save that note."
+    }
   }
 }

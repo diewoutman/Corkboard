@@ -1,11 +1,11 @@
 <div class="mx-auto max-w-sm">
-  <app-setup-step-header [step]="2" title="Set up your family" description="One-time setup — this creates your family and you as its first member." />
+  <app-setup-step-header [step]="2" [title]="'setup.title' | transloco" [description]="'setup.description' | transloco" />
 
   <form (ngSubmit)="submit()" #form="ngForm" class="mt-6 space-y-4">
-    <app-text-input label="Family name" [(ngModel)]="name" name="name" required placeholder="e.g. The Smiths" />
-    <app-text-input label="Time zone" [(ngModel)]="timeZone" name="timeZone" required />
-    <app-text-input label="Your display name" [(ngModel)]="ownerDisplayName" name="ownerDisplayName" required placeholder="e.g. Wouter" />
-    <app-color-picker-field label="Your color" [(value)]="ownerColor" />
+    <app-text-input [label]="'setup.family_name' | transloco" [(ngModel)]="name" name="name" required [placeholder]="'setup.family_name_placeholder' | transloco" />
+    <app-text-input [label]="'setup.time_zone' | transloco" [(ngModel)]="timeZone" name="timeZone" required />
+    <app-text-input [label]="'setup.display_name' | transloco" [(ngModel)]="ownerDisplayName" name="ownerDisplayName" required [placeholder]="'setup.display_name_placeholder' | transloco" />
+    <app-color-picker-field [label]="'setup.your_color' | transloco" [(value)]="ownerColor" />
 
     <app-error-banner [message]="errorMessage" />
 
@@ -14,7 +14,7 @@
       [disabled]="form.invalid || submitting"
       class="w-full rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50"
     >
-      Create family
+      {{ 'setup.create_family' | transloco }}
     </button>
   </form>
 </div>

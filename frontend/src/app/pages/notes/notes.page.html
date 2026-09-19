@@ -1,4 +1,4 @@
-<h1 class="text-2xl font-extrabold text-ink">Notes 📌</h1>
+<h1 class="text-2xl font-extrabold text-ink">{{ 'nav.notes' | transloco }} 📌</h1>
 
 <app-error-banner [message]="errorMessage" />
 
@@ -15,14 +15,14 @@
     (edit)="openEditNoteForm(note)"
   />
 
-  <app-empty-state *ngIf="notes.length === 0" class="col-span-full">No notes here yet.</app-empty-state>
+  <app-empty-state *ngIf="notes.length === 0" class="col-span-full">{{ 'notes.empty' | transloco }}</app-empty-state>
 </div>
 
 <app-modal-sheet *ngIf="showNewNoteForm" (dismissed)="closeNoteForm()">
   <form (ngSubmit)="submitNoteForm()" #form="ngForm" class="space-y-3">
-    <h2 class="font-heading text-lg font-bold text-ink">{{ editingNote ? 'Edit note' : 'Add note' }}</h2>
+    <h2 class="font-heading text-lg font-bold text-ink">{{ (editingNote ? 'notes.edit' : 'notes.add') | transloco }}</h2>
     <div>
-      <label for="title" class="block text-sm font-bold text-ink">Title</label>
+      <label for="title" class="block text-sm font-bold text-ink">{{ 'common.title' | transloco }}</label>
       <input
         id="title"
         name="title"
@@ -32,7 +32,7 @@
       />
     </div>
     <div>
-      <label for="description" class="block text-sm font-bold text-ink">Note</label>
+      <label for="description" class="block text-sm font-bold text-ink">{{ 'notes.note' | transloco }}</label>
       <textarea
         id="description"
         name="description"
@@ -45,18 +45,18 @@
 
     <label class="flex items-center gap-2 text-sm font-semibold text-ink-muted">
       <input type="checkbox" name="isImportant" [(ngModel)]="newNote.isImportant" class="rounded-md accent-coral" />
-      Mark as important
+      {{ 'shared.mark_important' | transloco }}
     </label>
 
     <div class="flex gap-2 pt-1">
       <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
-        {{ editingNote ? 'Save changes' : 'Add note' }}
+        {{ (editingNote ? 'common.save_changes' : 'notes.add') | transloco }}
       </button>
       <button type="button" (click)="closeNoteForm()" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">
-        Cancel
+        {{ 'common.cancel' | transloco }}
       </button>
     </div>
   </form>
 </app-modal-sheet>
 
-<app-fab-button *ngIf="!showNewNoteForm" label="Add note" (clicked)="openAddNoteForm()" />
+<app-fab-button *ngIf="!showNewNoteForm" [label]="'notes.add' | transloco" (clicked)="openAddNoteForm()" />

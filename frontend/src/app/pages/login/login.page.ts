@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { Auth } from '../../core/auth';
@@ -33,6 +34,7 @@ export class LoginPage implements OnInit {
     private readonly setup: Setup,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
+    private readonly transloco: TranslocoService,
   ) {}
 
   ngOnInit() {
@@ -64,7 +66,7 @@ export class LoginPage implements OnInit {
       },
       error: (err) => {
         this.submitting = false;
-        this.errorMessage = extractErrorMessage(err, 'Something went wrong. Please try again.');
+        this.errorMessage = extractErrorMessage(err, this.transloco.translate('common.generic_error'));
         this.cdr.markForCheck();
       },
     });

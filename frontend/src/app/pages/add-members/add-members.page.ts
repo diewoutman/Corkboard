@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { Router } from '@angular/router';
 import { FamilyMembers } from '../../core/family-members';
 import { FamilyMemberResponse } from '../../core/models';
@@ -21,6 +22,7 @@ export class AddMembersPage implements OnInit {
     private readonly familyMembers: FamilyMembers,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
+    private readonly transloco: TranslocoService,
   ) {}
 
   ngOnInit() {
@@ -31,7 +33,7 @@ export class AddMembersPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not load your family members.';
+        this.errorMessage = this.transloco.translate('members.errors.load');
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -60,7 +62,7 @@ export class AddMembersPage implements OnInit {
           this.cdr.markForCheck();
         },
         error: () => {
-          this.errorMessage = 'Could not add that family member.';
+          this.errorMessage = this.transloco.translate('members.errors.add');
           this.submitting = false;
           this.cdr.markForCheck();
         },
@@ -74,7 +76,7 @@ export class AddMembersPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not remove that family member.';
+        this.errorMessage = this.transloco.translate('members.errors.remove');
         this.cdr.markForCheck();
       },
     });

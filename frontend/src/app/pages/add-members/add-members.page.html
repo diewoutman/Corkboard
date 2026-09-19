@@ -1,8 +1,8 @@
 <div class="mx-auto max-w-sm">
   <app-setup-step-header
     [step]="3"
-    title="Add your family"
-    description="Add the rest of your family so you can assign notes, tasks, and appointments to them. You can always add more later."
+    [title]="'members.title' | transloco"
+    [description]="'members.description' | transloco"
   />
 
   <ul *ngIf="!loading" class="mt-6 divide-y divide-cork rounded-xl border-2 border-border-soft">
@@ -13,21 +13,21 @@
         type="button"
         (click)="removeMember(member)"
         class="text-ink-muted hover:text-danger"
-        aria-label="Remove"
+        [attr.aria-label]="'members.remove' | transloco"
       >✕</button>
     </li>
   </ul>
 
   <form (ngSubmit)="addMember()" #form="ngForm" class="mt-6 space-y-4">
-    <app-text-input label="Name" [(ngModel)]="displayName" name="displayName" required placeholder="e.g. Kids, partner, grandparent…" />
-    <app-color-picker-field label="Color" [(value)]="color" />
+    <app-text-input [label]="'common.name' | transloco" [(ngModel)]="displayName" name="displayName" required [placeholder]="'members.name_placeholder' | transloco" />
+    <app-color-picker-field [label]="'common.color' | transloco" [(value)]="color" />
 
     <button
       type="submit"
       [disabled]="form.invalid || submitting"
       class="w-full rounded-full border-2 border-coral px-4 py-2 text-sm font-extrabold text-coral hover:bg-pastel-coral disabled:cursor-not-allowed disabled:opacity-50"
     >
-      Add family member
+      {{ 'members.add' | transloco }}
     </button>
   </form>
 
@@ -38,6 +38,6 @@
     (click)="finish()"
     class="mt-6 w-full rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong"
   >
-    Finish setup
+    {{ 'members.finish' | transloco }}
   </button>
 </div>

@@ -2,16 +2,16 @@
   <app-setup-step-header
     *ngIf="isFirstRun"
     [step]="1"
-    title="Welcome! Let's create your account"
-    description="Nobody's set up this Qorkboard yet. Create your account first — you'll set up your family next."
+    [title]="'login.first_run_title' | transloco"
+    [description]="'login.first_run_description' | transloco"
   />
 
-  <h1 *ngIf="!isFirstRun" class="text-2xl font-extrabold text-ink">Log in</h1>
+  <h1 *ngIf="!isFirstRun" class="text-2xl font-extrabold text-ink">{{ 'login.log_in' | transloco }}</h1>
 
   <form (ngSubmit)="submit()" #form="ngForm" class="mt-6 space-y-4">
-    <app-text-input label="Email" type="email" [(ngModel)]="email" name="email" required autocomplete="email" />
+    <app-text-input [label]="'login.email' | transloco" type="email" [(ngModel)]="email" name="email" required autocomplete="email" />
     <app-text-input
-      label="Password"
+      [label]="'login.password' | transloco"
       type="password"
       [(ngModel)]="password"
       name="password"
@@ -27,7 +27,7 @@
       [disabled]="form.invalid || submitting"
       class="w-full rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50"
     >
-      {{ isFirstRun ? 'Create account and continue' : 'Log in' }}
+      {{ (isFirstRun ? 'login.create_account' : 'login.log_in') | transloco }}
     </button>
   </form>
 
