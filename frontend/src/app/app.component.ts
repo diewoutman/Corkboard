@@ -3,6 +3,7 @@ import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { Auth } from './core/auth';
 import { DueSummary } from './core/due-summary';
+import { AppLanguage, Language, SUPPORTED_LANGUAGES } from './core/language';
 
 export interface NavGroup {
   key: string;
@@ -68,17 +69,21 @@ export class AppComponent implements OnInit {
   readonly navGroups = NAV_GROUPS;
   readonly dailyChildren = DAILY_CHILDREN;
   readonly accountIcon = ACCOUNT_ICON;
+  readonly languages = SUPPORTED_LANGUAGES;
 
   private currentUrl = '';
 
   constructor(
     readonly auth: Auth,
+    readonly language: Language,
     private readonly dueSummary: DueSummary,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
+    this.language.init();
+
     if (this.auth.hasFamily()) {
       this.dueSummary.dueTodayCount().subscribe((count) => {
         this.dueTodayCount = count;
@@ -105,6 +110,10 @@ export class AppComponent implements OnInit {
   /** True on /admin/**, where AdminShellComponent owns the screen — hides this component's own header/bottom-nav. */
   get isAdminRoute(): boolean {
     return this.currentUrl === '/admin' || this.currentUrl.startsWith('/admin/');
+  }
+
+  setLanguage(language: AppLanguage) {
+    this.language.set(language);
   }
 
   toggleAccountMenu() {

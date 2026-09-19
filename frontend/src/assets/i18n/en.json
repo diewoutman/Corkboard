@@ -1,0 +1,27 @@
+{
+  "account": {
+    "menu": "Account menu",
+    "admin_console": "Admin console",
+    "language": "Language",
+    "log_out": "Log out"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "create": "Create",
+    "save_changes": "Save changes"
+  },
+  "tasks": {
+    "title": "Lists",
+    "new_list": "New list",
+    "edit_list": "Edit list",
+    "empty": "No lists yet — create one to start adding tasks.",
+    "list_name": "List name",
+    "list_name_placeholder": "e.g. Groceries, Chores…",
+    "list_color": "List color",
+    "errors": {
+      "load": "Could not load your lists. Pull to refresh to try again.",
+      "create": "Could not create that list.",
+      "save": "Could not save that list."
+    }
+  }
+}

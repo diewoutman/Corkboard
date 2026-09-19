@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 import { TasksPageRoutingModule } from './tasks-routing.module';
 
@@ -15,6 +16,7 @@ import { ModalSheetComponent } from '../../shared/components/modal-sheet/modal-s
   imports: [
     CommonModule,
     FormsModule,
+    TranslocoPipe,
     TasksPageRoutingModule,
     ErrorBannerComponent,
     LoadingIndicatorComponent,

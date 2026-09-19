@@ -1,0 +1,27 @@
+{
+  "account": {
+    "menu": "Accountmenu",
+    "admin_console": "Beheerconsole",
+    "language": "Taal",
+    "log_out": "Uitloggen"
+  },
+  "common": {
+    "cancel": "Annuleren",
+    "create": "Aanmaken",
+    "save_changes": "Wijzigingen opslaan"
+  },
+  "tasks": {
+    "title": "Lijsten",
+    "new_list": "Nieuwe lijst",
+    "edit_list": "Lijst bewerken",
+    "empty": "Nog geen lijsten — maak er een aan om taken toe te voegen.",
+    "list_name": "Naam van de lijst",
+    "list_name_placeholder": "bijv. Boodschappen, Klusjes…",
+    "list_color": "Kleur van de lijst",
+    "errors": {
+      "load": "Je lijsten konden niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
+      "create": "De lijst kon niet worden aangemaakt.",
+      "save": "De lijst kon niet worden opgeslagen."
+    }
+  }
+}

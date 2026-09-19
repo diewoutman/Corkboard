@@ -1,4 +1,4 @@
-<h1 class="text-2xl font-extrabold text-ink">Lists 📋</h1>
+<h1 class="text-2xl font-extrabold text-ink">{{ 'tasks.title' | transloco }} 📋</h1>
 
 <app-error-banner [message]="errorMessage" />
 
@@ -22,35 +22,35 @@
     class="flex min-h-[92px] flex-col items-center justify-center gap-1 rounded-3xl border-4 border-dashed border-border-soft text-sm font-extrabold text-ink-muted hover:border-coral hover:text-coral"
   >
     <span class="text-2xl leading-none">+</span>
-    New list
+    {{ 'tasks.new_list' | transloco }}
   </button>
 
   <p *ngIf="lists.length === 0" class="col-span-full text-center text-sm font-semibold text-ink-muted">
-    No lists yet — create one to start adding tasks.
+    {{ 'tasks.empty' | transloco }}
   </p>
 </div>
 
 <app-modal-sheet *ngIf="showNewListForm" (dismissed)="closeListForm()">
   <form (ngSubmit)="submitListForm()" #form="ngForm" class="space-y-3">
-    <h2 class="font-heading text-lg font-bold text-ink">{{ editingList ? 'Edit list' : 'New list' }}</h2>
+    <h2 class="font-heading text-lg font-bold text-ink">{{ (editingList ? 'tasks.edit_list' : 'tasks.new_list') | transloco }}</h2>
     <div>
-      <label for="listName" class="block text-sm font-bold text-ink">List name</label>
+      <label for="listName" class="block text-sm font-bold text-ink">{{ 'tasks.list_name' | transloco }}</label>
       <input
         id="listName"
         name="listName"
-        placeholder="e.g. Groceries, Chores…"
+        [placeholder]="'tasks.list_name_placeholder' | transloco"
         [(ngModel)]="newListName"
         required
         class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       />
     </div>
-    <app-color-picker-field label="List color" [(value)]="newListColor" />
+    <app-color-picker-field [label]="'tasks.list_color' | transloco" [(value)]="newListColor" />
     <div class="flex gap-2 pt-1">
       <button type="submit" [disabled]="form.invalid || submitting" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
-        {{ editingList ? 'Save changes' : 'Create' }}
+        {{ (editingList ? 'common.save_changes' : 'common.create') | transloco }}
       </button>
       <button type="button" (click)="closeListForm()" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">
-        Cancel
+        {{ 'common.cancel' | transloco }}
       </button>
     </div>
   </form>

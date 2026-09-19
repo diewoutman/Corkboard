@@ -28,7 +28,7 @@
             type="button"
             (click)="toggleAccountMenu()"
             class="flex h-8 w-8 items-center justify-center rounded-full bg-badge-bg text-ink-muted hover:text-coral"
-            aria-label="Account menu"
+            [attr.aria-label]="'account.menu' | transloco"
           >
             <app-icon [path]="accountIcon" sizeClass="h-5 w-5" />
           </button>
@@ -40,12 +40,22 @@
               *ngIf="auth.isSystemOwner()"
               routerLink="/admin"
               class="block w-full px-4 py-2 text-left text-sm font-bold text-ink-muted hover:text-coral"
-            >Admin console</a>
+            >{{ 'account.admin_console' | transloco }}</a>
+            <div class="flex items-center gap-1 px-4 py-2" role="group" [attr.aria-label]="'account.language' | transloco">
+              <button
+                *ngFor="let lang of languages"
+                type="button"
+                (click)="setLanguage(lang)"
+                [attr.aria-pressed]="language.current === lang"
+                class="rounded-full px-2 py-0.5 text-xs font-extrabold uppercase"
+                [ngClass]="language.current === lang ? 'bg-coral text-white' : 'text-ink-muted hover:text-coral'"
+              >{{ lang }}</button>
+            </div>
             <button
               type="button"
               (click)="logout()"
               class="block w-full px-4 py-2 text-left text-sm font-bold text-ink-muted hover:text-coral"
-            >Log out</button>
+            >{{ 'account.log_out' | transloco }}</button>
           </div>
         </div>
       </div>
