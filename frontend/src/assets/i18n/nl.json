@@ -16,7 +16,8 @@
     "name": "Naam",
     "color": "Kleur",
     "title": "Titel",
-    "generic_error": "Er ging iets mis. Probeer het opnieuw."
+    "generic_error": "Er ging iets mis. Probeer het opnieuw.",
+    "optional": "(optioneel)"
   },
   "tasks": {
     "title": "Lijsten",
@@ -215,6 +216,82 @@
       "delete": "De notitie kon niet worden verwijderd.",
       "create": "De notitie kon niet worden aangemaakt.",
       "save": "De notitie kon niet worden opgeslagen."
+    }
+  },
+  "task_list": {
+    "show_completed": "Afgeronde tonen",
+    "quick_add_placeholder": "Voeg een taak toe… probeer \"Melk kopen morgen 17:00 #Boodschappen\"",
+    "other": "Overig",
+    "empty": "Nog geen taken.",
+    "add": "Taak toevoegen",
+    "edit": "Taak bewerken",
+    "task": "Taak",
+    "notes": "Notities",
+    "due_date": "Deadline",
+    "priority": "Prioriteit",
+    "priorities": {
+      "none": "Geen",
+      "low": "Laag",
+      "medium": "Gemiddeld",
+      "high": "Hoog"
+    },
+    "category": "Categorie",
+    "category_hint": "(optioneel — groepeert de lijst, bijv. voor een boodschappenlijst)",
+    "category_placeholder": "bijv. Groente, Zuivel, Huishouden…",
+    "repeat": "Herhalen",
+    "repeat_hint": "(optioneel — afronden schuift de deadline door in plaats van de taak af te ronden)",
+    "repeats": {
+      "never": "Nooit",
+      "daily": "Dagelijks",
+      "weekly": "Wekelijks",
+      "monthly": "Maandelijks"
+    },
+    "errors": {
+      "load": "Deze lijst kon niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
+      "update": "De taak kon niet worden bijgewerkt.",
+      "delete": "De taak kon niet worden verwijderd.",
+      "create": "De taak kon niet worden aangemaakt.",
+      "save": "De taak kon niet worden opgeslagen."
+    }
+  },
+  "family": {
+    "intro": "Iedereen met een login ziet alle taken, notities en de agenda van dit gezin — delen per lijst kan nog niet.",
+    "owner_note": "Alleen de eigenaar kan logins aanmaken en leden beheren; volwassenen en leden hebben verder dezelfde rechten.",
+    "no_login": "Nog geen login — alleen de eigenaar kan er een aanmaken.",
+    "create_login": "Login aanmaken",
+    "password_hint": "Deel dit zelf met hen — ze kunnen het na het inloggen wijzigen.",
+    "role": "Rol",
+    "empty": "Nog geen gezinsleden.",
+    "birthday": "Verjaardag",
+    "errors": {
+      "load": "Je gezinsleden konden niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
+      "save": "Het gezinslid kon niet worden opgeslagen.",
+      "login": "De login kon niet worden aangemaakt."
+    }
+  },
+  "weekdays": {
+    "mo": "Maandag",
+    "tu": "Dinsdag",
+    "we": "Woensdag",
+    "th": "Donderdag",
+    "fr": "Vrijdag",
+    "sa": "Zaterdag",
+    "su": "Zondag"
+  },
+  "schedule": {
+    "title": "Rooster",
+    "add": "Onderdeel toevoegen",
+    "edit": "Onderdeel bewerken",
+    "day": "Dag",
+    "start_time": "Starttijd",
+    "end_time": "Eindtijd",
+    "location": "Locatie",
+    "ends_on": "Eindigt op",
+    "errors": {
+      "load": "Dit rooster kon niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
+      "save": "Het onderdeel kon niet worden opgeslagen.",
+      "add": "Het onderdeel kon niet worden toegevoegd.",
+      "remove": "Het onderdeel kon niet worden verwijderd."
     }
   }
 }

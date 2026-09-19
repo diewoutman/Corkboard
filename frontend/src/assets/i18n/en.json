@@ -16,7 +16,8 @@
     "name": "Name",
     "color": "Color",
     "title": "Title",
-    "generic_error": "Something went wrong. Please try again."
+    "generic_error": "Something went wrong. Please try again.",
+    "optional": "(optional)"
   },
   "tasks": {
     "title": "Lists",
@@ -215,6 +216,82 @@
       "delete": "Could not delete that note.",
       "create": "Could not create that note.",
       "save": "Could not save that note."
+    }
+  },
+  "task_list": {
+    "show_completed": "Show completed",
+    "quick_add_placeholder": "Add a task… try \"Buy milk tomorrow 5pm #Groceries\"",
+    "other": "Other",
+    "empty": "No tasks here yet.",
+    "add": "Add task",
+    "edit": "Edit task",
+    "task": "Task",
+    "notes": "Notes",
+    "due_date": "Due date",
+    "priority": "Priority",
+    "priorities": {
+      "none": "None",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "category": "Category",
+    "category_hint": "(optional — groups the list, e.g. for a shopping list)",
+    "category_placeholder": "e.g. Produce, Dairy, Household…",
+    "repeat": "Repeat",
+    "repeat_hint": "(optional — completing it rolls the due date forward instead of finishing it)",
+    "repeats": {
+      "never": "Never",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly"
+    },
+    "errors": {
+      "load": "Could not load this list. Pull to refresh to try again.",
+      "update": "Could not update that task.",
+      "delete": "Could not delete that task.",
+      "create": "Could not create that task.",
+      "save": "Could not save that task."
+    }
+  },
+  "family": {
+    "intro": "Everyone with a login sees this family's full Tasks, Notes and Calendar — there's no per-list sharing yet.",
+    "owner_note": "Only the Owner can create logins and manage members; Adult and Member accounts otherwise have the same access.",
+    "no_login": "No login yet — only the Owner can create one.",
+    "create_login": "Create login",
+    "password_hint": "Share this with them yourself — they can change it after logging in.",
+    "role": "Role",
+    "empty": "No family members yet.",
+    "birthday": "Birthday",
+    "errors": {
+      "load": "Could not load your family members. Pull to refresh to try again.",
+      "save": "Could not save that family member.",
+      "login": "Could not create that login."
+    }
+  },
+  "weekdays": {
+    "mo": "Monday",
+    "tu": "Tuesday",
+    "we": "Wednesday",
+    "th": "Thursday",
+    "fr": "Friday",
+    "sa": "Saturday",
+    "su": "Sunday"
+  },
+  "schedule": {
+    "title": "Schedule",
+    "add": "Add entry",
+    "edit": "Edit entry",
+    "day": "Day",
+    "start_time": "Start time",
+    "end_time": "End time",
+    "location": "Location",
+    "ends_on": "Ends on",
+    "errors": {
+      "load": "Could not load this schedule. Pull to refresh to try again.",
+      "save": "Could not save that entry.",
+      "add": "Could not add that entry.",
+      "remove": "Could not remove that entry."
     }
   }
 }

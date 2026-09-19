@@ -1,10 +1,10 @@
 <div class="flex items-center gap-3">
-  <a routerLink="/calendar" class="text-sm font-extrabold text-coral hover:text-coral-strong">‹ Calendar</a>
+  <a routerLink="/calendar" class="text-sm font-extrabold text-coral hover:text-coral-strong">‹ {{ 'nav.calendar' | transloco }}</a>
 </div>
 
 <div class="mt-2 flex items-center gap-2">
   <span *ngIf="schedule" class="h-3 w-3 shrink-0 rounded-full" [style.background]="schedule.color"></span>
-  <h1 class="text-2xl font-extrabold text-ink">{{ schedule?.name ?? 'Schedule' }}</h1>
+  <h1 class="text-2xl font-extrabold text-ink">{{ schedule?.name ?? ('schedule.title' | transloco) }}</h1>
 </div>
 
 <app-error-banner [message]="errorMessage" />
@@ -14,7 +14,7 @@
 <div *ngIf="!loading" class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-7">
   <app-schedule-day-column
     *ngFor="let day of weekdays; let i = index"
-    [label]="day.label"
+    [label]="day.labelKey | transloco"
     [entries]="entriesForDay(i)"
     [members]="members"
     (deleteEntry)="deleteEntry($event)"
@@ -22,24 +22,24 @@
   />
 </div>
 
-<app-fab-button *ngIf="!loading && !showNewEntryForm" label="Add entry" (clicked)="openAddEntryForm()" />
+<app-fab-button *ngIf="!loading && !showNewEntryForm" [label]="'schedule.add' | transloco" (clicked)="openAddEntryForm()" />
 
 <app-modal-sheet *ngIf="showNewEntryForm" (dismissed)="closeEntryForm()">
   <form (ngSubmit)="submitEntryForm()" #form="ngForm" class="space-y-3">
-    <h2 class="font-heading text-lg font-bold text-ink">{{ editingEntry ? 'Edit entry' : 'Add entry' }}</h2>
+    <h2 class="font-heading text-lg font-bold text-ink">{{ (editingEntry ? 'schedule.edit' : 'schedule.add') | transloco }}</h2>
     <div>
-      <label for="dayIndex" class="block text-sm font-bold text-ink">Day</label>
+      <label for="dayIndex" class="block text-sm font-bold text-ink">{{ 'schedule.day' | transloco }}</label>
       <select
         id="dayIndex"
         name="dayIndex"
         [(ngModel)]="newEntry.dayIndex"
         class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
       >
-        <option *ngFor="let day of weekdays; let i = index" [ngValue]="i">{{ day.label }}</option>
+        <option *ngFor="let day of weekdays; let i = index" [ngValue]="i">{{ day.labelKey | transloco }}</option>
       </select>
     </div>
     <div>
-      <label for="entryTitle" class="block text-sm font-bold text-ink">Title</label>
+      <label for="entryTitle" class="block text-sm font-bold text-ink">{{ 'common.title' | transloco }}</label>
       <input
         id="entryTitle"
         name="entryTitle"
@@ -50,7 +50,7 @@
     </div>
     <div class="grid grid-cols-2 gap-3">
       <div>
-        <label for="entryStart" class="block text-sm font-bold text-ink">Start time</label>
+        <label for="entryStart" class="block text-sm font-bold text-ink">{{ 'schedule.start_time' | transloco }}</label>
         <input
           id="entryStart"
           type="time"
@@ -61,7 +61,7 @@
         />
       </div>
       <div>
-        <label for="entryEnd" class="block text-sm font-bold text-ink">End time</label>
+        <label for="entryEnd" class="block text-sm font-bold text-ink">{{ 'schedule.end_time' | transloco }}</label>
         <input
           id="entryEnd"
           type="time"
@@ -72,7 +72,7 @@
       </div>
     </div>
     <div>
-      <label for="entryLocation" class="block text-sm font-bold text-ink">Location</label>
+      <label for="entryLocation" class="block text-sm font-bold text-ink">{{ 'schedule.location' | transloco }}</label>
       <input
         id="entryLocation"
         name="entryLocation"
@@ -82,10 +82,10 @@
     </div>
     <label class="flex items-center gap-2 text-sm font-semibold text-ink-muted">
       <input type="checkbox" name="everyOtherWeek" [(ngModel)]="newEntry.everyOtherWeek" class="rounded-md accent-coral" />
-      Every other week
+      {{ 'shared.every_other_week' | transloco }}
     </label>
     <div>
-      <label for="entryEndsOn" class="block text-sm font-bold text-ink">Ends on <span class="font-semibold text-ink-muted">(optional)</span></label>
+      <label for="entryEndsOn" class="block text-sm font-bold text-ink">{{ 'schedule.ends_on' | transloco }} <span class="font-semibold text-ink-muted">{{ 'common.optional' | transloco }}</span></label>
       <input
         id="entryEndsOn"
         type="date"
@@ -98,10 +98,10 @@
 
     <div class="flex gap-2 pt-1">
       <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
-        {{ editingEntry ? 'Save changes' : 'Add entry' }}
+        {{ (editingEntry ? 'common.save_changes' : 'schedule.add') | transloco }}
       </button>
       <button type="button" (click)="closeEntryForm()" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">
-        Cancel
+        {{ 'common.cancel' | transloco }}
       </button>
     </div>
   </form>

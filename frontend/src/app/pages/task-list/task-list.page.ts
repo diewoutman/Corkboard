@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Collections } from '../../core/collections';
@@ -35,6 +36,7 @@ export class TaskListPage implements OnInit {
     private readonly membersApi: FamilyMembers,
     private readonly collectionsApi: Collections,
     private readonly cdr: ChangeDetectorRef,
+    private readonly transloco: TranslocoService,
   ) {}
 
   ngOnInit() {
@@ -83,7 +85,7 @@ export class TaskListPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not load this list. Pull to refresh to try again.';
+        this.errorMessage = this.transloco.translate('task_list.errors.load');
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -104,7 +106,7 @@ export class TaskListPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not update that task.';
+        this.errorMessage = this.transloco.translate('task_list.errors.update');
         this.cdr.markForCheck();
       },
     });
@@ -117,7 +119,7 @@ export class TaskListPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.errorMessage = 'Could not delete that task.';
+        this.errorMessage = this.transloco.translate('task_list.errors.delete');
         this.cdr.markForCheck();
       },
     });
@@ -192,7 +194,7 @@ export class TaskListPage implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        this.errorMessage = extractErrorMessage(err, wasEditing ? 'Could not save that task.' : 'Could not create that task.');
+        this.errorMessage = extractErrorMessage(err, this.transloco.translate(wasEditing ? 'task_list.errors.save' : 'task_list.errors.create'));
         this.cdr.markForCheck();
       },
     });
@@ -226,7 +228,7 @@ export class TaskListPage implements OnInit {
           this.cdr.markForCheck();
         },
         error: (err) => {
-          this.errorMessage = extractErrorMessage(err, 'Could not create that task.');
+          this.errorMessage = extractErrorMessage(err, this.transloco.translate('task_list.errors.create'));
           this.cdr.markForCheck();
         },
       });
