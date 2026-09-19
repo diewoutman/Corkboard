@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { hasTimeOfDay } from '../../../core/recurrence';
 import { dueClass } from '../../../core/task-due';
 import { FamilyMemberResponse, NodeResponse } from '../../../core/models';
 import { memberColor, memberName } from '../../../core/member-lookup';
@@ -37,7 +38,7 @@ import { MemberBadgeComponent } from '../member-badge/member-badge.component';
         }
         <div class="mt-1 flex flex-wrap items-center gap-2">
           @if (task.until) {
-            <span class="text-xs" [class]="dueClassFor(task)">{{ 'shared.due' | transloco: { date: (task.until | date: 'mediumDate') } }}</span>
+            <span class="text-xs" [class]="dueClassFor(task)">{{ 'shared.due' | transloco: { date: (task.until | date: (hasTime(task) ? 'medium' : 'mediumDate')) } }}</span>
           }
           @if (task.recurrenceRule) {
             <span class="text-xs text-ink-muted" [title]="'shared.repeats_hint' | transloco">🔁</span>
@@ -61,6 +62,10 @@ export class TaskRowComponent {
 
   protected readonly memberName = memberName;
   protected readonly memberColor = memberColor;
+
+  hasTime(task: NodeResponse): boolean {
+    return hasTimeOfDay(task.until);
+  }
 
   dueClassFor(task: NodeResponse): string {
     return dueClass(task);

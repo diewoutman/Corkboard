@@ -8,8 +8,7 @@ import { extractErrorMessage } from '../../core/http-error';
 import { CollectionResponse, FamilyMemberResponse, NodeResponse, UpdateNodeRequest } from '../../core/models';
 import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
 import { parseQuickAdd } from '../../core/quick-add';
-
-type Repeat = 'never' | 'daily' | 'weekly' | 'monthly';
+import { RepeatSpec, WEEKDAY_CODES, WeekdayCode, buildRule, emptyRepeat, joinDue, parseRule, splitDue } from '../../core/recurrence';
 
 @Component({
   selector: 'app-task-list',
@@ -29,6 +28,7 @@ export class TaskListPage implements OnInit {
   showNewTaskForm = false;
   editingTask: NodeResponse | null = null;
   newTask = this.emptyNewTask();
+  readonly weekdayCodes = WEEKDAY_CODES;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -99,6 +99,11 @@ export class TaskListPage implements OnInit {
       : [...ids, memberId];
   }
 
+  toggleWeekday(code: WeekdayCode) {
+    const days = this.newTask.repeat.weekdays;
+    this.newTask.repeat.weekdays = days.includes(code) ? days.filter((d) => d !== code) : [...days, code];
+  }
+
   toggleDone(task: NodeResponse) {
     this.nodesApi.update(task.id, this.toUpdateRequest(task, { isCompleted: !task.isCompleted })).subscribe({
       next: (updated) => {
@@ -136,10 +141,11 @@ export class TaskListPage implements OnInit {
     this.newTask = {
       title: task.title,
       description: task.description ?? '',
-      dueDate: task.until ? task.until.slice(0, 10) : '',
+      dueDate: splitDue(task.until).date,
+      dueTime: splitDue(task.until).time,
       priority: task.priority,
       category: task.category ?? '',
-      repeat: this.repeatFromRule(task.recurrenceRule),
+      repeat: parseRule(task.recurrenceRule),
       assignedFamilyMemberIds: [...task.assignedFamilyMemberIds],
     };
     this.showNewTaskForm = true;
@@ -153,8 +159,8 @@ export class TaskListPage implements OnInit {
   submitTaskForm() {
     if (!this.newTask.title) return;
 
-    const until = this.newTask.dueDate ? new Date(this.newTask.dueDate).toISOString() : null;
-    const recurrenceRule = this.toRecurrenceRule(this.newTask.repeat);
+    const until = joinDue(this.newTask.dueDate, this.newTask.dueTime);
+    const recurrenceRule = buildRule(this.newTask.repeat, until ? new Date(until) : null);
 
     const request$ = this.editingTask
       ? this.nodesApi.update(
@@ -211,7 +217,7 @@ export class TaskListPage implements OnInit {
         title: parsed.title,
         description: null,
         from: null,
-        until: parsed.start ? parsed.start.toISOString() : null,
+        until: parsed.start ? this.quickAddDue(parsed.start, parsed.hasTime) : null,
         assignedFamilyMemberIds: [],
         collectionId: this.listId,
         priority: null,
@@ -274,30 +280,17 @@ export class TaskListPage implements OnInit {
       title: '',
       description: '',
       dueDate: '',
+      dueTime: '',
       priority: null as number | null,
       category: '',
-      repeat: 'never' as Repeat,
+      repeat: emptyRepeat() as RepeatSpec,
       assignedFamilyMemberIds: [] as string[],
     };
   }
 
-  private toRecurrenceRule(repeat: Repeat): string | null {
-    switch (repeat) {
-      case 'daily':
-        return 'FREQ=DAILY';
-      case 'weekly':
-        return 'FREQ=WEEKLY';
-      case 'monthly':
-        return 'FREQ=MONTHLY';
-      default:
-        return null;
-    }
-  }
-
-  private repeatFromRule(rule: string | null): Repeat {
-    if (rule?.includes('FREQ=DAILY')) return 'daily';
-    if (rule?.includes('FREQ=WEEKLY')) return 'weekly';
-    if (rule?.includes('FREQ=MONTHLY')) return 'monthly';
-    return 'never';
+  /** Quick-add without a time of day means "due that day", not chrono's default noon. */
+  private quickAddDue(start: Date, hasTime: boolean): string {
+    if (hasTime) return start.toISOString();
+    return new Date(start.getFullYear(), start.getMonth(), start.getDate()).toISOString();
   }
 }

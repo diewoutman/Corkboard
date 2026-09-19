@@ -64,13 +64,7 @@
     <div class="grid grid-cols-2 gap-3">
       <div>
         <label for="dueDate" class="block text-sm font-bold text-ink">{{ 'task_list.due_date' | transloco }}</label>
-        <input
-          id="dueDate"
-          type="date"
-          name="dueDate"
-          [(ngModel)]="newTask.dueDate"
-          class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-        />
+        <input id="dueDate" type="date" name="dueDate" [(ngModel)]="newTask.dueDate" class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral" />
       </div>
       <div>
         <label for="priority" class="block text-sm font-bold text-ink">{{ 'task_list.priority' | transloco }}</label>
@@ -86,6 +80,10 @@
           <option [ngValue]="3">{{ 'task_list.priorities.high' | transloco }}</option>
         </select>
       </div>
+    </div>
+    <div *ngIf="newTask.dueDate">
+      <label for="dueTime" class="block text-sm font-bold text-ink">{{ 'task_list.due_time' | transloco }} <span class="font-semibold text-ink-muted">{{ 'task_list.due_time_hint' | transloco }}</span></label>
+      <input id="dueTime" type="time" name="dueTime" [(ngModel)]="newTask.dueTime" class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral" />
     </div>
     <div>
       <label for="category" class="block text-sm font-bold text-ink">{{ 'task_list.category' | transloco }} <span class="font-semibold text-ink-muted">{{ 'task_list.category_hint' | transloco }}</span></label>
@@ -103,17 +101,43 @@
     </div>
     <div>
       <label for="repeat" class="block text-sm font-bold text-ink">{{ 'task_list.repeat' | transloco }} <span class="font-semibold text-ink-muted">{{ 'task_list.repeat_hint' | transloco }}</span></label>
-      <select
-        id="repeat"
-        name="repeat"
-        [(ngModel)]="newTask.repeat"
-        class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-      >
+      <select id="repeat" name="repeat" [(ngModel)]="newTask.repeat.preset" class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral">
         <option value="never">{{ 'task_list.repeats.never' | transloco }}</option>
         <option value="daily">{{ 'task_list.repeats.daily' | transloco }}</option>
+        <option value="weekdays">{{ 'task_list.repeats.weekdays' | transloco }}</option>
         <option value="weekly">{{ 'task_list.repeats.weekly' | transloco }}</option>
         <option value="monthly">{{ 'task_list.repeats.monthly' | transloco }}</option>
+        <option value="yearly">{{ 'task_list.repeats.yearly' | transloco }}</option>
+        <option value="custom">{{ 'task_list.repeats.custom' | transloco }}</option>
       </select>
+      <div *ngIf="newTask.repeat.preset === 'custom'" class="mt-2 space-y-2">
+        <div class="flex items-center gap-2 text-sm font-bold text-ink">
+          {{ 'task_list.repeat_every' | transloco }}
+          <input type="number" min="1" name="repeatInterval" [(ngModel)]="newTask.repeat.interval" [attr.aria-label]="'task_list.repeat_every' | transloco" class="w-20 rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral" />
+          <select name="repeatUnit" [(ngModel)]="newTask.repeat.unit" [attr.aria-label]="'task_list.repeat_unit' | transloco" class="rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral">
+            <option value="day">{{ 'task_list.units.day' | transloco }}</option>
+            <option value="week">{{ 'task_list.units.week' | transloco }}</option>
+            <option value="month">{{ 'task_list.units.month' | transloco }}</option>
+            <option value="year">{{ 'task_list.units.year' | transloco }}</option>
+          </select>
+        </div>
+        <div *ngIf="newTask.repeat.unit === 'week'" class="flex flex-wrap gap-1.5" role="group" [attr.aria-label]="'task_list.repeat_weekdays' | transloco">
+          <button
+            *ngFor="let code of weekdayCodes"
+            type="button"
+            (click)="toggleWeekday(code)"
+            [attr.aria-pressed]="newTask.repeat.weekdays.includes(code)"
+            class="rounded-full border-2 px-3 py-1 text-xs font-extrabold"
+            [class]="newTask.repeat.weekdays.includes(code) ? 'border-coral bg-coral text-white' : 'border-border-soft text-ink-muted hover:bg-cork'"
+          >
+            {{ 'task_list.weekdays.' + code | transloco }}
+          </button>
+        </div>
+        <select *ngIf="newTask.repeat.unit === 'month'" name="monthlyMode" [(ngModel)]="newTask.repeat.monthlyMode" class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral">
+          <option value="date">{{ 'task_list.monthly_modes.date' | transloco }}</option>
+          <option value="nthWeekday">{{ 'task_list.monthly_modes.nth_weekday' | transloco }}</option>
+        </select>
+      </div>
     </div>
     <app-assignee-chip-group [members]="members" [selectedIds]="newTask.assignedFamilyMemberIds" (toggled)="toggleAssignee($event)" />
 

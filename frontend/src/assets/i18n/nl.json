@@ -245,7 +245,10 @@
       "never": "Nooit",
       "daily": "Dagelijks",
       "weekly": "Wekelijks",
-      "monthly": "Maandelijks"
+      "monthly": "Maandelijks",
+      "weekdays": "Elke werkdag",
+      "yearly": "Jaarlijks",
+      "custom": "Aangepast…"
     },
     "errors": {
       "load": "Deze lijst kon niet worden geladen. Ververs de pagina om het opnieuw te proberen.",
@@ -253,6 +256,30 @@
       "delete": "De taak kon niet worden verwijderd.",
       "create": "De taak kon niet worden aangemaakt.",
       "save": "De taak kon niet worden opgeslagen."
+    },
+    "due_time": "Tijd",
+    "due_time_hint": "(optioneel)",
+    "repeat_every": "Elke",
+    "repeat_unit": "Eenheid",
+    "repeat_weekdays": "Weekdagen",
+    "units": {
+      "day": "dag(en)",
+      "week": "we(e)k(en)",
+      "month": "maand(en)",
+      "year": "jaar"
+    },
+    "weekdays": {
+      "MO": "Ma",
+      "TU": "Di",
+      "WE": "Wo",
+      "TH": "Do",
+      "FR": "Vr",
+      "SA": "Za",
+      "SU": "Zo"
+    },
+    "monthly_modes": {
+      "date": "Op dezelfde datum",
+      "nth_weekday": "Op dezelfde weekdag (bv. 3e vrijdag)"
     }
   },
   "family": {

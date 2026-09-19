@@ -245,7 +245,10 @@
       "never": "Never",
       "daily": "Daily",
       "weekly": "Weekly",
-      "monthly": "Monthly"
+      "monthly": "Monthly",
+      "weekdays": "Every weekday",
+      "yearly": "Yearly",
+      "custom": "Custom…"
     },
     "errors": {
       "load": "Could not load this list. Pull to refresh to try again.",
@@ -253,6 +256,30 @@
       "delete": "Could not delete that task.",
       "create": "Could not create that task.",
       "save": "Could not save that task."
+    },
+    "due_time": "Time",
+    "due_time_hint": "(optional)",
+    "repeat_every": "Every",
+    "repeat_unit": "Unit",
+    "repeat_weekdays": "Weekdays",
+    "units": {
+      "day": "day(s)",
+      "week": "week(s)",
+      "month": "month(s)",
+      "year": "year(s)"
+    },
+    "weekdays": {
+      "MO": "Mon",
+      "TU": "Tue",
+      "WE": "Wed",
+      "TH": "Thu",
+      "FR": "Fri",
+      "SA": "Sat",
+      "SU": "Sun"
+    },
+    "monthly_modes": {
+      "date": "On the same date",
+      "nth_weekday": "On the same weekday (e.g. 3rd Friday)"
     }
   },
   "family": {
