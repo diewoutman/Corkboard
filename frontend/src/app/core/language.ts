@@ -1,5 +1,6 @@
 import { Service, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
+import { Auth } from './auth';
 
 export const SUPPORTED_LANGUAGES = ['en', 'nl'] as const;
 export type AppLanguage = (typeof SUPPORTED_LANGUAGES)[number];
@@ -27,6 +28,7 @@ export function detectLanguage(): AppLanguage {
 @Service()
 export class Language {
   private readonly transloco = inject(TranslocoService);
+  private readonly auth = inject(Auth);
 
   get current(): AppLanguage {
     return this.transloco.getActiveLang() as AppLanguage;
@@ -38,16 +40,40 @@ export class Language {
   }
 
   /**
-   * Stores the choice and reloads: LOCALE_ID (which the `date` pipe reads) is
-   * fixed when the app boots, so a reload is what makes dates switch language too.
+   * Takes over the language stored on the account after logging in (so the choice follows the
+   * user across devices). Returns true when it differs from what's currently shown — the caller
+   * should then do a full page load, since LOCALE_ID is fixed at boot.
+   */
+  adopt(language: string | null | undefined): boolean {
+    if (!isSupported(language)) return false;
+    this.store(language);
+    return language !== this.current;
+  }
+
+  /**
+   * Stores the choice (on the account too, when signed in) and reloads: LOCALE_ID (which the
+   * `date` pipe reads) is fixed when the app boots, so a reload is what makes dates switch language too.
    */
   set(language: AppLanguage) {
     if (language === this.current) return;
+    this.store(language);
+
+    if (!this.auth.isAuthenticated()) {
+      window.location.reload();
+      return;
+    }
+    // A failed save still reloads: the choice is stored locally and applies on this device.
+    this.auth.updateLanguage(language).subscribe({
+      next: () => window.location.reload(),
+      error: () => window.location.reload(),
+    });
+  }
+
+  private store(language: AppLanguage) {
     try {
       localStorage.setItem(STORAGE_KEY, language);
     } catch {
-      // Not persisted — the reload below still applies it for this session's boot detection.
+      // Storage unavailable — the choice just won't survive the reload.
     }
-    window.location.reload();
   }
 }
