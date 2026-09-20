@@ -31,6 +31,8 @@ interface WidgetFormState {
   standalone: false,
 })
 export class HomePage implements OnInit {
+  /** Ignores a repeated click on delete while that item's request is still in flight. */
+  readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
   /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
   readonly submit = new SubmitGuard(inject(ChangeDetectorRef));
   /** Fixed number of grid columns the dashboard lays widgets out in — mirrors DashboardController.ColumnCount. */
@@ -252,7 +254,7 @@ export class HomePage implements OnInit {
   }
 
   removeWidget(widget: DashboardWidgetResponse) {
-    this.dashboardApi.delete(widget.id).subscribe({
+    this.removing.run(this.dashboardApi.delete(widget.id), widget.id).subscribe({
       next: () => {
         this.widgets = this.widgets.filter((w) => w.id !== widget.id);
         this.cdr.markForCheck();

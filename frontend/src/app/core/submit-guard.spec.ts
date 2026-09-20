@@ -40,4 +40,23 @@ describe('SubmitGuard', () => {
     first.complete();
     expect(guard.busy).toBe(false);
   });
+
+  it('with a key only blocks a repeat of the same key', () => {
+    const guard = new SubmitGuard(cdr);
+    const a = new Subject<void>();
+    const b = new Subject<void>();
+    const repeat = new Subject<void>();
+
+    guard.run(a, 'a').subscribe();
+    guard.run(repeat, 'a').subscribe();
+    guard.run(b, 'b').subscribe();
+
+    expect(repeat.observed).toBe(false);
+    expect(b.observed).toBe(true);
+    expect(guard.isBusy('a')).toBe(true);
+
+    a.complete();
+    expect(guard.isBusy('a')).toBe(false);
+    expect(guard.isBusy('b')).toBe(true);
+  });
 });

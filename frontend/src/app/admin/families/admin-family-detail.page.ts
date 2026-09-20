@@ -12,6 +12,8 @@ import { FamilyMemberResponse, FamilyResponse, FamilyRole } from '../../core/mod
   standalone: false,
 })
 export class AdminFamilyDetailPage implements OnInit {
+  /** Ignores a repeated click on delete while that item's request is still in flight. */
+  readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
   /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
   readonly submit = new SubmitGuard(inject(ChangeDetectorRef));
   familyId = '';
@@ -138,7 +140,7 @@ export class AdminFamilyDetailPage implements OnInit {
   }
 
   deleteMember(member: FamilyMemberResponse) {
-    this.adminFamilyMembersApi.delete(this.familyId, member.id).subscribe({
+    this.removing.run(this.adminFamilyMembersApi.delete(this.familyId, member.id), member.id).subscribe({
       next: () => {
         this.members = this.members.filter((m) => m.id !== member.id);
         this.cdr.markForCheck();

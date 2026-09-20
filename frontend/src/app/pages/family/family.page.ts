@@ -13,6 +13,8 @@ import { FamilyMemberResponse, FamilyRole } from '../../core/models';
   standalone: false,
 })
 export class FamilyPage implements OnInit {
+  /** Ignores a repeated click on delete while that item's request is still in flight. */
+  readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
   /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
   readonly submit = new SubmitGuard(inject(ChangeDetectorRef));
   readonly isOwner = this.auth.isOwner;
@@ -108,7 +110,7 @@ export class FamilyPage implements OnInit {
   }
 
   deleteMember(member: FamilyMemberResponse) {
-    this.familyMembersApi.delete(member.id).subscribe({
+    this.removing.run(this.familyMembersApi.delete(member.id), member.id).subscribe({
       next: () => {
         this.members = this.members.filter((m) => m.id !== member.id);
         this.cdr.markForCheck();

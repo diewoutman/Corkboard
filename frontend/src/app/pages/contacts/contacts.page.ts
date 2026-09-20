@@ -16,6 +16,8 @@ import { PagedList } from '../../core/paging';
   standalone: false,
 })
 export class ContactsPage implements OnInit {
+  /** Ignores a repeated click on delete while that item's request is still in flight. */
+  readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
   /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
   readonly submit = new SubmitGuard(inject(ChangeDetectorRef));
   households: CollectionResponse[] = [];
@@ -185,7 +187,7 @@ export class ContactsPage implements OnInit {
   }
 
   deleteContact(contact: NodeResponse) {
-    this.nodesApi.delete(contact.id).subscribe({
+    this.removing.run(this.nodesApi.delete(contact.id), contact.id).subscribe({
       next: () => {
         if (this.selectedContactId === contact.id) this.selectedContactId = null; // reload() picks the first contact
         this.reload(true);

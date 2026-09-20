@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { SubmitGuard } from '../../core/submit-guard';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
@@ -17,6 +18,8 @@ import { PALETTE } from '../../core/colors';
   standalone: false,
 })
 export class TasksPage implements OnInit, OnDestroy {
+  /** Ignores a repeated click on delete while that item's request is still in flight. */
+  readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
   readonly scopes: CollectionScope[] = ['Family', 'Personal'];
   lists: CollectionResponse[] = [];
   loading = true;
@@ -127,7 +130,7 @@ export class TasksPage implements OnInit, OnDestroy {
     const list = this.editingList;
     if (!list) return;
 
-    this.collectionsApi.delete(list.id).subscribe({
+    this.removing.run(this.collectionsApi.delete(list.id), list.id).subscribe({
       next: () => {
         this.lists = this.lists.filter((l) => l.id !== list.id);
         this.closeListForm();

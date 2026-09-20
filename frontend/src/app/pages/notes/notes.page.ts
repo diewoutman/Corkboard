@@ -15,6 +15,8 @@ import { PagedList } from '../../core/paging';
   standalone: false,
 })
 export class NotesPage implements OnInit {
+  /** Ignores a repeated click on delete while that item's request is still in flight. */
+  readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
   /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
   readonly submit = new SubmitGuard(inject(ChangeDetectorRef));
   members: FamilyMemberResponse[] = [];
@@ -79,7 +81,7 @@ export class NotesPage implements OnInit {
   }
 
   deleteNote(note: NodeResponse) {
-    this.nodesApi.delete(note.id).subscribe({
+    this.removing.run(this.nodesApi.delete(note.id), note.id).subscribe({
       next: () => this.reload(true),
       error: () => {
         this.errorMessage = this.transloco.translate('notes.errors.delete');

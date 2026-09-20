@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { SubmitGuard } from '../../core/submit-guard';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { of } from 'rxjs';
 import { PagedList } from '../../core/paging';
 import { ApiClients } from '../../core/api-clients';
@@ -12,6 +13,8 @@ import { API_SCOPE_AREAS, ApiCallLogEntryResponse, ApiClientResponse, CreatedApi
   standalone: false,
 })
 export class ApiClientsPage implements OnInit {
+  /** Ignores a repeated click on delete while that item's request is still in flight. */
+  readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
   readonly scopeAreas = API_SCOPE_AREAS;
 
   clients: ApiClientResponse[] = [];
@@ -97,7 +100,7 @@ export class ApiClientsPage implements OnInit {
   }
 
   revoke(client: ApiClientResponse) {
-    this.apiClientsApi.revoke(client.id).subscribe({
+    this.removing.run(this.apiClientsApi.revoke(client.id), client.id).subscribe({
       next: () => {
         this.clients = this.clients.map((c) => (c.id === client.id ? { ...c, isRevoked: true } : c));
         this.cdr.markForCheck();

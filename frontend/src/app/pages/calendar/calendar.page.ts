@@ -46,6 +46,8 @@ type ViewMode = 'month' | 'week' | 'day';
   standalone: false,
 })
 export class CalendarPage implements OnInit {
+  /** Ignores a repeated click on delete while that item's request is still in flight. */
+  readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
   /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
   readonly submit = new SubmitGuard(inject(ChangeDetectorRef));
   readonly viewModeOptions: SegmentedControlOption[] = [
@@ -330,7 +332,7 @@ export class CalendarPage implements OnInit {
   confirmDeleteId: string | null = null;
 
   deleteCalendar(calendar: CollectionResponse) {
-    this.collectionsApi.delete(calendar.id).subscribe({
+    this.removing.run(this.collectionsApi.delete(calendar.id), calendar.id).subscribe({
       next: () => {
         this.confirmDeleteId = null;
         this.calendars = this.calendars.filter((c) => c.id !== calendar.id);
@@ -603,7 +605,7 @@ export class CalendarPage implements OnInit {
       ? this.calendarApi.skipOccurrence(occurrence.appointmentId, occurrence.originalDate)
       : this.nodesApi.delete(occurrence.appointmentId);
 
-    request$.subscribe({
+    this.removing.run(request$, `${occurrence.appointmentId}|${occurrence.originalDate}`).subscribe({
       next: () => this.loadOccurrences(),
       error: () => {
         this.errorMessage = this.transloco.translate('calendar.errors.remove_event');

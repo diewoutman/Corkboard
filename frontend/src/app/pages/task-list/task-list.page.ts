@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, Subscription, finalize, forkJoin, map, of, switchMap } from 'rxjs';
@@ -27,6 +27,8 @@ interface TaskGroup {
   standalone: false,
 })
 export class TaskListPage implements OnInit, OnDestroy {
+  /** Ignores a repeated click on delete while that item's request is still in flight. */
+  readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
   private moveSub?: Subscription;
   listId!: string;
   /** True for the combined Family + Personal Inbox at /tasks/inbox, which has no single list of its own. */
@@ -301,7 +303,7 @@ export class TaskListPage implements OnInit, OnDestroy {
   }
 
   deleteSection(sectionId: string) {
-    this.collectionsApi.deleteSection(sectionId).subscribe({
+    this.removing.run(this.collectionsApi.deleteSection(sectionId), sectionId).subscribe({
       next: () => {
         this.sections = this.sections.filter((s) => s.id !== sectionId);
         this.tasks = this.tasks.map((t) => (t.sectionId === sectionId ? { ...t, sectionId: null } : t));
@@ -365,7 +367,7 @@ export class TaskListPage implements OnInit, OnDestroy {
   }
 
   deleteTask(task: NodeResponse) {
-    this.nodesApi.delete(task.id).subscribe({
+    this.removing.run(this.nodesApi.delete(task.id), task.id).subscribe({
       next: () => {
         if (this.hasMore) return this.refreshTasks();
         this.tasks = this.tasks.filter((t) => t.id !== task.id);
