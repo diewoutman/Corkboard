@@ -182,7 +182,7 @@ export class TasksPage implements OnInit, OnDestroy {
   }
 
   submitListForm() {
-    if (!this.newListName) return;
+    if (!this.newListName || this.submitting) return;
 
     this.submitting = true;
     const request$ = this.editingList

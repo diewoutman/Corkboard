@@ -34,7 +34,7 @@ let nextId = 0;
         <app-color-picker-field [label]="colorLabel || ('common.color' | transloco)" size="sm" [value]="color" (valueChange)="colorChange.emit($event)" />
       </div>
       <div class="flex gap-2">
-        <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-full bg-coral px-3 py-1.5 text-xs font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
+        <button type="submit" [disabled]="form.invalid || busy" class="flex-1 rounded-full bg-coral px-3 py-1.5 text-xs font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
           {{ 'common.add' | transloco }}
         </button>
         <button type="button" (click)="cancelled.emit()" class="rounded-full px-3 py-1.5 text-xs font-bold text-ink-muted hover:bg-cork">{{ 'common.cancel' | transloco }}</button>
@@ -44,6 +44,8 @@ let nextId = 0;
 })
 export class CalendarSourceFormComponent {
   @Input() namePlaceholder = '';
+  /** True while the create request is in flight; disables the submit button. */
+  @Input() busy = false;
   @Input() colorLabel = '';
   @Input() name = '';
   @Output() nameChange = new EventEmitter<string>();

@@ -68,3 +68,19 @@ you want here.
   local dev — see the main [README](../README.md#getting-started).
 - `Dockerfile.dockerignore` is picked up automatically by BuildKit when
   building with `-f docker/Dockerfile` from the repo root.
+
+## Running on a low-powered host (NAS)
+
+The API compresses responses (Brotli/gzip) and caches its fingerprinted bundles for a year, so most of the
+remaining latency is Postgres and disk. Things worth checking, in order:
+
+- **Keep the Postgres volume on the fastest disk you have** (SSD/NVMe pool or cache, not the spinning array).
+- **Give Postgres some memory.** The defaults assume a tiny machine. On a NAS with 4 GB+ free, start the
+  container with e.g. `-c shared_buffers=256MB -c effective_cache_size=1GB -c work_mem=8MB`.
+- **`synchronous_commit=off`** removes the wait for a disk flush on every write. A crash can lose the last
+  fraction of a second of writes but never corrupts the database — a fair trade for a family app.
+- **Measure before and after.** The API-clients page of the admin area shows the call log with
+  `DurationMs` per request (48h retention); compare the slow endpoints before and after a change.
+
+POST requests carry an `Idempotency-Key` header; the API remembers the response to a key for 10 minutes and
+replays it for a repeat, so a double submit or a retry can't create a second task.

@@ -85,6 +85,7 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
                 .HasForeignKey(n => n.CollectionId)
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(n => n.CollectionId);
+            entity.HasIndex(n => new { n.FamilyId, n.CollectionId, n.Until });
 
             entity.HasDiscriminator<string>("NodeType")
                 .HasValue<Note>("Note")

@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { SubmitGuard } from '../../core/submit-guard';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { forkJoin } from 'rxjs';
 import { FamilyMembers } from '../../core/family-members';
@@ -14,6 +15,8 @@ import { PagedList } from '../../core/paging';
   standalone: false,
 })
 export class NotesPage implements OnInit {
+  /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
+  readonly submit = new SubmitGuard(inject(ChangeDetectorRef));
   members: FamilyMemberResponse[] = [];
   readonly noteList = new PagedList<NodeResponse>((page) => this.nodesApi.listPage({ type: 'Note', sort: '-important', page }));
   loading = true;
@@ -138,7 +141,7 @@ export class NotesPage implements OnInit {
         });
 
     const wasEditing = !!this.editingNote;
-    request$.subscribe({
+    this.submit.run(request$).subscribe({
       next: () => {
         this.closeNoteForm();
         this.reload(true);

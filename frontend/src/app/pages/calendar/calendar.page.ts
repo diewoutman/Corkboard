@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { SubmitGuard } from '../../core/submit-guard';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { forkJoin, Observable, switchMap } from 'rxjs';
 import {
@@ -45,6 +46,8 @@ type ViewMode = 'month' | 'week' | 'day';
   standalone: false,
 })
 export class CalendarPage implements OnInit {
+  /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
+  readonly submit = new SubmitGuard(inject(ChangeDetectorRef));
   readonly viewModeOptions: SegmentedControlOption[] = [
     { value: 'month', label: this.transloco.translate('calendar.views.month') },
     { value: 'week', label: this.transloco.translate('calendar.views.week') },
@@ -298,14 +301,14 @@ export class CalendarPage implements OnInit {
   submitNewCalendar() {
     if (!this.newCalendarName) return;
 
-    this.collectionsApi
-      .create({
+    this.submit
+      .run(this.collectionsApi.create({
         name: this.newCalendarName,
         type: this.newCalendarType,
         color: this.newCalendarColor,
         parentCollectionId: null,
         ...NULL_HOUSEHOLD_FIELDS,
-      })
+      }))
       .subscribe({
         next: (created) => {
           this.calendars = [...this.calendars, created].sort((a, b) => a.name.localeCompare(b.name));
@@ -558,7 +561,7 @@ export class CalendarPage implements OnInit {
         });
 
     const wasEditing = !!this.editingEvent;
-    request$.subscribe({
+    this.submit.run(request$).subscribe({
       next: () => {
         this.closeEventForm();
         this.loadOccurrences();

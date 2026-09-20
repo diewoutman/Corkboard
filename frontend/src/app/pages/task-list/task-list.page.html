@@ -30,6 +30,13 @@
   (submitted)="submitQuickAdd($event)"
 />
 
+<ul *ngIf="pending.length" class="mt-2 flex flex-col gap-2" aria-busy="true">
+  <li *ngFor="let p of pending" class="flex items-center gap-2 rounded-2xl border-2 border-border-soft bg-white px-4 py-3 text-sm font-semibold text-ink-muted opacity-60">
+    <span class="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-coral border-t-transparent" aria-hidden="true"></span>
+    {{ p.title }}
+  </li>
+</ul>
+
 <app-loading-indicator *ngIf="loading" class="mt-8" />
 
 <div *ngIf="!loading" class="mt-4 space-y-4">
@@ -185,7 +192,7 @@
     <app-assignee-chip-group [members]="members" [selectedIds]="newTask.assignedFamilyMemberIds" (toggled)="toggleAssignee($event)" />
 
     <div class="flex gap-2 pt-1">
-      <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
+      <button type="submit" [disabled]="form.invalid || submit.busy" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
         {{ (editingTask ? 'common.save_changes' : 'task_list.add') | transloco }}
       </button>
       <button type="button" (click)="closeTaskForm()" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">

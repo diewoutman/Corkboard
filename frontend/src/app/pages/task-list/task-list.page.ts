@@ -1,10 +1,12 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { ActivatedRoute } from '@angular/router';
-import { Observable, Subscription, forkJoin, of, switchMap } from 'rxjs';
+import { Observable, Subscription, finalize, forkJoin, map, of, switchMap } from 'rxjs';
 import { Collections } from '../../core/collections';
 import { FamilyMembers } from '../../core/family-members';
 import { extractErrorMessage } from '../../core/http-error';
+import { Page } from '../../core/paging';
+import { SubmitGuard } from '../../core/submit-guard';
 import { CollectionResponse, CollectionScope, FamilyMemberResponse, NodeResponse, SectionResponse, UpdateNodeRequest } from '../../core/models';
 import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes, toUpdateRequest } from '../../core/nodes';
 import { TaskEvents } from '../../core/task-events';
@@ -54,6 +56,12 @@ export class TaskListPage implements OnInit, OnDestroy {
   loading = true;
   errorMessage: string | null = null;
 
+  /** Guards the task form against a double submit. */
+  readonly submit: SubmitGuard;
+  /** Quick-added tasks whose request is still in flight, shown dimmed until the server answers. */
+  pending: { id: number; title: string }[] = [];
+  private pendingSeq = 0;
+
   showNewTaskForm = false;
   editingTask: NodeResponse | null = null;
   newTask = this.emptyNewTask();
@@ -68,10 +76,12 @@ export class TaskListPage implements OnInit, OnDestroy {
     private readonly cdr: ChangeDetectorRef,
     private readonly transloco: TranslocoService,
     private readonly events: TaskEvents,
-  ) {}
+  ) {
+    this.submit = new SubmitGuard(cdr);
+  }
 
   ngOnInit() {
-    this.moveSub = this.events.moved.subscribe(() => this.reload(true));
+    this.moveSub = this.events.moved.subscribe(() => this.refreshTasks());
     // The shell reuses this component when another list is picked in the sidebar, so follow the param.
     this.route.paramMap.subscribe((params) => {
       this.listId = params.get('id')!;
@@ -152,63 +162,103 @@ export class TaskListPage implements OnInit, OnDestroy {
     });
   }
 
+  /** Everything the page needs in one round: the tasks are requested alongside the list metadata, not after it. */
   private loadList(): Observable<void> {
     return forkJoin({
-      list: this.collectionsApi.get(this.listId),
       lists: this.collectionsApi.list({ type: 'TaskList' }),
       members: this.membersApi.list(),
       sections: this.collectionsApi.sections(this.listId),
+      tasks: this.requestTaskPage(1),
     }).pipe(
-      switchMap(({ list, lists, members, sections }) => {
+      map(({ lists, members, sections, tasks }) => {
+        const list = lists.find((l) => l.id === this.listId);
+        if (!list) throw new Error('List not found');
         this.list = list;
         this.allLists = this.movableLists(lists);
         this.members = members;
         this.sections = sections;
-        return this.fetchTaskPage(1);
+        this.applyTaskPage(1, tasks);
       }),
     );
   }
 
   private loadCombined(): Observable<void> {
-    return forkJoin({ lists: this.collectionsApi.list({ type: 'TaskList' }), members: this.membersApi.list() }).pipe(
-      switchMap(({ lists, members }) => {
+    // Only the Inbox view needs the lists first (to learn the Inbox's id); All can fetch its tasks straight away.
+    return forkJoin({
+      lists: this.collectionsApi.list({ type: 'TaskList' }),
+      members: this.membersApi.list(),
+      tasks: this.isAllView ? this.requestTaskPage(1) : of(null),
+    }).pipe(
+      switchMap(({ lists, members, tasks }) => {
         this.allLists = this.movableLists(lists);
         this.inboxes = this.allLists.filter((l) => l.isInbox);
         this.members = members;
         // Personal first: an Inbox is for capturing things, and nobody else needs to see a half-formed thought.
         this.quickAddTargetId ??= (this.inboxes.find((i) => i.scope === 'Personal') ?? this.inboxes[0])?.id ?? null;
         this.viewLists = this.isAllView ? this.allLists : this.inboxes;
+        if (tasks) {
+          this.applyTaskPage(1, tasks);
+          return of(undefined);
+        }
         return this.fetchTaskPage(1);
       }),
     );
   }
 
   /** Server-side filter + sort + paging: open tasks by due date, or every task when "show completed" is on. Used by every view. */
-  private fetchTaskPage(page: number): Observable<void> {
+  private requestTaskPage(page: number): Observable<Page<NodeResponse>> {
     const inboxId = this.inboxes[0]?.id;
-    if (this.isInboxView && !inboxId) {
-      this.tasks = [];
-      this.total = 0;
-      return of(undefined);
-    }
+    if (this.isInboxView && !inboxId) return of({ items: [], total: 0 });
 
-    return this.nodesApi
-      .listPage({
-        type: 'Task',
-        collectionId: this.isInboxView ? inboxId : this.isAllView ? undefined : this.listId,
-        isCompleted: this.showCompleted ? undefined : false,
-        sort: 'due',
-        page,
-        pageSize: TaskListPage.PAGE_SIZE,
-      })
-      .pipe(
-        switchMap(({ items, total }) => {
-          this.page = page;
-          this.total = total;
-          this.tasks = page === 1 ? items : [...this.tasks, ...items];
-          return of(undefined);
-        }),
-      );
+    return this.nodesApi.listPage({
+      type: 'Task',
+      collectionId: this.isInboxView ? inboxId : this.isAllView ? undefined : this.listId,
+      isCompleted: this.showCompleted ? undefined : false,
+      sort: 'due',
+      page,
+      pageSize: TaskListPage.PAGE_SIZE,
+    });
+  }
+
+  private applyTaskPage(page: number, { items, total }: Page<NodeResponse>) {
+    this.page = page;
+    this.total = total;
+    this.tasks = page === 1 ? items : [...this.tasks, ...items];
+  }
+
+  private fetchTaskPage(page: number): Observable<void> {
+    return this.requestTaskPage(page).pipe(map((result) => this.applyTaskPage(page, result)));
+  }
+
+  /** Re-fetches only the first page of tasks — the lists, members and sections haven't changed. */
+  private refreshTasks() {
+    this.fetchTaskPage(1).subscribe({
+      next: () => this.cdr.markForCheck(),
+      error: () => {
+        this.errorMessage = this.transloco.translate('task_list.errors.load');
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  private refreshSections() {
+    if (this.isCombinedView) return;
+    this.collectionsApi.sections(this.listId).subscribe((sections) => {
+      this.sections = sections;
+      this.cdr.markForCheck();
+    });
+  }
+
+  /** Puts a just-created task into the visible list without a refetch; falls back to one when the local view can't place it. */
+  private insertCreated(created: NodeResponse) {
+    const placeable = !this.hasMore && (!created.sectionId || this.sections.some((s) => s.id === created.sectionId) || this.isCombinedView);
+    if (!placeable) {
+      this.refreshTasks();
+      if (created.sectionId) this.refreshSections();
+      return;
+    }
+    this.tasks = this.sortTasks([...this.tasks, created]);
+    this.cdr.markForCheck();
   }
 
   get hasMore(): boolean {
@@ -232,7 +282,7 @@ export class TaskListPage implements OnInit, OnDestroy {
 
   /** Completed tasks are only fetched on demand, so toggling needs a reload. */
   onShowCompletedChange() {
-    this.reload(true);
+    this.refreshTasks();
   }
 
   /** The task form's "List" options for one scope; the Personal Inbox comes first (allLists is sorted that way). */
@@ -303,7 +353,7 @@ export class TaskListPage implements OnInit, OnDestroy {
     this.nodesApi.update(task.id, toUpdateRequest(task, { isCompleted: !task.isCompleted })).subscribe({
       next: (updated) => {
         // With more pages still on the server, a changed task shifts every later page: start over from page 1.
-        if (this.hasMore) return this.reload(true);
+        if (this.hasMore) return this.refreshTasks();
         this.tasks = this.sortTasks(this.tasks.map((t) => (t.id === updated.id ? updated : t)));
         this.cdr.markForCheck();
       },
@@ -317,7 +367,7 @@ export class TaskListPage implements OnInit, OnDestroy {
   deleteTask(task: NodeResponse) {
     this.nodesApi.delete(task.id).subscribe({
       next: () => {
-        if (this.hasMore) return this.reload(true);
+        if (this.hasMore) return this.refreshTasks();
         this.tasks = this.tasks.filter((t) => t.id !== task.id);
         this.cdr.markForCheck();
       },
@@ -365,8 +415,10 @@ export class TaskListPage implements OnInit, OnDestroy {
     const recurrenceRule = buildRule(this.newTask.repeat, until ? new Date(until) : null);
     const collectionId = this.newTask.collectionId;
     const editing = this.editingTask;
+    const typedSection = this.newTask.section.trim();
 
-    this.resolveSection(collectionId, this.newTask.section)
+    this.submit
+      .run(this.resolveSection(collectionId, this.newTask.section)
       .pipe(
         switchMap((sectionId) =>
           editing
@@ -400,12 +452,19 @@ export class TaskListPage implements OnInit, OnDestroy {
                 ...NULL_NOTE_FIELDS,
               }),
         ),
-      )
+      ))
       .subscribe({
-        next: () => {
+        next: (saved) => {
           this.closeTaskForm();
-          // A new section may have been created, or the task moved to another list — refetch rather than patch by hand.
-          this.reload(true);
+          if (editing) {
+            // Moved lists, changed section or due date: the order and grouping may differ, so ask the server once.
+            this.refreshTasks();
+            if (typedSection) this.refreshSections();
+          } else if (this.isCombinedView) {
+            this.refreshTasks();
+          } else if (collectionId === this.listId) {
+            this.insertCreated(saved);
+          }
         },
         error: (err) => {
           this.errorMessage = extractErrorMessage(err, this.transloco.translate(editing ? 'task_list.errors.save' : 'task_list.errors.create'));
@@ -423,7 +482,11 @@ export class TaskListPage implements OnInit, OnDestroy {
     const target = this.isCombinedView ? this.quickAddTargetId : this.listId;
     if (!target) return;
 
-    this.resolveSection(target, this.isCombinedView ? '' : (parsed.category ?? ''))
+    const pending = { id: ++this.pendingSeq, title: parsed.title };
+    this.pending = [...this.pending, pending];
+    const typedSection = this.isCombinedView ? '' : (parsed.category ?? '').trim();
+
+    this.resolveSection(target, typedSection)
       .pipe(
         switchMap((sectionId) =>
           this.nodesApi.create({
@@ -443,9 +506,15 @@ export class TaskListPage implements OnInit, OnDestroy {
             ...NULL_NOTE_FIELDS,
           }),
         ),
+        finalize(() => {
+          this.pending = this.pending.filter((p) => p.id !== pending.id);
+          this.cdr.markForCheck();
+        }),
       )
       .subscribe({
-        next: () => this.reload(true),
+        next: (created) => {
+          this.insertCreated(created);
+        },
         error: (err) => {
           this.errorMessage = extractErrorMessage(err, this.transloco.translate('task_list.errors.create'));
           this.cdr.markForCheck();

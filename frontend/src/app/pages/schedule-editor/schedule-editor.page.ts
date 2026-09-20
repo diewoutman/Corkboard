@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { SubmitGuard } from '../../core/submit-guard';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -41,6 +42,8 @@ function toTimeInputValue(iso: string): string {
   standalone: false,
 })
 export class ScheduleEditorPage implements OnInit {
+  /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
+  readonly submit = new SubmitGuard(inject(ChangeDetectorRef));
   readonly weekdays = WEEKDAYS;
 
   scheduleId!: string;
@@ -174,7 +177,7 @@ export class ScheduleEditorPage implements OnInit {
         });
 
     const wasEditing = !!this.editingEntry;
-    request$.subscribe({
+    this.submit.run(request$).subscribe({
       next: (saved) => {
         this.entries = wasEditing ? this.entries.map((e) => (e.id === saved.id ? saved : e)) : [...this.entries, saved];
         this.closeEntryForm();

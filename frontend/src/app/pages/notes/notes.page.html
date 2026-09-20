@@ -51,7 +51,7 @@
     </label>
 
     <div class="flex gap-2 pt-1">
-      <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
+      <button type="submit" [disabled]="form.invalid || submit.busy" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
         {{ (editingNote ? 'common.save_changes' : 'notes.add') | transloco }}
       </button>
       <button type="button" (click)="closeNoteForm()" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">

@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using TickerQ.Dashboard.DependencyInjection;
@@ -156,7 +157,7 @@ var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(ClientCorsPolicy, policy =>
-        policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().WithExposedHeaders("X-Total-Count"));
+        policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().WithExposedHeaders("X-Total-Count", "Idempotent-Replayed"));
 });
 
 builder.Services.Configure<JwtOptions>(jwtSection);
@@ -170,6 +171,19 @@ builder.Services.AddScoped<IFamilyMemberService, FamilyMemberService>();
 builder.Services.AddScoped<IApiClientService, ApiClientService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<ApiCallLogCleanupJob>();
+builder.Services.AddSingleton<ApiCallLogWriter>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<ApiCallLogWriter>());
+
+// Gzip/Brotli for JSON and the static bundle — the biggest win on a slow link to a low-powered host.
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/problem+json", "image/svg+xml", "application/manifest+json"]);
+});
+builder.Services.Configure<BrotliCompressionProviderOptions>(o => o.Level = System.IO.Compression.CompressionLevel.Fastest);
+builder.Services.Configure<GzipCompressionProviderOptions>(o => o.Level = System.IO.Compression.CompressionLevel.Fastest);
 
 builder.Services.Configure<PushOptions>(builder.Configuration.GetSection(PushOptions.SectionName));
 builder.Services.AddScoped<NotificationService>();
@@ -247,12 +261,25 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseResponseCompression();
+
 // Serves the Angular build the Docker image copies into wwwroot (no-op if
 // wwwroot is empty, e.g. local `dotnet run` where the client runs via `ng
 // serve` instead). MapFallbackToFile below routes any unmatched GET request
 // to index.html so Angular's client-side router handles it.
 app.UseDefaultFiles();
-app.UseStaticFiles();
+var staticFileOptions = new StaticFileOptions
+{
+    // Angular's build fingerprints its bundles (main-XXXXXXXX.js, chunk-XXXXXXXX.js), so those never change under
+    // the same name and can be cached for a year. Everything else (index.html, service worker, manifest, icons)
+    // is revalidated with an ETag, which is a cheap 304.
+    OnPrepareResponse = ctx =>
+    {
+        var hashed = System.Text.RegularExpressions.Regex.IsMatch(ctx.File.Name, @"^[\w.]+-[A-Za-z0-9_]{8}\.(js|css)$");
+        ctx.Context.Response.Headers.CacheControl = hashed ? "public,max-age=31536000,immutable" : "no-cache";
+    },
+};
+app.UseStaticFiles(staticFileOptions);
 
 app.UseCors(ClientCorsPolicy);
 
@@ -262,11 +289,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseMiddleware<ApiCallLoggingMiddleware>();
+app.UseMiddleware<IdempotencyMiddleware>();
 
 app.MapControllers();
 
 app.UseTickerQ();
 
-app.MapFallbackToFile("index.html");
+app.MapFallbackToFile("index.html", staticFileOptions);
 
 app.Run();

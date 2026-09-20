@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { SubmitGuard } from '../../core/submit-guard';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Admin } from '../../core/admin';
 import { AdminFamilyMembers } from '../../core/admin-family-members';
@@ -11,6 +12,8 @@ import { FamilyMemberResponse, FamilyResponse, FamilyRole } from '../../core/mod
   standalone: false,
 })
 export class AdminFamilyDetailPage implements OnInit {
+  /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
+  readonly submit = new SubmitGuard(inject(ChangeDetectorRef));
   familyId = '';
   family: FamilyResponse | null = null;
   familyForm = { name: '', timeZone: '' };
@@ -71,7 +74,7 @@ export class AdminFamilyDetailPage implements OnInit {
   submitFamilyForm() {
     if (!this.familyForm.name || !this.familyForm.timeZone) return;
 
-    this.adminApi.updateFamily(this.familyId, this.familyForm).subscribe({
+    this.submit.run(this.adminApi.updateFamily(this.familyId, this.familyForm)).subscribe({
       next: (family) => {
         this.family = family;
         this.cdr.markForCheck();
@@ -120,7 +123,7 @@ export class AdminFamilyDetailPage implements OnInit {
       ? this.adminFamilyMembersApi.update(this.familyId, this.editingMemberId, request)
       : this.adminFamilyMembersApi.create(this.familyId, request);
 
-    request$.subscribe({
+    this.submit.run(request$).subscribe({
       next: (saved) => {
         this.members = this.editingMemberId ? this.members.map((m) => (m.id === saved.id ? saved : m)) : [...this.members, saved];
         this.showMemberForm = false;
@@ -159,7 +162,7 @@ export class AdminFamilyDetailPage implements OnInit {
   submitAccountForm() {
     if (!this.accountFormForId || !this.accountForm.email || !this.accountForm.password) return;
 
-    this.adminFamilyMembersApi.createAccount(this.familyId, this.accountFormForId, this.accountForm).subscribe({
+    this.submit.run(this.adminFamilyMembersApi.createAccount(this.familyId, this.accountFormForId, this.accountForm)).subscribe({
       next: (saved) => {
         this.members = this.members.map((m) => (m.id === saved.id ? saved : m));
         this.accountFormForId = null;
