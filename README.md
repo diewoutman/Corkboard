@@ -1,8 +1,9 @@
 # Qorkboard
 
-A family coordination app built for one family — not a generic multi-tenant
-SaaS product. Appointments, tasks, notes, and contacts all live on one shared
-board, self-hosted on your own hardware.
+Qorkboard is a self-hosted family organizer. Appointments, tasks, notes and
+contacts live together on one shared board that everyone in the household
+can see, and you run it yourself on your own hardware, so the data stays
+yours.
 
 ![Dashboard](docs/screenshots/dashboard.png)
 
@@ -16,22 +17,6 @@ board, self-hosted on your own hardware.
 | ![Family](docs/screenshots/family.png) | ![Login](docs/screenshots/login.png) |
 
 </details>
-
-## Why
-
-Commercial family-organizer apps come with ads, subscriptions, and features
-nobody in the household asked for. Qorkboard is the opposite bet:
-
-- **Self-hosted first.** You own the data and the deployment (a home
-  server/NAS, via Docker).
-- **One core abstraction.** Everything that can be "pinned to the board" —
-  calendar appointments, tasks, notes, contacts — is a `Node` with a
-  different `Type`, not four unrelated features bolted together.
-- **API-first.** The backend has no server-rendered UI; the Angular client is
-  just one consumer of the API, leaving the door open for a future mobile
-  app or automation scripts.
-- **Small surface.** Ship the smallest useful version, let real family use
-  drive what gets built next.
 
 ## Features
 
@@ -52,42 +37,6 @@ nobody in the household asked for. Qorkboard is the opposite bet:
   every family on the instance, and API client (client-credentials)
   management for external automation/integrations.
 - **Installable PWA** — Angular service worker + manifest.
-
-## Tech stack
-
-| Layer | Stack |
-|---|---|
-| Backend | .NET 10, ASP.NET Core Web API (API-first, no server-rendered views) |
-| Database | PostgreSQL via EF Core |
-| Auth | ASP.NET Core Identity + JWT, plus client-credentials tokens for API clients |
-| Scheduling | [TickerQ](https://github.com/Arcenox-co/TickerQ) (EF-Core-backed, in-process) |
-| Calendar interop | [Ical.Net](https://github.com/ical-org/ical.net) for RRULE expansion and `.ics` import/export |
-| Frontend | Angular 22 + Tailwind CSS, `@angular/cdk` for drag-and-drop |
-| Component workshop | Storybook |
-| Testing | xUnit (API), Playwright (e2e) |
-
-## Project structure
-
-```
-backend/
-  Corkboard.slnx
-  src/
-    Corkboard.Api/             # controllers, auth, DI wiring
-    Corkboard.Domain/          # entities: Family, FamilyMember, Node (Note/Task/Appointment/Contact), ...
-    Corkboard.Infrastructure/  # EF Core DbContext + migrations, TickerQ jobs, Identity, iCal
-    Corkboard.Contracts/       # request/response DTOs shared with the client's shape
-  tests/
-    Corkboard.Domain.Tests/
-    Corkboard.Api.Tests/       # in-memory-DB unit tests + contract validation
-frontend/                     # Angular 22 + Tailwind CSS PWA
-  src/app/core/               # Auth, Families, FamilyMembers, Nodes, Collections, CalendarApi, Dashboard, Admin, ...
-  src/app/pages/               # login, family-setup, add-members, home, tasks, task-list, notes, calendar,
-                                # schedule-editor, contacts, family
-  src/app/admin/                # system-owner-only shell: stats, families, api-clients
-  e2e/                         # Playwright specs
-docker-compose.yml            # Postgres (dev database)
-docker/                        # Dockerfile for a combined frontend+API self-hosting image
-```
 
 ## Getting started
 
@@ -134,17 +83,8 @@ npm --prefix frontend test      # Angular unit tests
 npm --prefix frontend run e2e   # Playwright end-to-end tests
 ```
 
-### Regenerating the screenshots
-
-The images above are captured by a dedicated Playwright script, not hand-taken:
-
-```bash
-npm --prefix frontend run screenshots
-```
-
-It drives the seeded dev family (starting the dev stack itself if it isn't
-already running), populates a small deterministic set of demo data, and
-writes PNGs to `docs/screenshots/`. Rerun it after any meaningful UI change.
+The README screenshots are regenerated with a script; see
+[`docs/screenshots.md`](docs/screenshots.md).
 
 ## Self-hosting (Docker image)
 
@@ -152,9 +92,3 @@ For running Qorkboard somewhere other than a dev machine (a home
 server/NAS), `docker/` builds one image with the frontend and API combined —
 see [`docker/README.md`](docker/README.md). You host Postgres yourself; the
 image just connects to it.
-
-## Status
-
-Actively developed, single-family use. See `CONCEPT.md` for the full design
-document (domain model, API surface, and decisions log) and
-`graphify-out/GRAPH_REPORT.md` for a generated map of the codebase.
