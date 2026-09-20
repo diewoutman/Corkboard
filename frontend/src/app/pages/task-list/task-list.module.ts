@@ -11,8 +11,7 @@ import { QuickAddBarComponent } from '../../shared/components/quick-add-bar/quic
 import { LoadingIndicatorComponent } from '../../shared/components/loading-indicator/loading-indicator.component';
 import { TaskRowComponent } from '../../shared/components/task-row/task-row.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
-import { AssigneeChipGroupComponent } from '../../shared/components/assignee-chip-group/assignee-chip-group.component';
-import { FabButtonComponent } from '../../shared/components/fab-button/fab-button.component';
+import { TaskEditorComponent } from '../../shared/components/task-editor/task-editor.component';
 import { ModalSheetComponent } from '../../shared/components/modal-sheet/modal-sheet.component';
 
 @NgModule({
@@ -26,8 +25,7 @@ import { ModalSheetComponent } from '../../shared/components/modal-sheet/modal-s
     LoadingIndicatorComponent,
     TaskRowComponent,
     EmptyStateComponent,
-    AssigneeChipGroupComponent,
-    FabButtonComponent,
+    TaskEditorComponent,
     ModalSheetComponent,
   ],
   declarations: [TaskListPage],

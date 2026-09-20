@@ -1,5 +1,6 @@
+import { CreateFab } from '../../core/create-fab';
 import { SubmitGuard } from '../../core/submit-guard';
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { forkJoin } from 'rxjs';
 import { Collections } from '../../core/collections';
@@ -15,7 +16,9 @@ import { PagedList } from '../../core/paging';
   styleUrls: ['./contacts.page.scss'],
   standalone: false,
 })
-export class ContactsPage implements OnInit {
+export class ContactsPage implements OnInit, OnDestroy {
+  private readonly createFab = inject(CreateFab);
+  private unregisterFab?: () => void;
   /** Ignores a repeated click on delete while that item's request is still in flight. */
   readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
   /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
@@ -46,7 +49,24 @@ export class ContactsPage implements OnInit {
     private readonly transloco: TranslocoService,
   ) {}
 
+  /** Makes the app's "+" button open this page's editor. */
+  private registerFab() {
+    this.unregisterFab?.();
+    this.unregisterFab = this.createFab.register({
+      kind: null,
+      open: () => {
+        this.openNewContactForm();
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  ngOnDestroy() {
+    this.unregisterFab?.();
+  }
+
   ngOnInit() {
+    this.registerFab();
     this.reload();
   }
 

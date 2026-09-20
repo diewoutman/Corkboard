@@ -9,7 +9,6 @@ import { MemberAvatarsComponent } from '../../shared/member-avatars.component';
 import { ErrorBannerComponent } from '../../shared/components/error-banner/error-banner.component';
 import { LoadingIndicatorComponent } from '../../shared/components/loading-indicator/loading-indicator.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
-import { FabButtonComponent } from '../../shared/components/fab-button/fab-button.component';
 import { MemberAvatarComponent } from '../../shared/components/member-avatar/member-avatar.component';
 import { AgendaListItemComponent } from '../../shared/components/agenda-list-item/agenda-list-item.component';
 import { WidgetCardComponent } from '../../shared/components/widget-card/widget-card.component';
@@ -38,7 +37,6 @@ import { UpcomingWidgetComponent } from './widgets/upcoming-widget.component';
     ErrorBannerComponent,
     LoadingIndicatorComponent,
     EmptyStateComponent,
-    FabButtonComponent,
     MemberAvatarComponent,
     AgendaListItemComponent,
     WidgetCardComponent,

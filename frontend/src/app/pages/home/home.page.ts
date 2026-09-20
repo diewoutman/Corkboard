@@ -1,12 +1,12 @@
+import { CreateFab } from '../../core/create-fab';
 import { SubmitGuard } from '../../core/submit-guard';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
-import { forkJoin } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import { Auth } from '../../core/auth';
 import { Collections } from '../../core/collections';
 import { Dashboard } from '../../core/dashboard';
-import { Families } from '../../core/families';
 import { extractErrorMessage } from '../../core/http-error';
 import { CollectionResponse, DashboardWidgetResponse, DashboardWidgetScope, DashboardWidgetType } from '../../core/models';
 import { SegmentedControlOption } from '../../shared/components/segmented-control/segmented-control.component';
@@ -30,7 +30,9 @@ interface WidgetFormState {
   styleUrls: ['./home.page.scss'],
   standalone: false,
 })
-export class HomePage implements OnInit {
+export class HomePage implements OnInit, OnDestroy {
+  private readonly createFab = inject(CreateFab);
+  private createdSub?: Subscription;
   /** Ignores a repeated click on delete while that item's request is still in flight. */
   readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
   /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
@@ -45,7 +47,6 @@ export class HomePage implements OnInit {
     { value: 'Personal', label: this.transloco.translate('home.scope.personal') },
   ];
 
-  familyName: string | null = null;
 
   dashboardScope: DashboardWidgetScope = 'Personal';
   widgets: DashboardWidgetResponse[] = [];
@@ -53,13 +54,15 @@ export class HomePage implements OnInit {
   loading = true;
   errorMessage: string | null = null;
 
+  /** Widgets can only be added, configured, resized, moved or removed while the dashboard is in edit mode. */
+  editMode = false;
+
   showWidgetForm = false;
   editingWidgetId: string | null = null;
   widgetForm = this.emptyWidgetForm();
 
   constructor(
     readonly auth: Auth,
-    private readonly familiesApi: Families,
     private readonly dashboardApi: Dashboard,
     private readonly collectionsApi: Collections,
     private readonly cdr: ChangeDetectorRef,
@@ -73,18 +76,24 @@ export class HomePage implements OnInit {
 
   switchDashboard(scope: string) {
     this.dashboardScope = scope as DashboardWidgetScope;
+    if (!this.editableDashboard) this.editMode = false;
     this.reload();
   }
 
-  ngOnInit() {
-    this.familiesApi.mine().subscribe({
-      next: (family) => {
-        this.familyName = family.name;
-        this.cdr.markForCheck();
-      },
-      error: () => {},
-    });
+  toggleEditMode() {
+    this.editMode = !this.editMode;
+    this.createFab.hidden.set(this.editMode);
+    if (!this.editMode) this.cancelWidgetForm();
+  }
 
+  ngOnDestroy() {
+    this.createFab.hidden.set(false);
+    this.createdSub?.unsubscribe();
+  }
+
+  ngOnInit() {
+    // Something made from the app's "+" sheet: the widgets read their data on init, so re-creating them shows it.
+    this.createdSub = this.createFab.created.subscribe(() => this.reload());
     this.reload();
   }
 
@@ -136,6 +145,7 @@ export class HomePage implements OnInit {
   }
 
   drop(event: CdkDragDrop<DashboardWidgetResponse[]>) {
+    if (!this.editMode) return;
     moveItemInArray(this.widgets, event.previousIndex, event.currentIndex);
     this.dashboardApi.reorder(this.dashboardScope, { orderedWidgetIds: this.widgets.map((w) => w.id) }).subscribe({
       error: () => {
@@ -172,6 +182,7 @@ export class HomePage implements OnInit {
 
   /** Cycles a widget's width: 1/3 → 2/3 → full width → back to 1/3. */
   cycleWidgetWidth(widget: DashboardWidgetResponse) {
+    if (!this.editMode) return;
     const nextSpan = (widget.span % HomePage.COLUMN_COUNT) + 1;
     const previousSpan = widget.span;
     widget.span = nextSpan;

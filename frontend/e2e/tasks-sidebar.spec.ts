@@ -38,7 +38,7 @@ test('a task can be dragged onto another list in the sidebar', async ({ authedPa
   await createList(page, to);
 
   await page.locator('a').filter({ hasText: from }).click();
-  await page.getByRole('button', { name: 'Add task' }).click();
+  await page.getByRole('button', { name: 'Create', exact: true }).click();
   await page.getByLabel('Task', { exact: true }).fill(title);
   await page.getByRole('button', { name: 'Add task' }).click();
   const row = page.locator('li[draggable="true"]').filter({ hasText: title });

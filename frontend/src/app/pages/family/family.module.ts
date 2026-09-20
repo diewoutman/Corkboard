@@ -11,7 +11,6 @@ import { LoadingIndicatorComponent } from '../../shared/components/loading-indic
 import { FamilyMemberCardComponent } from '../../shared/components/family-member-card/family-member-card.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ColorPickerFieldComponent } from '../../shared/components/color-picker-field/color-picker-field.component';
-import { FabButtonComponent } from '../../shared/components/fab-button/fab-button.component';
 
 @NgModule({
   imports: [
@@ -24,7 +23,6 @@ import { FabButtonComponent } from '../../shared/components/fab-button/fab-butto
     FamilyMemberCardComponent,
     EmptyStateComponent,
     ColorPickerFieldComponent,
-    FabButtonComponent,
   ],
   declarations: [FamilyPage],
 })

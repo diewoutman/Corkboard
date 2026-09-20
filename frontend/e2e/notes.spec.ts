@@ -5,7 +5,7 @@ test('a note can be edited via its edit button', async ({ authedPage: page }) =>
   const editedTitle = `${originalTitle} (edited)`;
 
   await page.goto('/notes');
-  await page.getByRole('button', { name: 'Add note' }).click();
+  await page.getByRole('button', { name: 'Create', exact: true }).click();
   await page.getByLabel('Title').fill(originalTitle);
   await page.getByRole('button', { name: 'Add note' }).click();
 

@@ -55,6 +55,7 @@
     "moved_error": "De taak kon niet worden verplaatst."
   },
   "nav": {
+    "powered_by": "Aangedreven door Qorkboard",
     "home": "Home",
     "daily": "Dagelijks",
     "administration": "Administratie",
@@ -105,8 +106,6 @@
       "family": "Gezin",
       "personal": "Persoonlijk"
     },
-    "hint_editable": "Sleep widgets om ze te herschikken, of gebruik ↔ om het formaat te wijzigen.",
-    "hint_readonly": "Alleen gezinsbeheerders kunnen het gezinsdashboard bewerken.",
     "empty_editable": "Je dashboard is leeg — voeg een widget toe om te beginnen.",
     "empty_readonly": "Nog geen widgets — vraag een gezinsbeheerder om er een in te stellen.",
     "widget_titles": {
@@ -171,7 +170,9 @@
       "resize": "Het formaat van de widget kon niet worden gewijzigd.",
       "remove": "De widget kon niet worden verwijderd.",
       "save": "De widget kon niet worden opgeslagen."
-    }
+    },
+    "edit": "Bewerken",
+    "done": "Klaar"
   },
   "roles": {
     "Owner": "Eigenaar",
@@ -241,6 +242,8 @@
     }
   },
   "task_list": {
+    "more_options": "Meer opties",
+    "fewer_options": "Minder opties",
     "load_more": "Meer laden",
     "show_completed": "Afgeronde tonen",
     "quick_add_placeholder": "Voeg een taak toe… probeer \"Melk kopen morgen 17:00 #Boodschappen\"",
@@ -465,6 +468,14 @@
       "enable": "Herinneringen aanzetten is mislukt. Heb je meldingen toegestaan?",
       "disable": "Herinneringen uitzetten is mislukt.",
       "save": "Die instelling kon niet worden opgeslagen."
+    }
+  },
+  "create": {
+    "title": "Aanmaken",
+    "kinds": {
+      "task": "Taak",
+      "note": "Notitie",
+      "event": "Afspraak"
     }
   }
 }

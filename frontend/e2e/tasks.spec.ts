@@ -11,7 +11,7 @@ test('a task can be edited via its edit button', async ({ authedPage: page }) =>
   await page.getByRole('button', { name: 'Create' }).click();
   await page.locator('a').filter({ hasText: listName }).getByText(listName).click();
 
-  await page.getByRole('button', { name: 'Add task' }).click();
+  await page.getByRole('button', { name: 'Create', exact: true }).click();
   await page.getByLabel('Task', { exact: true }).fill(originalTitle);
   await page.getByRole('button', { name: 'Add task' }).click();
 

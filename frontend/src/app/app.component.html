@@ -1,16 +1,18 @@
 <div class="flex min-h-screen flex-col" [class.bg-cork]="!isAdminRoute">
-  <header *ngIf="!isAdminRoute" class="sticky top-0 z-20 bg-white">
+  <header
+    *ngIf="!isAdminRoute"
+    class="sticky top-0 z-20 bg-white transition-transform duration-200"
+    [ngClass]="headerHidden ? '-translate-y-full sm:translate-y-0' : ''"
+  >
     <div class="mx-auto flex max-w-screen-2xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
       <div class="flex items-center gap-2">
-        <a routerLink="/home" class="flex items-center gap-2 font-heading text-xl font-extrabold text-coral">
+        <a routerLink="/home" class="flex items-center gap-2 text-coral">
           <img src="assets/icon/qorkboard-mark.svg" alt="" width="28" height="28" class="rounded-lg" />
-          Qorkboard
+          <span class="flex min-w-0 flex-col leading-tight">
+            <span class="truncate font-heading text-xl font-extrabold">{{ families.name() || 'Qorkboard' }}</span>
+            <span *ngIf="families.name()" class="text-[10px] font-bold text-ink-muted">{{ 'nav.powered_by' | transloco }}</span>
+          </span>
         </a>
-        <span
-          *ngIf="auth.hasFamily()"
-          class="rounded-full bg-badge-bg px-2.5 py-0.5 text-[10px] font-extrabold text-badge-text"
-          [title]="(auth.isOwner() ? 'nav.role_hint_owner' : 'nav.role_hint_member') | transloco"
-        >{{ auth.role() }}</span>
       </div>
 
       <div *ngIf="auth.hasFamily()" class="flex items-center gap-4">
@@ -98,4 +100,6 @@
       {{ group.labelKey | transloco }}
     </a>
   </nav>
+
+  <app-create-fab *ngIf="!isAdminRoute && auth.hasFamily()" />
 </div>

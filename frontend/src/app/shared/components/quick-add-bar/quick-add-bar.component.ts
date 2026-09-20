@@ -18,7 +18,7 @@ import { FormsModule } from '@angular/forms';
       />
       <button
         type="submit"
-        [disabled]="!text.trim()"
+        [disabled]="busy || !text.trim()"
         class="shrink-0 rounded-full bg-coral px-5 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50"
       >{{ 'common.add' | transloco }}</button>
     </form>
@@ -26,13 +26,15 @@ import { FormsModule } from '@angular/forms';
 })
 export class QuickAddBarComponent {
   @Input() placeholder = '';
+  /** True while the previous submit is still being saved — the button stays disabled until the server has answered. */
+  @Input() busy = false;
   @Output() submitted = new EventEmitter<string>();
 
   text = '';
 
   onSubmit() {
     const trimmed = this.text.trim();
-    if (!trimmed) return;
+    if (!trimmed || this.busy) return;
     this.submitted.emit(trimmed);
     this.text = '';
   }

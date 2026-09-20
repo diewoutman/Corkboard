@@ -9,9 +9,8 @@ import { TranslocoPipe } from '@jsverse/transloco';
  * `ListCardComponent` staying router-agnostic and letting the page supply the interactive
  * wrapper: this component has no CDK dependency of its own and renders fine in Storybook alone.
  *
- * The resize/configure/remove buttons only reveal on hover (`group`/`group-hover`, same pattern as
- * CalendarEventBlockComponent's hover-reveal edit/delete) — kept out of the way until the widget is
- * actually being interacted with.
+ * The resize/configure/remove buttons are always visible while `editable` (the dashboard's edit mode) — hover-reveal
+ * would be unreachable on touch screens — and absent otherwise.
  *
  * When `showPanel` is false, the card chrome (background/padding/shadow) drops away — the widget
  * sits bare on the board — but the title row and resize/configure/remove buttons stay, just
@@ -31,7 +30,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
     <div [class]="showPanel ? 'mb-2 flex items-center justify-between gap-2' : 'mb-1 flex items-center gap-2'">
       <ng-content select="[widgetCardTitle]"></ng-content>
       @if (editable) {
-        <div [class]="showPanel ? 'hidden items-center gap-2.5 group-hover:flex' : 'ml-auto hidden items-center gap-2.5 group-hover:flex'">
+        <div [class]="showPanel ? 'flex items-center gap-3' : 'ml-auto flex items-center gap-3'">
           @if (resizable) {
             <button type="button" (click)="resized.emit()" class="text-ink-muted hover:text-coral" [attr.aria-label]="'shared.widget_resize' | transloco" [title]="'shared.widget_resize' | transloco">↔</button>
           }
@@ -44,8 +43,8 @@ import { TranslocoPipe } from '@jsverse/transloco';
   `,
 })
 export class WidgetCardComponent {
-  /** False on the Family dashboard for non-admins — hides resize/configure/remove. */
-  @Input() editable = true;
+  /** True only in the dashboard's edit mode — shows resize/configure/remove. */
+  @Input() editable = false;
   /** Whether this widget renders inside the card chrome, or bare on the board. */
   @Input() showPanel = true;
   /** False for widgets whose size isn't span-driven (a Shortcut pill) — hides the resize control. */
