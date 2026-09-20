@@ -1,3 +1,4 @@
+import { SubmitGuard } from '../../core/submit-guard';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { ActivatedRoute } from '@angular/router';
@@ -6,7 +7,6 @@ import { Collections } from '../../core/collections';
 import { FamilyMembers } from '../../core/family-members';
 import { extractErrorMessage } from '../../core/http-error';
 import { Page } from '../../core/paging';
-import { SubmitGuard } from '../../core/submit-guard';
 import { CollectionResponse, CollectionScope, FamilyMemberResponse, NodeResponse, SectionResponse, UpdateNodeRequest } from '../../core/models';
 import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes, toUpdateRequest } from '../../core/nodes';
 import { TaskEvents } from '../../core/task-events';
@@ -27,6 +27,8 @@ interface TaskGroup {
   standalone: false,
 })
 export class TaskListPage implements OnInit, OnDestroy {
+  /** Ignores a repeated click while that item's update is still in flight (a recurring task would otherwise roll forward twice). */
+  readonly updating = new SubmitGuard(inject(ChangeDetectorRef));
   /** Ignores a repeated click on delete while that item's request is still in flight. */
   readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
   private moveSub?: Subscription;
@@ -352,7 +354,7 @@ export class TaskListPage implements OnInit, OnDestroy {
   }
 
   toggleDone(task: NodeResponse) {
-    this.nodesApi.update(task.id, toUpdateRequest(task, { isCompleted: !task.isCompleted })).subscribe({
+    this.updating.run(this.nodesApi.update(task.id, toUpdateRequest(task, { isCompleted: !task.isCompleted })), task.id).subscribe({
       next: (updated) => {
         // With more pages still on the server, a changed task shifts every later page: start over from page 1.
         if (this.hasMore) return this.refreshTasks();

@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { SubmitGuard } from '../../../core/submit-guard';
+import { ChangeDetectorRef, Component, Input, OnInit, inject } from '@angular/core';
 import { forkJoin, of, switchMap } from 'rxjs';
 import { Auth } from '../../../core/auth';
 import { Collections } from '../../../core/collections';
@@ -14,6 +15,8 @@ const MAX_TASKS_SHOWN = 8;
   standalone: false,
 })
 export class TasksWidgetComponent implements OnInit {
+  /** Ignores a repeated click while that item's update is still in flight (a recurring task would otherwise roll forward twice). */
+  readonly updating = new SubmitGuard(inject(ChangeDetectorRef));
   @Input() collectionId: string | null = null;
   @Input() assignedToMeOnly: boolean | null = null;
 
@@ -88,7 +91,7 @@ export class TasksWidgetComponent implements OnInit {
   }
 
   toggleDone(task: NodeResponse) {
-    this.nodesApi.update(task.id, toggleTaskCompletionRequest(task, true)).subscribe({
+    this.updating.run(this.nodesApi.update(task.id, toggleTaskCompletionRequest(task, true)), task.id).subscribe({
       next: () => {
         this.tasks = this.tasks.filter((t) => t.id !== task.id);
         this.cdr.markForCheck();

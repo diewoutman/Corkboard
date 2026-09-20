@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { SubmitGuard } from '../../../core/submit-guard';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { dueTasks, groupByMember, MemberGroup, occurrenceToAgendaItem, taskToAgendaItem } from '../../../core/agenda';
 import { CalendarApi } from '../../../core/calendar';
@@ -12,6 +13,8 @@ import { Nodes, toggleTaskCompletionRequest } from '../../../core/nodes';
   standalone: false,
 })
 export class TodayWidgetComponent implements OnInit {
+  /** Ignores a repeated click while that item's update is still in flight (a recurring task would otherwise roll forward twice). */
+  readonly updating = new SubmitGuard(inject(ChangeDetectorRef));
   loading = true;
   groups: MemberGroup[] = [];
 
@@ -46,7 +49,7 @@ export class TodayWidgetComponent implements OnInit {
   }
 
   toggleDone(task: NodeResponse) {
-    this.nodesApi.update(task.id, toggleTaskCompletionRequest(task, true)).subscribe({
+    this.updating.run(this.nodesApi.update(task.id, toggleTaskCompletionRequest(task, true)), task.id).subscribe({
       next: () => {
         for (const group of this.groups) {
           group.items = group.items.filter((i) => i.task?.id !== task.id);

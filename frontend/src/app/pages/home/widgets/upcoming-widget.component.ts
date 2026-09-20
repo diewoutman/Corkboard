@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { SubmitGuard } from '../../../core/submit-guard';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { forkJoin } from 'rxjs';
 import { AgendaItem, groupByDay, occurrenceToAgendaItem, taskToAgendaItem } from '../../../core/agenda';
@@ -22,6 +23,8 @@ interface DayView {
   standalone: false,
 })
 export class UpcomingWidgetComponent implements OnInit {
+  /** Ignores a repeated click while that item's update is still in flight (a recurring task would otherwise roll forward twice). */
+  readonly updating = new SubmitGuard(inject(ChangeDetectorRef));
   loading = true;
   members: FamilyMemberResponse[] = [];
   overdue: AgendaItem[] = [];
@@ -72,7 +75,7 @@ export class UpcomingWidgetComponent implements OnInit {
   }
 
   toggleDone(task: NodeResponse) {
-    this.nodesApi.update(task.id, toggleTaskCompletionRequest(task, true)).subscribe({
+    this.updating.run(this.nodesApi.update(task.id, toggleTaskCompletionRequest(task, true)), task.id).subscribe({
       next: () => {
         this.overdue = this.overdue.filter((i) => i.task?.id !== task.id);
         this.days = this.days.map((day) => ({ ...day, items: day.items.filter((i) => i.task?.id !== task.id) }));
