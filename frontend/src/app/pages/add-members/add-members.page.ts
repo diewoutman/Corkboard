@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { SubmitGuard } from '../../core/submit-guard';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { Router } from '@angular/router';
 import { FamilyMembers } from '../../core/family-members';
@@ -11,6 +12,8 @@ import { FamilyMemberResponse } from '../../core/models';
   standalone: false,
 })
 export class AddMembersPage implements OnInit {
+  /** Ignores a repeated click on delete while that item's request is still in flight. */
+  readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
   members: FamilyMemberResponse[] = [];
   displayName = '';
   color = '#4c6ef5';
@@ -70,7 +73,7 @@ export class AddMembersPage implements OnInit {
   }
 
   removeMember(member: FamilyMemberResponse) {
-    this.familyMembers.delete(member.id).subscribe({
+    this.removing.run(this.familyMembers.delete(member.id), member.id).subscribe({
       next: () => {
         this.members = this.members.filter((m) => m.id !== member.id);
         this.cdr.markForCheck();

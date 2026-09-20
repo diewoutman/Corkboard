@@ -28,7 +28,7 @@
           class="mt-1 rounded-md border border-slate-600 bg-slate-900 px-2.5 py-1.5 text-sm text-white focus:border-indigo-500 focus:outline-none"
         />
       </div>
-      <button type="submit" [disabled]="familyFormRef.invalid" class="rounded-md bg-indigo-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50">
+      <button type="submit" [disabled]="familyFormRef.invalid || submit.busy" class="rounded-md bg-indigo-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50">
         Save
       </button>
     </form>
@@ -100,7 +100,7 @@
             </select>
           </div>
           <div class="flex gap-2 pt-1">
-            <button type="submit" [disabled]="accountFormRef.invalid" class="flex-1 rounded-md bg-indigo-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50">
+            <button type="submit" [disabled]="accountFormRef.invalid || submit.busy" class="flex-1 rounded-md bg-indigo-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50">
               Create login
             </button>
             <button type="button" (click)="cancelAccountForm()" class="rounded-md px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white">
@@ -145,7 +145,7 @@
         />
       </div>
       <div class="flex gap-2 pt-1">
-        <button type="submit" [disabled]="memberFormRef.invalid" class="flex-1 rounded-md bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50">
+        <button type="submit" [disabled]="memberFormRef.invalid || submit.busy" class="flex-1 rounded-md bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50">
           {{ editingMemberId ? 'Save changes' : 'Add member' }}
         </button>
         <button type="button" (click)="cancelMemberForm()" class="rounded-md px-4 py-2 text-sm font-semibold text-slate-400 hover:text-white">

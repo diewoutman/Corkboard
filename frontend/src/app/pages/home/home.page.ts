@@ -1,5 +1,6 @@
+import { SubmitGuard } from '../../core/submit-guard';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { forkJoin } from 'rxjs';
 import { Auth } from '../../core/auth';
@@ -30,6 +31,10 @@ interface WidgetFormState {
   standalone: false,
 })
 export class HomePage implements OnInit {
+  /** Ignores a repeated click on delete while that item's request is still in flight. */
+  readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
+  /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
+  readonly submit = new SubmitGuard(inject(ChangeDetectorRef));
   /** Fixed number of grid columns the dashboard lays widgets out in — mirrors DashboardController.ColumnCount. */
   static readonly COLUMN_COUNT = 3;
 
@@ -232,7 +237,7 @@ export class HomePage implements OnInit {
       ? this.dashboardApi.update(this.editingWidgetId, config)
       : this.dashboardApi.create({ type: this.widgetForm.type, scope: this.dashboardScope, ...config });
 
-    request$.subscribe({
+    this.submit.run(request$).subscribe({
       next: (saved) => {
         this.widgets = this.editingWidgetId
           ? this.widgets.map((w) => (w.id === saved.id ? saved : w))
@@ -249,7 +254,7 @@ export class HomePage implements OnInit {
   }
 
   removeWidget(widget: DashboardWidgetResponse) {
-    this.dashboardApi.delete(widget.id).subscribe({
+    this.removing.run(this.dashboardApi.delete(widget.id), widget.id).subscribe({
       next: () => {
         this.widgets = this.widgets.filter((w) => w.id !== widget.id);
         this.cdr.markForCheck();

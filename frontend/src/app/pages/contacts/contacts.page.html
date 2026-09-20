@@ -65,7 +65,7 @@
       />
     </div>
     <div class="flex gap-2 pt-1">
-      <button type="submit" [disabled]="householdFormRef.invalid" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
+      <button type="submit" [disabled]="householdFormRef.invalid || submit.busy" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
         {{ (editingHouseholdId ? 'common.save_changes' : 'contacts.add_household') | transloco }}
       </button>
       <button type="button" (click)="cancelHouseholdForm()" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">
@@ -233,7 +233,7 @@
       />
 
       <div class="flex gap-2 pt-1">
-        <button type="submit" [disabled]="form.invalid" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
+        <button type="submit" [disabled]="form.invalid || submit.busy" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
           {{ (editingContactId ? 'common.save_changes' : 'contacts.add') | transloco }}
         </button>
         <button type="button" (click)="cancelContactForm()" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">

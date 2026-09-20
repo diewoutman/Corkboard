@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { SubmitGuard } from '../../core/submit-guard';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { forkJoin } from 'rxjs';
 import { Collections } from '../../core/collections';
@@ -15,6 +16,10 @@ import { PagedList } from '../../core/paging';
   standalone: false,
 })
 export class ContactsPage implements OnInit {
+  /** Ignores a repeated click on delete while that item's request is still in flight. */
+  readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
+  /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
+  readonly submit = new SubmitGuard(inject(ChangeDetectorRef));
   households: CollectionResponse[] = [];
   readonly contactList = new PagedList<NodeResponse>((page) => this.nodesApi.listPage({ type: 'Contact', sort: 'name', page }));
   selectedContactId: string | null = null;
@@ -165,7 +170,7 @@ export class ContactsPage implements OnInit {
       ? this.collectionsApi.update(this.editingHouseholdId, { ...request, color: existing?.color ?? '#94a3b8' })
       : this.collectionsApi.create({ ...request, type: 'Household', color: '#94a3b8', parentCollectionId: null });
 
-    request$.subscribe({
+    this.submit.run(request$).subscribe({
       next: (saved) => {
         this.households = (
           this.editingHouseholdId ? this.households.map((h) => (h.id === saved.id ? saved : h)) : [...this.households, saved]
@@ -182,7 +187,7 @@ export class ContactsPage implements OnInit {
   }
 
   deleteContact(contact: NodeResponse) {
-    this.nodesApi.delete(contact.id).subscribe({
+    this.removing.run(this.nodesApi.delete(contact.id), contact.id).subscribe({
       next: () => {
         if (this.selectedContactId === contact.id) this.selectedContactId = null; // reload() picks the first contact
         this.reload(true);
@@ -262,7 +267,7 @@ export class ContactsPage implements OnInit {
       ? this.nodesApi.update(this.editingContactId, { ...common, title, isCompleted: null })
       : this.nodesApi.create({ ...common, type: 'Contact', title });
 
-    request$.subscribe({
+    this.submit.run(request$).subscribe({
       next: (saved) => {
         this.savedContact = saved;
         this.selectedContactId = saved.id;

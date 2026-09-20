@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { SubmitGuard } from '../../core/submit-guard';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { forkJoin } from 'rxjs';
 import { FamilyMembers } from '../../core/family-members';
@@ -14,6 +15,12 @@ import { PagedList } from '../../core/paging';
   standalone: false,
 })
 export class NotesPage implements OnInit {
+  /** Ignores a repeated click while that item's update is still in flight (a recurring task would otherwise roll forward twice). */
+  readonly updating = new SubmitGuard(inject(ChangeDetectorRef));
+  /** Ignores a repeated click on delete while that item's request is still in flight. */
+  readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
+  /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
+  readonly submit = new SubmitGuard(inject(ChangeDetectorRef));
   members: FamilyMemberResponse[] = [];
   readonly noteList = new PagedList<NodeResponse>((page) => this.nodesApi.listPage({ type: 'Note', sort: '-important', page }));
   loading = true;
@@ -66,7 +73,7 @@ export class NotesPage implements OnInit {
   }
 
   toggleImportant(note: NodeResponse) {
-    this.nodesApi.update(note.id, this.toUpdateRequest(note, { isImportant: !note.isImportant })).subscribe({
+    this.updating.run(this.nodesApi.update(note.id, this.toUpdateRequest(note, { isImportant: !note.isImportant })), note.id).subscribe({
       next: () => this.reload(true),
       error: () => {
         this.errorMessage = this.transloco.translate('notes.errors.update');
@@ -76,7 +83,7 @@ export class NotesPage implements OnInit {
   }
 
   deleteNote(note: NodeResponse) {
-    this.nodesApi.delete(note.id).subscribe({
+    this.removing.run(this.nodesApi.delete(note.id), note.id).subscribe({
       next: () => this.reload(true),
       error: () => {
         this.errorMessage = this.transloco.translate('notes.errors.delete');
@@ -138,7 +145,7 @@ export class NotesPage implements OnInit {
         });
 
     const wasEditing = !!this.editingNote;
-    request$.subscribe({
+    this.submit.run(request$).subscribe({
       next: () => {
         this.closeNoteForm();
         this.reload(true);

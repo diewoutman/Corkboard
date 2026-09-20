@@ -1,4 +1,5 @@
-import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnInit } from '@angular/core';
+import { SubmitGuard } from '../../../core/submit-guard';
+import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnInit, inject } from '@angular/core';
 import { of, switchMap } from 'rxjs';
 import {
   currentHourKeyFor,
@@ -28,6 +29,8 @@ import { Nodes, toggleTaskCompletionRequest } from '../../../core/nodes';
   standalone: false,
 })
 export class TimelineWidgetComponent implements OnInit, OnChanges, AfterViewChecked {
+  /** Ignores a repeated click while that item's update is still in flight (a recurring task would otherwise roll forward twice). */
+  readonly updating = new SubmitGuard(inject(ChangeDetectorRef));
   @Input() assignedToMeOnly: boolean | null = null;
   @Input() hourlyLayout: boolean | null = null;
 
@@ -119,7 +122,7 @@ export class TimelineWidgetComponent implements OnInit, OnChanges, AfterViewChec
   }
 
   toggleDone(task: NodeResponse) {
-    this.nodesApi.update(task.id, toggleTaskCompletionRequest(task, true)).subscribe({
+    this.updating.run(this.nodesApi.update(task.id, toggleTaskCompletionRequest(task, true)), task.id).subscribe({
       next: () => {
         this.segments = this.segments.map((s) => ({ ...s, items: s.items.filter((i) => i.task?.id !== task.id) }));
         this.cdr.markForCheck();

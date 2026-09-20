@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { SubmitGuard } from '../../core/submit-guard';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -41,6 +42,10 @@ function toTimeInputValue(iso: string): string {
   standalone: false,
 })
 export class ScheduleEditorPage implements OnInit {
+  /** Ignores a repeated click on delete while that item's request is still in flight. */
+  readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
+  /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
+  readonly submit = new SubmitGuard(inject(ChangeDetectorRef));
   readonly weekdays = WEEKDAYS;
 
   scheduleId!: string;
@@ -174,7 +179,7 @@ export class ScheduleEditorPage implements OnInit {
         });
 
     const wasEditing = !!this.editingEntry;
-    request$.subscribe({
+    this.submit.run(request$).subscribe({
       next: (saved) => {
         this.entries = wasEditing ? this.entries.map((e) => (e.id === saved.id ? saved : e)) : [...this.entries, saved];
         this.closeEntryForm();
@@ -188,7 +193,7 @@ export class ScheduleEditorPage implements OnInit {
   }
 
   deleteEntry(entry: NodeResponse) {
-    this.nodesApi.delete(entry.id).subscribe({
+    this.removing.run(this.nodesApi.delete(entry.id), entry.id).subscribe({
       next: () => {
         this.entries = this.entries.filter((e) => e.id !== entry.id);
         this.cdr.markForCheck();
