@@ -11,8 +11,7 @@ import { ErrorBannerComponent } from '../../shared/components/error-banner/error
 import { LoadingIndicatorComponent } from '../../shared/components/loading-indicator/loading-indicator.component';
 import { StickyNoteCardComponent } from '../../shared/components/sticky-note-card/sticky-note-card.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
-import { AssigneeChipGroupComponent } from '../../shared/components/assignee-chip-group/assignee-chip-group.component';
-import { FabButtonComponent } from '../../shared/components/fab-button/fab-button.component';
+import { NoteEditorComponent } from '../../shared/components/note-editor/note-editor.component';
 import { ModalSheetComponent } from '../../shared/components/modal-sheet/modal-sheet.component';
 
 @NgModule({
@@ -26,8 +25,7 @@ import { ModalSheetComponent } from '../../shared/components/modal-sheet/modal-s
     LoadingIndicatorComponent,
     StickyNoteCardComponent,
     EmptyStateComponent,
-    AssigneeChipGroupComponent,
-    FabButtonComponent,
+    NoteEditorComponent,
     ModalSheetComponent,
   ],
   declarations: [NotesPage],

@@ -14,10 +14,9 @@ import { SegmentedControlComponent } from '../../shared/components/segmented-con
 import { MonthDayCellComponent } from '../../shared/components/month-day-cell/month-day-cell.component';
 import { CalendarEventBlockComponent } from '../../shared/components/calendar-event-block/calendar-event-block.component';
 import { MemberBadgeComponent } from '../../shared/components/member-badge/member-badge.component';
-import { AssigneeChipGroupComponent } from '../../shared/components/assignee-chip-group/assignee-chip-group.component';
-import { FabButtonComponent } from '../../shared/components/fab-button/fab-button.component';
 import { CalendarSourceRowComponent } from '../../shared/components/calendar-source-row/calendar-source-row.component';
 import { CalendarSourceFormComponent } from '../../shared/components/calendar-source-form/calendar-source-form.component';
+import { EventEditorComponent } from '../../shared/components/event-editor/event-editor.component';
 import { ModalSheetComponent } from '../../shared/components/modal-sheet/modal-sheet.component';
 
 @NgModule({
@@ -33,11 +32,10 @@ import { ModalSheetComponent } from '../../shared/components/modal-sheet/modal-s
     MonthDayCellComponent,
     CalendarEventBlockComponent,
     MemberBadgeComponent,
-    AssigneeChipGroupComponent,
-    FabButtonComponent,
     CalendarSourceRowComponent,
     CalendarSourceFormComponent,
     ModalSheetComponent,
+    EventEditorComponent,
   ],
   declarations: [CalendarPage, TimeGridComponent],
 })

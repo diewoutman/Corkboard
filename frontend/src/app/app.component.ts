@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { Auth } from './core/auth';
@@ -66,6 +66,9 @@ const ACCOUNT_ICON = 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 
 export class AppComponent implements OnInit {
   dueTodayCount = 0;
   accountMenuOpen = false;
+  /** On phones the top bar slides away while scrolling down and returns on scrolling up, to give the content the space. */
+  headerHidden = false;
+  private lastScrollY = 0;
 
   readonly navGroups = NAV_GROUPS;
   readonly dailyChildren = DAILY_CHILDREN;
@@ -73,6 +76,20 @@ export class AppComponent implements OnInit {
   readonly languages = SUPPORTED_LANGUAGES;
 
   private currentUrl = '';
+
+  @HostListener('window:scroll')
+  onScroll() {
+    const y = Math.max(window.scrollY, 0);
+    const delta = y - this.lastScrollY;
+    // Ignore jitter and the rubber-band bounce at the top; keep the bar while its account menu is open.
+    if (Math.abs(delta) < 6) return;
+    this.lastScrollY = y;
+    const hidden = !this.accountMenuOpen && delta > 0 && y > 56;
+    if (hidden !== this.headerHidden) {
+      this.headerHidden = hidden;
+      this.cdr.markForCheck();
+    }
+  }
 
   constructor(
     readonly auth: Auth,

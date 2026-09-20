@@ -1,5 +1,9 @@
 <div class="flex min-h-screen flex-col" [class.bg-cork]="!isAdminRoute">
-  <header *ngIf="!isAdminRoute" class="sticky top-0 z-20 bg-white">
+  <header
+    *ngIf="!isAdminRoute"
+    class="sticky top-0 z-20 bg-white transition-transform duration-200"
+    [ngClass]="headerHidden ? '-translate-y-full sm:translate-y-0' : ''"
+  >
     <div class="mx-auto flex max-w-screen-2xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
       <div class="flex items-center gap-2">
         <a routerLink="/home" class="flex items-center gap-2 font-heading text-xl font-extrabold text-coral">
@@ -98,4 +102,6 @@
       {{ group.labelKey | transloco }}
     </a>
   </nav>
+
+  <app-create-fab *ngIf="!isAdminRoute && auth.hasFamily()" />
 </div>

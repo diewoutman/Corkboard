@@ -1,3 +1,4 @@
+import { CreateFab } from '../../core/create-fab';
 import { SubmitGuard } from '../../core/submit-guard';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
@@ -11,7 +12,7 @@ import { CollectionResponse, CollectionScope, FamilyMemberResponse, NodeResponse
 import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes, toUpdateRequest } from '../../core/nodes';
 import { TaskEvents } from '../../core/task-events';
 import { parseQuickAdd } from '../../core/quick-add';
-import { RepeatSpec, WEEKDAY_CODES, WeekdayCode, buildRule, emptyRepeat, joinDue, parseRule, splitDue } from '../../core/recurrence';
+import { TaskSaved } from '../../shared/components/task-editor/task-editor.component';
 
 interface TaskGroup {
   key: string;
@@ -32,6 +33,8 @@ export class TaskListPage implements OnInit, OnDestroy {
   /** Ignores a repeated click on delete while that item's request is still in flight. */
   readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
   private moveSub?: Subscription;
+  private readonly createFab = inject(CreateFab);
+  private unregisterFab?: () => void;
   listId!: string;
   /** True for the combined Family + Personal Inbox at /tasks/inbox, which has no single list of its own. */
   isInboxView = false;
@@ -45,8 +48,6 @@ export class TaskListPage implements OnInit, OnDestroy {
   /** Every list a task can live in (for moving tasks), Inboxes first. */
   allLists: CollectionResponse[] = [];
   sections: SectionResponse[] = [];
-  /** Sections of the list currently picked in the task form (differs from `sections` after choosing another list). */
-  formSections: SectionResponse[] = [];
   /** Which Inbox quick-add drops into, in the combined view. */
   quickAddTargetId: string | null = null;
   members: FamilyMemberResponse[] = [];
@@ -60,17 +61,12 @@ export class TaskListPage implements OnInit, OnDestroy {
   loading = true;
   errorMessage: string | null = null;
 
-  /** Guards the task form against a double submit. */
-  readonly submit: SubmitGuard;
   /** Quick-added tasks whose request is still in flight, shown dimmed until the server answers. */
   pending: { id: number; title: string }[] = [];
+  /** The task being edited in the editor sheet (new tasks come from the app's "+" sheet). */
+  editingTask: NodeResponse | null = null;
   private pendingSeq = 0;
 
-  showNewTaskForm = false;
-  editingTask: NodeResponse | null = null;
-  newTask = this.emptyNewTask();
-  readonly weekdayCodes = WEEKDAY_CODES;
-  readonly scopes: CollectionScope[] = ['Family', 'Personal'];
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -81,11 +77,12 @@ export class TaskListPage implements OnInit, OnDestroy {
     private readonly transloco: TranslocoService,
     private readonly events: TaskEvents,
   ) {
-    this.submit = new SubmitGuard(cdr);
   }
 
   ngOnInit() {
     this.moveSub = this.events.moved.subscribe(() => this.refreshTasks());
+    // A task made from the app's "+" sheet: show it here.
+    this.moveSub.add(this.createFab.created.subscribe((kind) => kind === 'task' && this.refreshTasks()));
     // The shell reuses this component when another list is picked in the sidebar, so follow the param.
     this.route.paramMap.subscribe((params) => {
       this.listId = params.get('id')!;
@@ -102,6 +99,13 @@ export class TaskListPage implements OnInit, OnDestroy {
   /** Views that span several lists have no single list of their own. */
   ngOnDestroy() {
     this.moveSub?.unsubscribe();
+    this.unregisterFab?.();
+  }
+
+  /** Tells the app's "+" sheet to start on the task editor, in this list — once the lists are known. */
+  private registerFab() {
+    this.unregisterFab?.();
+    this.unregisterFab = this.createFab.register({ kind: 'task', taskListId: this.isCombinedView ? this.quickAddTargetId : this.listId });
   }
 
   get isCombinedView(): boolean {
@@ -156,6 +160,7 @@ export class TaskListPage implements OnInit, OnDestroy {
     load$.subscribe({
       next: () => {
         this.loading = false;
+        this.registerFab();
         this.cdr.markForCheck();
       },
       error: () => {
@@ -289,11 +294,6 @@ export class TaskListPage implements OnInit, OnDestroy {
     this.refreshTasks();
   }
 
-  /** The task form's "List" options for one scope; the Personal Inbox comes first (allLists is sorted that way). */
-  listsInScope(scope: CollectionScope): CollectionResponse[] {
-    return this.allLists.filter((l) => l.scope === scope);
-  }
-
   private movableLists(lists: CollectionResponse[]): CollectionResponse[] {
     return lists.filter((l) => !l.isSystemManaged).sort((a, b) => Number(b.isInbox) - Number(a.isInbox) || a.name.localeCompare(b.name));
   }
@@ -316,41 +316,6 @@ export class TaskListPage implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
     });
-  }
-
-  /** The form's list picker changed: its section names come from the newly chosen list. */
-  onFormListChange() {
-    this.newTask.section = '';
-    this.loadFormSections();
-  }
-
-  /** Loads the section names offered by the form's list; `selectId` pre-fills the section field (editing a task). */
-  private loadFormSections(selectId: string | null = null) {
-    const target = this.newTask.collectionId;
-    const apply = (sections: SectionResponse[]) => {
-      this.formSections = sections;
-      if (selectId) this.newTask.section = sections.find((s) => s.id === selectId)?.name ?? '';
-      this.cdr.markForCheck();
-    };
-
-    if (target === this.list?.id) return apply(this.sections);
-    this.formSections = [];
-    if (!target) return;
-    this.collectionsApi.sections(target).subscribe((sections) => {
-      if (this.newTask.collectionId === target) apply(sections);
-    });
-  }
-
-  toggleAssignee(memberId: string) {
-    const ids = this.newTask.assignedFamilyMemberIds;
-    this.newTask.assignedFamilyMemberIds = ids.includes(memberId)
-      ? ids.filter((id) => id !== memberId)
-      : [...ids, memberId];
-  }
-
-  toggleWeekday(code: WeekdayCode) {
-    const days = this.newTask.repeat.weekdays;
-    this.newTask.repeat.weekdays = days.includes(code) ? days.filter((d) => d !== code) : [...days, code];
   }
 
   toggleDone(task: NodeResponse) {
@@ -382,99 +347,19 @@ export class TaskListPage implements OnInit, OnDestroy {
     });
   }
 
-  openAddTaskForm() {
-    this.editingTask = null;
-    this.newTask = this.emptyNewTask();
-    this.newTask.collectionId = this.isCombinedView ? this.quickAddTargetId : this.listId;
-    this.loadFormSections();
-    this.showNewTaskForm = true;
-  }
-
   openEditTaskForm(task: NodeResponse) {
     this.editingTask = task;
-    this.newTask = {
-      title: task.title,
-      description: task.description ?? '',
-      dueDate: splitDue(task.until).date,
-      dueTime: splitDue(task.until).time,
-      priority: task.priority,
-      section: '',
-      collectionId: task.collectionId,
-      repeat: parseRule(task.recurrenceRule),
-      assignedFamilyMemberIds: [...task.assignedFamilyMemberIds],
-    };
-    this.loadFormSections(task.sectionId);
-    this.showNewTaskForm = true;
   }
 
   closeTaskForm() {
-    this.showNewTaskForm = false;
     this.editingTask = null;
   }
 
-  submitTaskForm() {
-    if (!this.newTask.title || !this.newTask.collectionId) return;
-
-    const until = joinDue(this.newTask.dueDate, this.newTask.dueTime);
-    const recurrenceRule = buildRule(this.newTask.repeat, until ? new Date(until) : null);
-    const collectionId = this.newTask.collectionId;
-    const editing = this.editingTask;
-    const typedSection = this.newTask.section.trim();
-
-    this.submit
-      .run(this.resolveSection(collectionId, this.newTask.section)
-      .pipe(
-        switchMap((sectionId) =>
-          editing
-            ? this.nodesApi.update(
-                editing.id,
-                toUpdateRequest(editing, {
-                  title: this.newTask.title,
-                  description: this.newTask.description || null,
-                  until,
-                  assignedFamilyMemberIds: this.newTask.assignedFamilyMemberIds,
-                  collectionId,
-                  priority: this.newTask.priority,
-                  sectionId,
-                  recurrenceRule,
-                }),
-              )
-            : this.nodesApi.create({
-                type: 'Task',
-                title: this.newTask.title,
-                description: this.newTask.description || null,
-                from: null,
-                until,
-                assignedFamilyMemberIds: this.newTask.assignedFamilyMemberIds,
-                collectionId,
-                priority: this.newTask.priority,
-                sectionId,
-                location: null,
-                allDay: null,
-                recurrenceRule,
-                ...NULL_CONTACT_FIELDS,
-                ...NULL_NOTE_FIELDS,
-              }),
-        ),
-      ))
-      .subscribe({
-        next: (saved) => {
-          this.closeTaskForm();
-          if (editing) {
-            // Moved lists, changed section or due date: the order and grouping may differ, so ask the server once.
-            this.refreshTasks();
-            if (typedSection) this.refreshSections();
-          } else if (this.isCombinedView) {
-            this.refreshTasks();
-          } else if (collectionId === this.listId) {
-            this.insertCreated(saved);
-          }
-        },
-        error: (err) => {
-          this.errorMessage = extractErrorMessage(err, this.transloco.translate(editing ? 'task_list.errors.save' : 'task_list.errors.create'));
-          this.cdr.markForCheck();
-        },
-      });
+  /** A task was edited in the sheet: moved lists, changed section or due date, so the order and grouping may differ — ask the server once. */
+  onTaskSaved(saved: TaskSaved) {
+    this.closeTaskForm();
+    this.refreshTasks();
+    if (saved.sectionTyped) this.refreshSections();
   }
 
   /** Todoist-style fast capture: "Buy milk tomorrow 5pm #Groceries" — parsed client-side, same create call as the full form. */
@@ -530,7 +415,7 @@ export class TaskListPage implements OnInit, OnDestroy {
   private resolveSection(collectionId: string, name: string): Observable<string | null> {
     const trimmed = name.trim();
     if (!trimmed) return of(null);
-    const known = (collectionId === this.list?.id ? this.sections : this.formSections).find((s) => s.name.toLowerCase() === trimmed.toLowerCase());
+    const known = this.sections.find((s) => s.name.toLowerCase() === trimmed.toLowerCase());
     if (known) return of(known.id);
     return this.collectionsApi.createSection(collectionId, trimmed).pipe(switchMap((section) => of(section.id)));
   }
@@ -540,20 +425,6 @@ export class TaskListPage implements OnInit, OnDestroy {
       if (!!a.isCompleted !== !!b.isCompleted) return a.isCompleted ? 1 : -1;
       return (a.until ?? a.createdAt).localeCompare(b.until ?? b.createdAt);
     });
-  }
-
-  private emptyNewTask() {
-    return {
-      title: '',
-      description: '',
-      dueDate: '',
-      dueTime: '',
-      priority: null as number | null,
-      section: '',
-      collectionId: null as string | null,
-      repeat: emptyRepeat() as RepeatSpec,
-      assignedFamilyMemberIds: [] as string[],
-    };
   }
 
   /** Quick-add without a time of day means "due that day", not chrono's default noon. */

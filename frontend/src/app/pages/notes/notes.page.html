@@ -20,45 +20,6 @@
 
 <app-load-more class="mt-4 block" [visible]="!loading && noteList.hasMore" [loading]="noteList.loadingMore" (more)="loadMore()" />
 
-<app-modal-sheet *ngIf="showNewNoteForm" (dismissed)="closeNoteForm()">
-  <form (ngSubmit)="submitNoteForm()" #form="ngForm" class="space-y-3">
-    <h2 class="font-heading text-lg font-bold text-ink">{{ (editingNote ? 'notes.edit' : 'notes.add') | transloco }}</h2>
-    <div>
-      <label for="title" class="block text-sm font-bold text-ink">{{ 'common.title' | transloco }}</label>
-      <input
-        id="title"
-        name="title"
-        [(ngModel)]="newNote.title"
-        required
-        class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-      />
-    </div>
-    <div>
-      <label for="description" class="block text-sm font-bold text-ink">{{ 'notes.note' | transloco }}</label>
-      <textarea
-        id="description"
-        name="description"
-        [(ngModel)]="newNote.description"
-        rows="4"
-        class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-      ></textarea>
-    </div>
-    <app-assignee-chip-group [members]="members" [selectedIds]="newNote.assignedFamilyMemberIds" (toggled)="toggleAssignee($event)" />
-
-    <label class="flex items-center gap-2 text-sm font-semibold text-ink-muted">
-      <input type="checkbox" name="isImportant" [(ngModel)]="newNote.isImportant" class="rounded-md accent-coral" />
-      {{ 'shared.mark_important' | transloco }}
-    </label>
-
-    <div class="flex gap-2 pt-1">
-      <button type="submit" [disabled]="form.invalid || submit.busy" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
-        {{ (editingNote ? 'common.save_changes' : 'notes.add') | transloco }}
-      </button>
-      <button type="button" (click)="closeNoteForm()" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">
-        {{ 'common.cancel' | transloco }}
-      </button>
-    </div>
-  </form>
+<app-modal-sheet *ngIf="editingNote" (dismissed)="closeNoteForm()">
+  <app-note-editor [note]="editingNote" (saved)="onNoteSaved()" (cancelled)="closeNoteForm()" />
 </app-modal-sheet>
-
-<app-fab-button *ngIf="!showNewNoteForm" [label]="'notes.add' | transloco" (clicked)="openAddNoteForm()" />

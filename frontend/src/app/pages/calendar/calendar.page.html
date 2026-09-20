@@ -12,6 +12,7 @@
     <app-quick-add-bar
       *ngIf="eventableCalendars.length > 0"
       [placeholder]="'calendar.quick_add_placeholder' | transloco"
+      [busy]="submit.busy"
       (submitted)="submitQuickAdd($event)"
     />
 
@@ -93,109 +94,20 @@
     </div>
 
     <!-- Add/edit event form -->
-    <app-modal-sheet *ngIf="showNewEventForm" (dismissed)="closeEventForm()">
-      <form (ngSubmit)="submitNewEvent()" #form="ngForm" class="space-y-3">
-        <h2 class="font-heading text-lg font-bold text-ink">{{ (editingEvent ? 'calendar.edit_event' : 'calendar.add_event') | transloco }}</h2>
-        <div>
-          <label for="calendarId" class="block text-sm font-bold text-ink">{{ 'nav.calendar' | transloco }}</label>
-          <select
-            id="calendarId"
-            name="calendarId"
-            [(ngModel)]="newEvent.calendarId"
-            required
-            class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-          >
-            <option *ngFor="let calendar of eventableCalendars" [ngValue]="calendar.id">{{ calendar.name }}</option>
-          </select>
-        </div>
-        <div>
-          <label for="eventTitle" class="block text-sm font-bold text-ink">{{ 'calendar.event' | transloco }}</label>
-          <input
-            id="eventTitle"
-            name="eventTitle"
-            [(ngModel)]="newEvent.title"
-            required
-            class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-          />
-        </div>
-        <label class="flex items-center gap-2 text-sm font-semibold text-ink-muted">
-          <input type="checkbox" name="allDay" [(ngModel)]="newEvent.allDay" class="rounded-md accent-coral" />
-          {{ 'timeline.segments.anytime' | transloco }}
-        </label>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label for="eventStart" class="block text-sm font-bold text-ink">{{ 'calendar.start' | transloco }}</label>
-            <input
-              id="eventStart"
-              [type]="newEvent.allDay ? 'date' : 'datetime-local'"
-              name="eventStart"
-              [(ngModel)]="newEvent.start"
-              required
-              class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-            />
-          </div>
-          <div>
-            <label for="eventEnd" class="block text-sm font-bold text-ink">{{ 'calendar.end' | transloco }}</label>
-            <input
-              id="eventEnd"
-              [type]="newEvent.allDay ? 'date' : 'datetime-local'"
-              name="eventEnd"
-              [(ngModel)]="newEvent.end"
-              class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-            />
-          </div>
-        </div>
-        <div>
-          <label for="repeat" class="block text-sm font-bold text-ink">{{ 'task_list.repeat' | transloco }}</label>
-          <select
-            id="repeat"
-            name="repeat"
-            [(ngModel)]="newEvent.repeat"
-            class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-          >
-            <option value="never">{{ 'task_list.repeats.never' | transloco }}</option>
-            <option value="daily">{{ 'task_list.repeats.daily' | transloco }}</option>
-            <option value="weekly">{{ 'task_list.repeats.weekly' | transloco }}</option>
-            <option value="monthly">{{ 'task_list.repeats.monthly' | transloco }}</option>
-          </select>
-        </div>
-        <div>
-          <label for="eventLocation" class="block text-sm font-bold text-ink">{{ 'schedule.location' | transloco }}</label>
-          <input
-            id="eventLocation"
-            name="eventLocation"
-            [(ngModel)]="newEvent.location"
-            class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-          />
-        </div>
-        <div>
-          <label for="eventDescription" class="block text-sm font-bold text-ink">{{ 'task_list.notes' | transloco }}</label>
-          <textarea
-            id="eventDescription"
-            name="eventDescription"
-            [(ngModel)]="newEvent.description"
-            rows="2"
-            class="mt-1 block w-full rounded-xl border-2 border-border-soft px-3 py-2 text-sm shadow-sm focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral"
-          ></textarea>
-        </div>
-        <app-assignee-chip-group [members]="members" [selectedIds]="newEvent.assignedFamilyMemberIds" (toggled)="toggleAssignee($event)" />
-
-        <div class="flex gap-2 pt-1">
-          <button type="submit" [disabled]="form.invalid || submit.busy" class="flex-1 rounded-full bg-coral px-4 py-2 text-sm font-extrabold text-white shadow-button hover:bg-coral-strong disabled:cursor-not-allowed disabled:opacity-50">
-            {{ (editingEvent ? 'common.save_changes' : 'calendar.add_event') | transloco }}
-          </button>
-          <button type="button" (click)="closeEventForm()" class="rounded-full px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">
-            {{ 'common.cancel' | transloco }}
-          </button>
-        </div>
-      </form>
+    <app-modal-sheet *ngIf="eventEditor" (dismissed)="closeEventForm()">
+      <app-event-editor
+        [event]="eventEditor.event"
+        [presetStart]="eventEditor.start"
+        [presetEnd]="eventEditor.end"
+        (saved)="onEventSaved()"
+        (cancelled)="closeEventForm()"
+      />
     </app-modal-sheet>
 
     <p *ngIf="eventableCalendars.length === 0" class="mt-4 text-sm font-semibold text-ink-muted">
       {{ 'calendar.add_calendar_hint' | transloco }}
     </p>
 
-    <app-fab-button *ngIf="!showNewEventForm && eventableCalendars.length > 0" [label]="'calendar.add_event' | transloco" (clicked)="openNewEventForm()" />
   </div>
 
   <!-- Sidebar: which calendars/schedules exist, toggle visibility, get a subscribe link, import .ics -->

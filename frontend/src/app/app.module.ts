@@ -9,6 +9,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { authInterceptor } from './core/auth-interceptor';
+import { CreateFabComponent } from './shared/components/create-fab/create-fab.component';
 import { IconComponent } from './shared/components/icon/icon.component';
 import { TranslocoPipe, TranslocoService, provideTransloco } from '@jsverse/transloco';
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, detectLanguage } from './core/language';
@@ -22,6 +23,7 @@ registerLocaleData(localeNl);
     BrowserModule,
     AppRoutingModule,
     IconComponent,
+    CreateFabComponent,
     TranslocoPipe,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: !isDevMode(),

@@ -22,7 +22,6 @@
   />
 </div>
 
-<app-fab-button *ngIf="!loading && !showNewEntryForm" [label]="'schedule.add' | transloco" (clicked)="openAddEntryForm()" />
 
 <app-modal-sheet *ngIf="showNewEntryForm" (dismissed)="closeEntryForm()">
   <form (ngSubmit)="submitEntryForm()" #form="ngForm" class="space-y-3">

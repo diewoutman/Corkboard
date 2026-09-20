@@ -1,7 +1,8 @@
+import { CreateFab } from '../../core/create-fab';
 import { SubmitGuard } from '../../core/submit-guard';
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
-import { forkJoin, Observable, switchMap } from 'rxjs';
+import { forkJoin, Observable, Subscription, switchMap } from 'rxjs';
 import {
   addDays,
   addMonths,
@@ -36,7 +37,6 @@ interface DayCell {
   occurrences: OccurrenceResponse[];
 }
 
-type Repeat = 'never' | 'daily' | 'weekly' | 'monthly';
 type ViewMode = 'month' | 'week' | 'day';
 
 @Component({
@@ -45,7 +45,10 @@ type ViewMode = 'month' | 'week' | 'day';
   styleUrls: ['./calendar.page.scss'],
   standalone: false,
 })
-export class CalendarPage implements OnInit {
+export class CalendarPage implements OnInit, OnDestroy {
+  private readonly createFab = inject(CreateFab);
+  private unregisterFab?: () => void;
+  private createdSub?: Subscription;
   /** Ignores a repeated click on delete while that item's request is still in flight. */
   readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
   /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
@@ -75,9 +78,8 @@ export class CalendarPage implements OnInit {
   newCalendarColor = '#4c6ef5';
   newCalendarType: 'Calendar' | 'Schedule' = 'Calendar';
 
-  showNewEventForm = false;
-  editingEvent: NodeResponse | null = null;
-  newEvent = this.emptyNewEvent();
+  /** The event editor sheet: the event being edited (null for a new one) and the times a new one starts with. */
+  eventEditor: { event: NodeResponse | null; start: string; end: string } | null = null;
 
   importingCalendarId: string | null = null;
   feedUrlByCalendarId: Record<string, string> = {};
@@ -91,7 +93,21 @@ export class CalendarPage implements OnInit {
     private readonly transloco: TranslocoService,
   ) {}
 
+  /** Makes the app's "+" button open this page's editor. */
+  private registerFab() {
+    this.unregisterFab?.();
+    this.unregisterFab = this.createFab.register({ kind: 'event' });
+  }
+
+  ngOnDestroy() {
+    this.unregisterFab?.();
+    this.createdSub?.unsubscribe();
+  }
+
   ngOnInit() {
+    this.registerFab();
+    // An event made from the app's "+" sheet: show it here.
+    this.createdSub = this.createFab.created.subscribe((kind) => kind === 'event' && this.loadOccurrences());
     this.membersApi.list().subscribe((members) => {
       this.members = members;
       this.cdr.markForCheck();
@@ -155,10 +171,6 @@ export class CalendarPage implements OnInit {
     }).subscribe({
       next: ({ calendars, schedules }) => {
         this.calendars = [...calendars, ...schedules].sort((a, b) => a.name.localeCompare(b.name));
-        const plainCalendars = calendars;
-        if (!this.newEvent.calendarId && plainCalendars.length > 0) {
-          this.newEvent.calendarId = plainCalendars[0].id;
-        }
         this.loadOccurrences();
       },
       error: () => {
@@ -314,7 +326,6 @@ export class CalendarPage implements OnInit {
       .subscribe({
         next: (created) => {
           this.calendars = [...this.calendars, created].sort((a, b) => a.name.localeCompare(b.name));
-          if (created.type === 'Calendar' && !this.newEvent.calendarId) this.newEvent.calendarId = created.id;
           this.newCalendarName = '';
           this.newCalendarColor = '#4c6ef5';
           this.newCalendarType = 'Calendar';
@@ -337,7 +348,6 @@ export class CalendarPage implements OnInit {
         this.confirmDeleteId = null;
         this.calendars = this.calendars.filter((c) => c.id !== calendar.id);
         this.hiddenCalendarIds.delete(calendar.id);
-        if (this.newEvent.calendarId === calendar.id) this.newEvent.calendarId = this.eventableCalendars[0]?.id ?? '';
         this.loadOccurrences();
         this.cdr.markForCheck();
       },
@@ -383,40 +393,15 @@ export class CalendarPage implements OnInit {
     });
   }
 
-  toggleAssignee(memberId: string) {
-    const ids = this.newEvent.assignedFamilyMemberIds;
-    this.newEvent.assignedFamilyMemberIds = ids.includes(memberId)
-      ? ids.filter((id) => id !== memberId)
-      : [...ids, memberId];
-  }
-
   openNewEventForm(dayKey?: string) {
-    this.editingEvent = null;
-    this.newEvent = this.emptyNewEvent();
-    if (this.eventableCalendars.length > 0) this.newEvent.calendarId = this.eventableCalendars[0].id;
-    if (dayKey) {
-      this.newEvent.start = `${dayKey}T09:00`;
-    }
-    this.showNewEventForm = true;
+    this.eventEditor = { event: null, start: dayKey ? `${dayKey}T09:00` : '', end: '' };
   }
 
-  /** Fetches the full Node (occurrences omit description/recurrence/etc.) then opens it in the same add/edit form. */
+  /** Fetches the full Node (occurrences omit description/recurrence/etc.) then opens it in the event editor. */
   openEditEventForm(occurrence: OccurrenceResponse) {
     this.nodesApi.get(occurrence.appointmentId).subscribe({
       next: (node) => {
-        this.editingEvent = node;
-        this.newEvent = {
-          calendarId: node.collectionId ?? '',
-          title: node.title,
-          description: node.description ?? '',
-          location: node.location ?? '',
-          start: node.from ? (node.allDay ? node.from.slice(0, 10) : toDatetimeLocalValue(new Date(node.from))) : '',
-          end: node.until ? (node.allDay ? node.until.slice(0, 10) : toDatetimeLocalValue(new Date(node.until))) : '',
-          allDay: !!node.allDay,
-          repeat: this.repeatFromRule(node.recurrenceRule),
-          assignedFamilyMemberIds: [...node.assignedFamilyMemberIds],
-        };
-        this.showNewEventForm = true;
+        this.eventEditor = { event: node, start: '', end: '' };
         this.cdr.markForCheck();
       },
       error: () => {
@@ -427,18 +412,17 @@ export class CalendarPage implements OnInit {
   }
 
   closeEventForm() {
-    this.showNewEventForm = false;
-    this.editingEvent = null;
+    this.eventEditor = null;
   }
 
-  /** Click-drag on the Week/Day time grid to create an event — pre-fills the same form the "+ Add event" button opens. */
+  onEventSaved() {
+    this.closeEventForm();
+    this.loadOccurrences();
+  }
+
+  /** Click-drag on the Week/Day time grid to create an event — opens the event editor with those times. */
   onGridCreateRange({ start, end }: { date: Date; start: Date; end: Date }) {
-    this.editingEvent = null;
-    this.newEvent = this.emptyNewEvent();
-    if (this.eventableCalendars.length > 0) this.newEvent.calendarId = this.eventableCalendars[0].id;
-    this.newEvent.start = toDatetimeLocalValue(start);
-    this.newEvent.end = toDatetimeLocalValue(end);
-    this.showNewEventForm = true;
+    this.eventEditor = { event: null, start: toDatetimeLocalValue(start), end: toDatetimeLocalValue(end) };
   }
 
   /** Drag an existing block on the Week/Day time grid to reschedule it — one occurrence (via an exception) if recurring, the Appointment itself otherwise. */
@@ -493,8 +477,8 @@ export class CalendarPage implements OnInit {
       return;
     }
 
-    this.nodesApi
-      .create({
+    this.submit
+      .run(this.nodesApi.create({
         type: 'Appointment',
         title: parsed.title,
         description: null,
@@ -509,7 +493,7 @@ export class CalendarPage implements OnInit {
         recurrenceRule: null,
         ...NULL_CONTACT_FIELDS,
         ...NULL_NOTE_FIELDS,
-      })
+      }))
       .subscribe({
         next: () => {
           this.loadOccurrences();
@@ -519,80 +503,6 @@ export class CalendarPage implements OnInit {
           this.cdr.markForCheck();
         },
       });
-  }
-
-  submitNewEvent() {
-    if (!this.newEvent.title || !this.newEvent.start || !this.newEvent.calendarId) return;
-
-    const from = new Date(this.newEvent.start).toISOString();
-    const until = this.newEvent.end ? new Date(this.newEvent.end).toISOString() : null;
-    const recurrenceRule = this.toRecurrenceRule(this.newEvent.repeat);
-
-    const request$ = this.editingEvent
-      ? this.nodesApi.update(this.editingEvent.id, {
-          title: this.newEvent.title,
-          description: this.newEvent.description || null,
-          from,
-          until,
-          assignedFamilyMemberIds: this.newEvent.assignedFamilyMemberIds,
-          collectionId: this.newEvent.calendarId,
-          isImportant: null,
-          isCompleted: null,
-          priority: null,
-          sectionId: null,
-          location: this.newEvent.location || null,
-          allDay: this.newEvent.allDay,
-          recurrenceRule,
-          ...NULL_CONTACT_FIELDS,
-        })
-      : this.nodesApi.create({
-          type: 'Appointment',
-          title: this.newEvent.title,
-          description: this.newEvent.description || null,
-          from,
-          until,
-          assignedFamilyMemberIds: this.newEvent.assignedFamilyMemberIds,
-          collectionId: this.newEvent.calendarId,
-          priority: null,
-          sectionId: null,
-          location: this.newEvent.location || null,
-          allDay: this.newEvent.allDay,
-          recurrenceRule,
-          ...NULL_CONTACT_FIELDS,
-          ...NULL_NOTE_FIELDS,
-        });
-
-    const wasEditing = !!this.editingEvent;
-    this.submit.run(request$).subscribe({
-      next: () => {
-        this.closeEventForm();
-        this.loadOccurrences();
-      },
-      error: (err) => {
-        this.errorMessage = extractErrorMessage(err, this.transloco.translate(wasEditing ? 'calendar.errors.save_event' : 'calendar.errors.create_event'));
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  private toRecurrenceRule(repeat: Repeat): string | null {
-    switch (repeat) {
-      case 'daily':
-        return 'FREQ=DAILY';
-      case 'weekly':
-        return 'FREQ=WEEKLY';
-      case 'monthly':
-        return 'FREQ=MONTHLY';
-      default:
-        return null;
-    }
-  }
-
-  private repeatFromRule(rule: string | null): Repeat {
-    if (rule?.includes('FREQ=DAILY')) return 'daily';
-    if (rule?.includes('FREQ=WEEKLY')) return 'weekly';
-    if (rule?.includes('FREQ=MONTHLY')) return 'monthly';
-    return 'never';
   }
 
   /**
@@ -612,20 +522,6 @@ export class CalendarPage implements OnInit {
         this.cdr.markForCheck();
       },
     });
-  }
-
-  private emptyNewEvent() {
-    return {
-      calendarId: '',
-      title: '',
-      description: '',
-      location: '',
-      start: '',
-      end: '',
-      allDay: false,
-      repeat: 'never' as Repeat,
-      assignedFamilyMemberIds: [] as string[],
-    };
   }
 }
 

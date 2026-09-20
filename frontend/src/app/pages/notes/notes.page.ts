@@ -1,11 +1,11 @@
+import { CreateFab } from '../../core/create-fab';
 import { SubmitGuard } from '../../core/submit-guard';
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
-import { forkJoin } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import { FamilyMembers } from '../../core/family-members';
-import { extractErrorMessage } from '../../core/http-error';
-import { FamilyMemberResponse, NodeResponse, UpdateNodeRequest } from '../../core/models';
-import { NULL_CONTACT_FIELDS, Nodes } from '../../core/nodes';
+import { FamilyMemberResponse, NodeResponse } from '../../core/models';
+import { Nodes, toUpdateRequest } from '../../core/nodes';
 import { PagedList } from '../../core/paging';
 
 @Component({
@@ -14,21 +14,21 @@ import { PagedList } from '../../core/paging';
   styleUrls: ['./notes.page.scss'],
   standalone: false,
 })
-export class NotesPage implements OnInit {
+export class NotesPage implements OnInit, OnDestroy {
+  private readonly createFab = inject(CreateFab);
+  private unregisterFab?: () => void;
+  private createdSub?: Subscription;
   /** Ignores a repeated click while that item's update is still in flight (a recurring task would otherwise roll forward twice). */
   readonly updating = new SubmitGuard(inject(ChangeDetectorRef));
   /** Ignores a repeated click on delete while that item's request is still in flight. */
   readonly removing = new SubmitGuard(inject(ChangeDetectorRef));
-  /** Blocks a second submit (double click, Enter twice) while a create/save request is in flight. */
-  readonly submit = new SubmitGuard(inject(ChangeDetectorRef));
   members: FamilyMemberResponse[] = [];
   readonly noteList = new PagedList<NodeResponse>((page) => this.nodesApi.listPage({ type: 'Note', sort: '-important', page }));
   loading = true;
   errorMessage: string | null = null;
 
-  showNewNoteForm = false;
+  /** The note being edited in the editor sheet (new notes come from the app's "+" sheet). */
   editingNote: NodeResponse | null = null;
-  newNote = this.emptyNewNote();
 
   constructor(
     private readonly nodesApi: Nodes,
@@ -37,7 +37,21 @@ export class NotesPage implements OnInit {
     private readonly transloco: TranslocoService,
   ) {}
 
+  /** Makes the app's "+" button open this page's editor. */
+  private registerFab() {
+    this.unregisterFab?.();
+    this.unregisterFab = this.createFab.register({ kind: 'note' });
+  }
+
+  ngOnDestroy() {
+    this.unregisterFab?.();
+    this.createdSub?.unsubscribe();
+  }
+
   ngOnInit() {
+    this.registerFab();
+    // A note made from the app's "+" sheet: show it here.
+    this.createdSub = this.createFab.created.subscribe((kind) => kind === 'note' && this.reload(true));
     this.reload();
   }
 
@@ -65,15 +79,8 @@ export class NotesPage implements OnInit {
     });
   }
 
-  toggleAssignee(memberId: string) {
-    const ids = this.newNote.assignedFamilyMemberIds;
-    this.newNote.assignedFamilyMemberIds = ids.includes(memberId)
-      ? ids.filter((id) => id !== memberId)
-      : [...ids, memberId];
-  }
-
   toggleImportant(note: NodeResponse) {
-    this.updating.run(this.nodesApi.update(note.id, this.toUpdateRequest(note, { isImportant: !note.isImportant })), note.id).subscribe({
+    this.updating.run(this.nodesApi.update(note.id, toUpdateRequest(note, { isImportant: !note.isImportant })), note.id).subscribe({
       next: () => this.reload(true),
       error: () => {
         this.errorMessage = this.transloco.translate('notes.errors.update');
@@ -92,97 +99,17 @@ export class NotesPage implements OnInit {
     });
   }
 
-  openAddNoteForm() {
-    this.editingNote = null;
-    this.newNote = this.emptyNewNote();
-    this.showNewNoteForm = true;
-  }
-
   openEditNoteForm(note: NodeResponse) {
     this.editingNote = note;
-    this.newNote = {
-      title: note.title,
-      description: note.description ?? '',
-      assignedFamilyMemberIds: [...note.assignedFamilyMemberIds],
-      isImportant: !!note.isImportant,
-    };
-    this.showNewNoteForm = true;
   }
 
   closeNoteForm() {
-    this.showNewNoteForm = false;
     this.editingNote = null;
   }
 
-  submitNoteForm() {
-    if (!this.newNote.title) return;
-
-    const request$ = this.editingNote
-      ? this.nodesApi.update(
-          this.editingNote.id,
-          this.toUpdateRequest(this.editingNote, {
-            title: this.newNote.title,
-            description: this.newNote.description || null,
-            assignedFamilyMemberIds: this.newNote.assignedFamilyMemberIds,
-            isImportant: this.newNote.isImportant,
-          }),
-        )
-      : this.nodesApi.create({
-          type: 'Note',
-          title: this.newNote.title,
-          description: this.newNote.description || null,
-          from: null,
-          until: null,
-          assignedFamilyMemberIds: this.newNote.assignedFamilyMemberIds,
-          collectionId: null,
-          isImportant: this.newNote.isImportant,
-          priority: null,
-          sectionId: null,
-          location: null,
-          allDay: null,
-          recurrenceRule: null,
-          ...NULL_CONTACT_FIELDS,
-        });
-
-    const wasEditing = !!this.editingNote;
-    this.submit.run(request$).subscribe({
-      next: () => {
-        this.closeNoteForm();
-        this.reload(true);
-      },
-      error: (err) => {
-        this.errorMessage = extractErrorMessage(err, this.transloco.translate(wasEditing ? 'notes.errors.save' : 'notes.errors.create'));
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  private toUpdateRequest(note: NodeResponse, overrides: Partial<UpdateNodeRequest>): UpdateNodeRequest {
-    return {
-      title: note.title,
-      description: note.description,
-      from: note.from,
-      until: note.until,
-      assignedFamilyMemberIds: note.assignedFamilyMemberIds,
-      collectionId: note.collectionId,
-      isImportant: note.isImportant,
-      isCompleted: null,
-      priority: null,
-      sectionId: null,
-      location: null,
-      allDay: null,
-      recurrenceRule: null,
-      firstName: null,
-      lastName: null,
-      dateOfBirth: null,
-      street: null,
-      city: null,
-      postalCode: null,
-      country: null,
-      phoneNumbers: null,
-      emails: null,
-      ...overrides,
-    };
+  onNoteSaved() {
+    this.closeNoteForm();
+    this.reload(true);
   }
 
   loadMore() {
@@ -199,14 +126,5 @@ export class NotesPage implements OnInit {
   private finishLoadMore() {
     this.noteList.loadingMore = false;
     this.cdr.markForCheck();
-  }
-
-  private emptyNewNote() {
-    return {
-      title: '',
-      description: '',
-      assignedFamilyMemberIds: [] as string[],
-      isImportant: false,
-    };
   }
 }

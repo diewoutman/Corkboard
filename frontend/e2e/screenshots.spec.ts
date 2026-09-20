@@ -131,7 +131,7 @@ test('app screenshots', async ({ authedPage: page }) => {
   ];
   for (const event of events) {
     if ((await page.getByText(event.title, { exact: true }).count()) > 0) continue;
-    await page.getByRole('button', { name: 'Add event' }).click();
+    await page.getByRole('button', { name: 'Create', exact: true }).click();
     await page.getByLabel('Calendar', { exact: true }).selectOption({ label: 'Family Calendar' });
     await page.getByLabel('Event', { exact: true }).fill(event.title);
     await page.getByLabel('Start').fill(dateAt(event.day, event.hour));
@@ -153,7 +153,7 @@ test('app screenshots', async ({ authedPage: page }) => {
   }
 
   if ((await page.getByRole('button', { name: /Emma Jansen/ }).count()) === 0) {
-    await page.getByRole('button', { name: 'Add contact' }).click();
+    await page.getByRole('button', { name: 'Create', exact: true }).click();
     await page.getByLabel('First name').fill('Emma');
     await page.getByLabel('Last name').fill('Jansen');
     await page.getByLabel('Household').selectOption({ label: 'Jansen Household' });
@@ -166,17 +166,19 @@ test('app screenshots', async ({ authedPage: page }) => {
   // Tasks widget (on the seeded "Groceries" list) and one Upcoming widget ---
   await goto(page, '/home');
 
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
   await page.getByRole('button', { name: 'Add widget' }).click();
   await page.getByLabel('Type').selectOption('Tasks');
   await page.getByLabel('A specific list').check();
   await page.locator('select[name="taskCollectionId"]').selectOption({ label: 'Groceries' });
-  await page.getByRole('button', { name: 'Add widget' }).click();
+  await page.getByRole('button', { name: 'Add widget' }).last().click();
   await expect(page.locator('app-tasks-widget')).toBeVisible();
 
   await page.getByRole('button', { name: 'Add widget' }).click();
   await page.getByLabel('Type').selectOption('Upcoming');
-  await page.getByRole('button', { name: 'Add widget' }).click();
+  await page.getByRole('button', { name: 'Add widget' }).last().click();
   await expect(page.locator('app-upcoming-widget')).toBeVisible();
+  await page.getByRole('button', { name: 'Done', exact: true }).click();
   await shot(page, 'dashboard');
 
   // --- Tasks: lists overview, then the seeded "Groceries" list itself ---

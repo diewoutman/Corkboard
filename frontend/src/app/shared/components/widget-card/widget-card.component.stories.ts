@@ -19,7 +19,7 @@ export const Default: Story = {
   render: (args) => ({
     props: args,
     template: `
-      <app-widget-card (resized)="resized()" (configure)="configure()" (remove)="remove()">
+      <app-widget-card [editable]="true" (resized)="resized()" (configure)="configure()" (remove)="remove()">
         <h2 widgetCardTitle class="font-heading text-base font-bold text-ink">Today</h2>
         <p class="text-sm text-ink-muted">Widget body content goes here.</p>
       </app-widget-card>
@@ -31,7 +31,7 @@ export const LongTitle: Story = {
   render: (args) => ({
     props: args,
     template: `
-      <app-widget-card (resized)="resized()" (configure)="configure()" (remove)="remove()">
+      <app-widget-card [editable]="true" (resized)="resized()" (configure)="configure()" (remove)="remove()">
         <h2 widgetCardTitle class="font-heading text-base font-bold text-ink">Everything assigned to me this week</h2>
         <p class="text-sm text-ink-muted">Widget body content goes here.</p>
       </app-widget-card>

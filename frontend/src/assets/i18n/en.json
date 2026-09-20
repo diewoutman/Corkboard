@@ -105,8 +105,6 @@
       "family": "Family",
       "personal": "Personal"
     },
-    "hint_editable": "Drag widgets to reorder them, or use ↔ to resize.",
-    "hint_readonly": "Only family admins can edit the Family dashboard.",
     "empty_editable": "Your dashboard is empty — add a widget to get started.",
     "empty_readonly": "No widgets yet — ask a family admin to set one up.",
     "widget_titles": {
@@ -171,7 +169,9 @@
       "resize": "Could not resize that widget.",
       "remove": "Could not remove that widget.",
       "save": "Could not save that widget."
-    }
+    },
+    "edit": "Edit",
+    "done": "Done"
   },
   "roles": {
     "Owner": "Owner",
@@ -241,6 +241,8 @@
     }
   },
   "task_list": {
+    "more_options": "More options",
+    "fewer_options": "Fewer options",
     "load_more": "Load more",
     "show_completed": "Show completed",
     "quick_add_placeholder": "Add a task… try \"Buy milk tomorrow 5pm #Groceries\"",
@@ -465,6 +467,14 @@
       "enable": "Could not turn on reminders. Did you allow notifications?",
       "disable": "Could not turn off reminders.",
       "save": "Could not save that setting."
+    }
+  },
+  "create": {
+    "title": "Create",
+    "kinds": {
+      "task": "Task",
+      "note": "Note",
+      "event": "Event"
     }
   }
 }
