@@ -55,6 +55,7 @@
     "moved_error": "The task could not be moved."
   },
   "nav": {
+    "powered_by": "Powered by Qorkboard",
     "home": "Home",
     "daily": "Daily",
     "administration": "Administration",

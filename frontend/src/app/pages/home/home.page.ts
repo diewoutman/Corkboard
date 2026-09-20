@@ -7,7 +7,6 @@ import { Subscription, forkJoin } from 'rxjs';
 import { Auth } from '../../core/auth';
 import { Collections } from '../../core/collections';
 import { Dashboard } from '../../core/dashboard';
-import { Families } from '../../core/families';
 import { extractErrorMessage } from '../../core/http-error';
 import { CollectionResponse, DashboardWidgetResponse, DashboardWidgetScope, DashboardWidgetType } from '../../core/models';
 import { SegmentedControlOption } from '../../shared/components/segmented-control/segmented-control.component';
@@ -48,7 +47,6 @@ export class HomePage implements OnInit, OnDestroy {
     { value: 'Personal', label: this.transloco.translate('home.scope.personal') },
   ];
 
-  familyName: string | null = null;
 
   dashboardScope: DashboardWidgetScope = 'Personal';
   widgets: DashboardWidgetResponse[] = [];
@@ -65,7 +63,6 @@ export class HomePage implements OnInit, OnDestroy {
 
   constructor(
     readonly auth: Auth,
-    private readonly familiesApi: Families,
     private readonly dashboardApi: Dashboard,
     private readonly collectionsApi: Collections,
     private readonly cdr: ChangeDetectorRef,
@@ -97,14 +94,6 @@ export class HomePage implements OnInit, OnDestroy {
   ngOnInit() {
     // Something made from the app's "+" sheet: the widgets read their data on init, so re-creating them shows it.
     this.createdSub = this.createFab.created.subscribe(() => this.reload());
-    this.familiesApi.mine().subscribe({
-      next: (family) => {
-        this.familyName = family.name;
-        this.cdr.markForCheck();
-      },
-      error: () => {},
-    });
-
     this.reload();
   }
 

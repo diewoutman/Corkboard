@@ -55,6 +55,7 @@
     "moved_error": "De taak kon niet worden verplaatst."
   },
   "nav": {
+    "powered_by": "Aangedreven door Qorkboard",
     "home": "Home",
     "daily": "Dagelijks",
     "administration": "Administratie",

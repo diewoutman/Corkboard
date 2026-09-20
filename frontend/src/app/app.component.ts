@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, HostListener, OnInit } from '@angular/cor
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { Auth } from './core/auth';
+import { Families } from './core/families';
 import { DueSummary } from './core/due-summary';
 import { AppLanguage, Language, SUPPORTED_LANGUAGES } from './core/language';
 
@@ -93,6 +94,7 @@ export class AppComponent implements OnInit {
 
   constructor(
     readonly auth: Auth,
+    readonly families: Families,
     readonly language: Language,
     private readonly dueSummary: DueSummary,
     private readonly router: Router,
@@ -103,6 +105,7 @@ export class AppComponent implements OnInit {
     this.language.init();
 
     if (this.auth.hasFamily()) {
+      this.families.load().subscribe({ error: () => {} });
       this.dueSummary.dueTodayCount().subscribe((count) => {
         this.dueTodayCount = count;
         this.cdr.markForCheck();

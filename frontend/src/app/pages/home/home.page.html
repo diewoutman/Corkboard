@@ -1,5 +1,5 @@
 <div class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
-  <h1 class="truncate text-xl font-extrabold text-ink sm:text-2xl">{{ familyName ? familyName : ('home.welcome' | transloco) }} 👋</h1>
+  <span aria-hidden="true"></span>
   <app-segmented-control
     [options]="dashboardOptions"
     [selected]="dashboardScope"
