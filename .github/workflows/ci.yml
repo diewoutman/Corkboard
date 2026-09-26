@@ -1,0 +1,102 @@
+# Runs the three test layers on every PR and on push to main:
+#   - dotnet test            (Corkboard.Api.Tests, Corkboard.Domain.Tests)
+#   - ng test                (Angular unit tests, headless via the Vitest-based unit-test builder)
+#   - playwright test        (e2e, against the real stack started by scripts/dev.sh)
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  backend-tests:
+    name: Backend tests (dotnet test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: dotnet test
+        working-directory: backend
+        run: dotnet test --configuration Release
+
+  frontend-tests:
+    name: Frontend unit tests (ng test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: ng test
+        working-directory: frontend
+        run: npx ng test --configuration=ci
+
+  e2e-tests:
+    name: E2E tests (playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Install dotnet-ef
+        run: |
+          dotnet tool install --global dotnet-ef
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
+      - name: Start Postgres
+        run: docker compose up -d --wait postgres
+
+      - name: Apply EF Core migrations
+        run: |
+          dotnet ef database update \
+            --project backend/src/Corkboard.Infrastructure \
+            --startup-project backend/src/Corkboard.Api
+
+      - name: Build backend
+        working-directory: backend
+        run: dotnet build --configuration Release
+
+      # scripts/dev.sh (invoked by playwright.config.ts's webServer) starts the API and Angular
+      # dev server itself; Postgres and migrations are pre-warmed above so that startup finishes
+      # comfortably inside the webServer timeout.
+      - name: Run Playwright e2e tests
+        working-directory: frontend
+        run: npx playwright test
+
+      - name: Upload Playwright traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: frontend/test-results/
+          retention-days: 7
