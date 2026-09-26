@@ -92,3 +92,9 @@ For running Qorkboard somewhere other than a dev machine (a home
 server/NAS), `docker/` builds one image with the frontend and API combined —
 see [`docker/README.md`](docker/README.md). You host Postgres yourself; the
 image just connects to it.
+
+## License
+
+Qorkboard is licensed under the [GNU Affero General Public License v3.0](LICENSE).
+If you run a modified version as a network service, you must make your
+modified source available to its users.

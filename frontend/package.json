@@ -65,5 +65,5 @@
     "vite": "latest",
     "vitest": "^4.0.8"
   },
-  "description": "Corkboard's Angular + Tailwind PWA client"
+  "description": "Qorkboard's Angular + Tailwind PWA client"
 }
