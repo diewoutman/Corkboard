@@ -9,7 +9,7 @@ import { FamilyMembers } from '../../core/family-members';
 import { extractErrorMessage } from '../../core/http-error';
 import { Page } from '../../core/paging';
 import { CollectionResponse, CollectionScope, FamilyMemberResponse, NodeResponse, SectionResponse, UpdateNodeRequest } from '../../core/models';
-import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes, toUpdateRequest } from '../../core/nodes';
+import { NULL_CONTACT_FIELDS, NULL_MEAL_FIELDS, NULL_NOTE_FIELDS, NULL_RECIPE_FIELDS, NULL_SHOPPING_FIELDS, Nodes, toUpdateRequest } from '../../core/nodes';
 import { TaskEvents } from '../../core/task-events';
 import { parseQuickAdd } from '../../core/quick-add';
 import { TaskSaved } from '../../shared/components/task-editor/task-editor.component';
@@ -392,6 +392,9 @@ export class TaskListPage implements OnInit, OnDestroy {
             allDay: null,
             recurrenceRule: null,
             ...NULL_CONTACT_FIELDS,
+            ...NULL_RECIPE_FIELDS,
+            ...NULL_MEAL_FIELDS,
+            ...NULL_SHOPPING_FIELDS,
             ...NULL_NOTE_FIELDS,
           }),
         ),

@@ -60,6 +60,19 @@
         </ul>
       </section>
 
+      <section *ngIf="systemManagedLists.length > 0">
+        <h2 class="mb-1 px-3 text-xs font-extrabold uppercase tracking-wide text-ink-muted">{{ 'tasks.system_managed' | transloco }}</h2>
+        <ul class="flex flex-col">
+          <li *ngFor="let list of systemManagedLists">
+            <a [routerLink]="['/tasks', list.id]" routerLinkActive="bg-cork" class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-extrabold text-ink hover:bg-cork">
+              <span class="h-3 w-3 shrink-0 rounded-full" [style.background]="list.color"></span>
+              <span class="flex-1 truncate">{{ list.name }}</span>
+              <span *ngIf="list.incompleteCount" class="text-xs font-bold text-ink-muted">{{ list.incompleteCount }}</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
       <button
         *ngIf="!showNewListForm"
         type="button"
