@@ -81,9 +81,14 @@ export class TasksPage implements OnInit, OnDestroy {
     return this.inboxes.reduce((sum, l) => sum + (l.incompleteCount ?? 0), 0);
   }
 
-  /** Lists you can open in the tasks UI — system-managed lists and the Inboxes are shown elsewhere or not at all. */
+  /** Lists you can open in the tasks UI — system-managed lists get their own section below, the Inboxes are shown elsewhere. */
   listsIn(scope: CollectionScope): CollectionResponse[] {
     return this.lists.filter((l) => l.scope === scope && !l.isInbox && !l.isSystemManaged);
+  }
+
+  /** e.g. the shopping list, managed from the Keuken tab — shown here too so it's easy to find, labeled as system-managed. */
+  get systemManagedLists(): CollectionResponse[] {
+    return this.lists.filter((l) => l.isSystemManaged);
   }
 
   reload(quiet = false) {

@@ -203,6 +203,14 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("FamilyId", "Scope", "OwnerUserId");
 
+                    b.HasIndex(new[] { "FamilyId" }, "IX_Collections_MealPlan")
+                        .IsUnique()
+                        .HasFilter("\"Type\" = 5");
+
+                    b.HasIndex(new[] { "FamilyId" }, "IX_Collections_SystemShoppingList")
+                        .IsUnique()
+                        .HasFilter("\"IsSystemManaged\" AND \"Type\" = 0");
+
                     b.ToTable("Collections");
                 });
 
@@ -490,6 +498,102 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("PushSubscriptions");
+                });
+
+            modelBuilder.Entity("Corkboard.Domain.Entities.RecipeIngredient", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<decimal?>("Quantity")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("RecipeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Unit")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipeId");
+
+                    b.ToTable("RecipeIngredients");
+                });
+
+            modelBuilder.Entity("Corkboard.Domain.Entities.RecipePhoto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RecipeId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipeId")
+                        .IsUnique();
+
+                    b.ToTable("RecipePhotos");
+                });
+
+            modelBuilder.Entity("Corkboard.Domain.Entities.RecipePhotoBlob", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RecipePhotoBlobs");
+                });
+
+            modelBuilder.Entity("Corkboard.Domain.Entities.RecipeStep", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Instruction")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RecipeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipeId");
+
+                    b.ToTable("RecipeSteps");
                 });
 
             modelBuilder.Entity("Corkboard.Domain.Entities.Section", b =>
@@ -989,6 +1093,21 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                     b.HasDiscriminator().HasValue("Contact");
                 });
 
+            modelBuilder.Entity("Corkboard.Domain.Entities.Meal", b =>
+                {
+                    b.HasBaseType("Corkboard.Domain.Entities.Node");
+
+                    b.Property<int>("PlannedServings")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("RecipeId")
+                        .HasColumnType("uuid");
+
+                    b.HasIndex("RecipeId");
+
+                    b.HasDiscriminator().HasValue("Meal");
+                });
+
             modelBuilder.Entity("Corkboard.Domain.Entities.Note", b =>
                 {
                     b.HasBaseType("Corkboard.Domain.Entities.Node");
@@ -997,6 +1116,19 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean");
 
                     b.HasDiscriminator().HasValue("Note");
+                });
+
+            modelBuilder.Entity("Corkboard.Domain.Entities.Recipe", b =>
+                {
+                    b.HasBaseType("Corkboard.Domain.Entities.Node");
+
+                    b.Property<int>("Servings")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SourceUrl")
+                        .HasColumnType("text");
+
+                    b.HasDiscriminator().HasValue("Recipe");
                 });
 
             modelBuilder.Entity("Corkboard.Domain.Entities.TaskNode", b =>
@@ -1009,14 +1141,24 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<int?>("Priority")
                         .HasColumnType("integer");
+
+                    b.Property<decimal?>("Quantity")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("RecurrenceRule")
                         .HasColumnType("text");
 
                     b.Property<Guid?>("SectionId")
                         .HasColumnType("uuid");
+
+                    b.Property<int?>("Unit")
+                        .HasColumnType("integer");
 
                     b.HasIndex("SectionId");
 
@@ -1161,6 +1303,48 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                     b.Navigation("Node");
                 });
 
+            modelBuilder.Entity("Corkboard.Domain.Entities.RecipeIngredient", b =>
+                {
+                    b.HasOne("Corkboard.Domain.Entities.Recipe", "Recipe")
+                        .WithMany("Ingredients")
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Recipe");
+                });
+
+            modelBuilder.Entity("Corkboard.Domain.Entities.RecipePhoto", b =>
+                {
+                    b.HasOne("Corkboard.Domain.Entities.Recipe", "Recipe")
+                        .WithOne("Photo")
+                        .HasForeignKey("Corkboard.Domain.Entities.RecipePhoto", "RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Recipe");
+                });
+
+            modelBuilder.Entity("Corkboard.Domain.Entities.RecipePhotoBlob", b =>
+                {
+                    b.HasOne("Corkboard.Domain.Entities.RecipePhoto", null)
+                        .WithOne()
+                        .HasForeignKey("Corkboard.Domain.Entities.RecipePhotoBlob", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Corkboard.Domain.Entities.RecipeStep", b =>
+                {
+                    b.HasOne("Corkboard.Domain.Entities.Recipe", "Recipe")
+                        .WithMany("Steps")
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Recipe");
+                });
+
             modelBuilder.Entity("Corkboard.Domain.Entities.Section", b =>
                 {
                     b.HasOne("Corkboard.Domain.Entities.Collection", "Collection")
@@ -1274,6 +1458,17 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                     b.Navigation("Parent");
                 });
 
+            modelBuilder.Entity("Corkboard.Domain.Entities.Meal", b =>
+                {
+                    b.HasOne("Corkboard.Domain.Entities.Recipe", "Recipe")
+                        .WithMany()
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Recipe");
+                });
+
             modelBuilder.Entity("Corkboard.Domain.Entities.TaskNode", b =>
                 {
                     b.HasOne("Corkboard.Domain.Entities.Section", "Section")
@@ -1327,6 +1522,15 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                     b.Navigation("Emails");
 
                     b.Navigation("PhoneNumbers");
+                });
+
+            modelBuilder.Entity("Corkboard.Domain.Entities.Recipe", b =>
+                {
+                    b.Navigation("Ingredients");
+
+                    b.Navigation("Photo");
+
+                    b.Navigation("Steps");
                 });
 #pragma warning restore 612, 618
         }

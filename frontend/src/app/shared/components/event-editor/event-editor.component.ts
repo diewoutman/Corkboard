@@ -6,7 +6,7 @@ import { Collections } from '../../../core/collections';
 import { FamilyMembers } from '../../../core/family-members';
 import { extractErrorMessage } from '../../../core/http-error';
 import { CollectionResponse, FamilyMemberResponse, NodeResponse } from '../../../core/models';
-import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes } from '../../../core/nodes';
+import { NULL_CONTACT_FIELDS, NULL_MEAL_FIELDS, NULL_NOTE_FIELDS, NULL_RECIPE_FIELDS, NULL_SHOPPING_FIELDS, Nodes } from '../../../core/nodes';
 import { SubmitGuard } from '../../../core/submit-guard';
 import { AssigneeChipGroupComponent } from '../assignee-chip-group/assignee-chip-group.component';
 import { ErrorBannerComponent } from '../error-banner/error-banner.component';
@@ -221,6 +221,9 @@ export class EventEditorComponent implements OnInit {
           allDay: this.model.allDay,
           recurrenceRule,
           ...NULL_CONTACT_FIELDS,
+          ...NULL_RECIPE_FIELDS,
+          ...NULL_MEAL_FIELDS,
+          ...NULL_SHOPPING_FIELDS,
         })
       : this.nodesApi.create({
           type: 'Appointment',
@@ -236,6 +239,9 @@ export class EventEditorComponent implements OnInit {
           allDay: this.model.allDay,
           recurrenceRule,
           ...NULL_CONTACT_FIELDS,
+          ...NULL_RECIPE_FIELDS,
+          ...NULL_MEAL_FIELDS,
+          ...NULL_SHOPPING_FIELDS,
           ...NULL_NOTE_FIELDS,
         });
 
