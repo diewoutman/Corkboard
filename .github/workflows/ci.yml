@@ -73,6 +73,10 @@ jobs:
           dotnet tool install --global dotnet-ef
           echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
 
+      - name: Build backend
+        working-directory: backend
+        run: dotnet build
+
       - name: Start Postgres
         run: docker compose up -d --wait postgres
 
@@ -80,11 +84,8 @@ jobs:
         run: |
           dotnet ef database update \
             --project backend/src/Corkboard.Infrastructure \
-            --startup-project backend/src/Corkboard.Api
-
-      - name: Build backend
-        working-directory: backend
-        run: dotnet build --configuration Release
+            --startup-project backend/src/Corkboard.Api \
+            --no-build
 
       # scripts/dev.sh (invoked by playwright.config.ts's webServer) starts the API and Angular
       # dev server itself; Postgres and migrations are pre-warmed above so that startup finishes
@@ -100,3 +101,4 @@ jobs:
           name: playwright-traces
           path: frontend/test-results/
           retention-days: 7
+          if-no-files-found: ignore
