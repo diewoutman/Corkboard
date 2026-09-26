@@ -6,6 +6,8 @@ using Corkboard.Infrastructure.Persistence;
 using Corkboard.Infrastructure.Recurrence;
 using Microsoft.EntityFrameworkCore;
 using ContractNodeType = Corkboard.Contracts.Nodes.NodeType;
+using DomainIngredientUnit = Corkboard.Domain.Entities.IngredientUnit;
+using ContractIngredientUnit = Corkboard.Contracts.Nodes.IngredientUnit;
 
 namespace Corkboard.Application.Nodes;
 
@@ -18,6 +20,10 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
             .Include(n => n.Assignments)
             .Include(n => ((Contact)n).PhoneNumbers)
             .Include(n => ((Contact)n).Emails)
+            .Include(n => ((Recipe)n).Ingredients)
+            .Include(n => ((Recipe)n).Steps)
+            .Include(n => ((Recipe)n).Photo)
+            .Include(n => ((Meal)n).Recipe)
             .Where(n => n.FamilyId == familyId)
             .Where(VisibleTo(userId));
 
@@ -27,6 +33,8 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
             ContractNodeType.Task => query.Where(n => n is TaskNode),
             ContractNodeType.Appointment => query.Where(n => n is Appointment),
             ContractNodeType.Contact => query.Where(n => n is Contact),
+            ContractNodeType.Recipe => query.Where(n => n is Recipe),
+            ContractNodeType.Meal => query.Where(n => n is Meal),
             _ => query,
         };
 
@@ -38,6 +46,11 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
         if (filter.CollectionId is { } collectionIdValue)
         {
             query = query.Where(n => n.CollectionId == collectionIdValue);
+        }
+
+        if (filter.Unfiled == true)
+        {
+            query = query.Where(n => n.CollectionId == null);
         }
 
         if (filter.From is { } fromValue)
@@ -121,6 +134,10 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
             .Include(n => n.Assignments)
             .Include(n => ((Contact)n).PhoneNumbers)
             .Include(n => ((Contact)n).Emails)
+            .Include(n => ((Recipe)n).Ingredients)
+            .Include(n => ((Recipe)n).Steps)
+            .Include(n => ((Recipe)n).Photo)
+            .Include(n => ((Meal)n).Recipe)
             .Where(VisibleTo(userId))
             .FirstOrDefaultAsync(n => n.FamilyId == familyId && n.Id == id, cancellationToken);
 
@@ -151,6 +168,20 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
             return Result<NodeResponse>.Failure(InvalidContactError);
         }
 
+        if (request.Type == ContractNodeType.Recipe && request.Servings is not > 0)
+        {
+            return Result<NodeResponse>.Failure(InvalidRecipeError);
+        }
+
+        Recipe? mealRecipe = null;
+        if (request.Type == ContractNodeType.Meal)
+        {
+            mealRecipe = request.RecipeId is { } recipeId
+                ? await db.Nodes.OfType<Recipe>().FirstOrDefaultAsync(r => r.FamilyId == familyId && r.Id == recipeId, cancellationToken)
+                : null;
+            if (mealRecipe is null) return Result<NodeResponse>.Failure(InvalidMealError);
+        }
+
         var now = DateTimeOffset.UtcNow;
         Node node = request.Type switch
         {
@@ -161,6 +192,9 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
                 Priority = request.Priority,
                 SectionId = request.SectionId,
                 RecurrenceRule = request.RecurrenceRule,
+                Quantity = request.Quantity,
+                Unit = (DomainIngredientUnit?)request.Unit,
+                NormalizedName = request.Quantity is not null || request.Unit is not null ? Normalize(request.Title) : null,
             },
             ContractNodeType.Appointment => new Appointment
             {
@@ -181,6 +215,20 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
                 Country = request.Country,
                 PhoneNumbers = (request.PhoneNumbers ?? []).Select(p => new ContactPhoneNumber { Id = Guid.NewGuid(), Number = p.Number, Label = p.Label }).ToList(),
                 Emails = (request.Emails ?? []).Select(e => new ContactEmail { Id = Guid.NewGuid(), Email = e.Email, Label = e.Label }).ToList(),
+            },
+            ContractNodeType.Recipe => new Recipe
+            {
+                Title = request.Title,
+                Servings = request.Servings!.Value,
+                SourceUrl = string.IsNullOrWhiteSpace(request.SourceUrl) ? null : request.SourceUrl.Trim(),
+                Ingredients = ToIngredients(request.Ingredients),
+                Steps = ToSteps(request.Steps),
+            },
+            ContractNodeType.Meal => new Meal
+            {
+                Title = request.Title,
+                RecipeId = mealRecipe!.Id,
+                PlannedServings = request.PlannedServings is > 0 ? request.PlannedServings.Value : mealRecipe.Servings,
             },
             _ => throw new ArgumentOutOfRangeException(nameof(request)),
         };
@@ -208,6 +256,10 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
             .Include(n => n.Assignments)
             .Include(n => ((Contact)n).PhoneNumbers)
             .Include(n => ((Contact)n).Emails)
+            .Include(n => ((Recipe)n).Ingredients)
+            .Include(n => ((Recipe)n).Steps)
+            .Include(n => ((Recipe)n).Photo)
+            .Include(n => ((Meal)n).Recipe)
             .Where(VisibleTo(userId))
             .FirstOrDefaultAsync(n => n.FamilyId == familyId && n.Id == id, cancellationToken);
         if (node is null) return Result<NodeResponse>.Failure(Error.NotFound());
@@ -222,6 +274,20 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
         if (node is Contact && string.IsNullOrWhiteSpace(request.FirstName))
         {
             return Result<NodeResponse>.Failure(InvalidContactError);
+        }
+
+        if (node is Recipe && request.Servings is not > 0)
+        {
+            return Result<NodeResponse>.Failure(InvalidRecipeError);
+        }
+
+        Recipe? mealRecipe = null;
+        if (node is Meal)
+        {
+            mealRecipe = request.RecipeId is { } recipeId
+                ? await db.Nodes.OfType<Recipe>().FirstOrDefaultAsync(r => r.FamilyId == familyId && r.Id == recipeId, cancellationToken)
+                : null;
+            if (mealRecipe is null) return Result<NodeResponse>.Failure(InvalidMealError);
         }
 
         node.Title = request.Title;
@@ -240,6 +306,9 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
                 task.Priority = request.Priority;
                 task.SectionId = request.SectionId;
                 task.RecurrenceRule = request.RecurrenceRule;
+                task.Quantity = request.Quantity;
+                task.Unit = (DomainIngredientUnit?)request.Unit;
+                task.NormalizedName = request.Quantity is not null || request.Unit is not null ? Normalize(request.Title) : null;
 
                 // Completing a recurring Task rolls Until forward to the next occurrence
                 // instead of finishing it for good — matches Todoist's recurring-task model.
@@ -292,6 +361,24 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
                     .ToList();
                 db.ContactEmails.AddRange(contact.Emails);
                 break;
+            case Recipe recipe:
+                recipe.Servings = request.Servings!.Value;
+                recipe.SourceUrl = string.IsNullOrWhiteSpace(request.SourceUrl) ? null : request.SourceUrl.Trim();
+
+                // Same RemoveRange/AddRange-via-DbSet approach as Contact's phone
+                // numbers/emails above, for the same change-tracker reason.
+                db.Set<RecipeIngredient>().RemoveRange(recipe.Ingredients);
+                recipe.Ingredients = ToIngredients(request.Ingredients, recipe.Id);
+                db.Set<RecipeIngredient>().AddRange(recipe.Ingredients);
+
+                db.Set<RecipeStep>().RemoveRange(recipe.Steps);
+                recipe.Steps = ToSteps(request.Steps, recipe.Id);
+                db.Set<RecipeStep>().AddRange(recipe.Steps);
+                break;
+            case Meal meal:
+                meal.RecipeId = mealRecipe!.Id;
+                meal.PlannedServings = request.PlannedServings is > 0 ? request.PlannedServings.Value : mealRecipe.Servings;
+                break;
         }
 
         node.Assignments.Clear();
@@ -340,6 +427,47 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
     private static Error InvalidSectionError => Error.BadRequest(
         "Invalid section", "SectionId must be a Section of the Task's own list.");
 
+    private static Error InvalidRecipeError => Error.BadRequest(
+        "Invalid recipe", "A Recipe requires Servings greater than zero.");
+
+    private static Error InvalidMealError => Error.BadRequest(
+        "Invalid meal", "RecipeId must reference a Recipe in this Family.");
+
+    private static List<RecipeIngredient> ToIngredients(IReadOnlyList<RecipeIngredientDto>? dtos, Guid? recipeId = null) =>
+        (dtos ?? []).Select((dto, index) => new RecipeIngredient
+        {
+            Id = Guid.NewGuid(),
+            RecipeId = recipeId ?? default,
+            Name = dto.Name.Trim(),
+            NormalizedName = Normalize(dto.Name),
+            Quantity = dto.Quantity,
+            Unit = (DomainIngredientUnit?)dto.Unit,
+            SortOrder = index,
+        }).ToList();
+
+    private static List<RecipeStep> ToSteps(IReadOnlyList<RecipeStepDto>? dtos, Guid? recipeId = null) =>
+        (dtos ?? []).Select((dto, index) => new RecipeStep
+        {
+            Id = Guid.NewGuid(),
+            RecipeId = recipeId ?? default,
+            Instruction = dto.Instruction.Trim(),
+            SortOrder = index,
+        }).ToList();
+
+    /// <summary>
+    /// Trim, lowercase, strip diacritics, collapse whitespace — the merge key used
+    /// to recognize "the same ingredient" across recipes/meals on the shopping list
+    /// (see MealPlanService.AddToShoppingListAsync), regardless of how it was typed.
+    /// </summary>
+    public static string Normalize(string name)
+    {
+        var decomposed = name.Trim().ToLowerInvariant().Normalize(System.Text.NormalizationForm.FormD);
+        var stripped = new string(decomposed
+            .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
+            .ToArray());
+        return System.Text.RegularExpressions.Regex.Replace(stripped, @"\s+", " ").Trim();
+    }
+
     /// <summary>Null section is always fine; otherwise it has to live in the Task's list (so moving lists means picking a section there, or none).</summary>
     private async Task<bool> SectionBelongsToAsync(Guid? sectionId, Guid? collectionId, CancellationToken cancellationToken)
     {
@@ -354,7 +482,8 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
     private static string BuildContactTitle(string firstName, string? lastName) =>
         string.IsNullOrWhiteSpace(lastName) ? firstName.Trim() : $"{firstName.Trim()} {lastName.Trim()}";
 
-    private static NodeResponse ToResponse(Node node)
+    /// <summary>Public: reused by MealPlanService to render Meal/Recipe Nodes with the same shape NodesController serves.</summary>
+    public static NodeResponse ToResponse(Node node)
     {
         var assignedIds = node.Assignments.Select(a => a.FamilyMemberId).ToList();
 
@@ -365,38 +494,78 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
                 task.CreatedAt, task.UpdatedAt, task.CreatedByUserId, assignedIds, task.CollectionId,
                 IsImportant: null,
                 task.IsCompleted, task.CompletedAt, task.Priority, task.SectionId,
+                (decimal?)task.Quantity, (ContractIngredientUnit?)task.Unit,
                 Location: null, AllDay: null, task.RecurrenceRule,
                 FirstName: null, LastName: null, DateOfBirth: null,
                 Street: null, City: null, PostalCode: null, Country: null,
-                PhoneNumbers: [], Emails: []),
+                PhoneNumbers: [], Emails: [],
+                Servings: null, Ingredients: [], Steps: [], PhotoId: null, SourceUrl: null,
+                RecipeId: null, RecipeTitle: null, PlannedServings: null),
             Appointment appointment => new NodeResponse(
                 appointment.Id, ContractNodeType.Appointment, appointment.Title, appointment.Description, appointment.From, appointment.Until,
                 appointment.CreatedAt, appointment.UpdatedAt, appointment.CreatedByUserId, assignedIds, appointment.CollectionId,
                 IsImportant: null,
                 IsCompleted: null, CompletedAt: null, Priority: null, SectionId: null,
+                Quantity: null, Unit: null,
                 appointment.Location, appointment.AllDay, appointment.RecurrenceRule,
                 FirstName: null, LastName: null, DateOfBirth: null,
                 Street: null, City: null, PostalCode: null, Country: null,
-                PhoneNumbers: [], Emails: []),
+                PhoneNumbers: [], Emails: [],
+                Servings: null, Ingredients: [], Steps: [], PhotoId: null, SourceUrl: null,
+                RecipeId: null, RecipeTitle: null, PlannedServings: null),
             Contact contact => new NodeResponse(
                 contact.Id, ContractNodeType.Contact, contact.Title, contact.Description, contact.From, contact.Until,
                 contact.CreatedAt, contact.UpdatedAt, contact.CreatedByUserId, assignedIds, contact.CollectionId,
                 IsImportant: null,
                 IsCompleted: null, CompletedAt: null, Priority: null, SectionId: null,
+                Quantity: null, Unit: null,
                 Location: null, AllDay: null, RecurrenceRule: null,
                 contact.FirstName, contact.LastName, contact.DateOfBirth,
                 contact.Street, contact.City, contact.PostalCode, contact.Country,
                 contact.PhoneNumbers.Select(p => new ContactPhoneNumberDto(p.Number, p.Label)).ToList(),
-                contact.Emails.Select(e => new ContactEmailDto(e.Email, e.Label)).ToList()),
+                contact.Emails.Select(e => new ContactEmailDto(e.Email, e.Label)).ToList(),
+                Servings: null, Ingredients: [], Steps: [], PhotoId: null, SourceUrl: null,
+                RecipeId: null, RecipeTitle: null, PlannedServings: null),
             Note note => new NodeResponse(
                 note.Id, ContractNodeType.Note, note.Title, note.Description, note.From, note.Until,
                 note.CreatedAt, note.UpdatedAt, note.CreatedByUserId, assignedIds, note.CollectionId,
                 note.IsImportant,
                 IsCompleted: null, CompletedAt: null, Priority: null, SectionId: null,
+                Quantity: null, Unit: null,
                 Location: null, AllDay: null, RecurrenceRule: null,
                 FirstName: null, LastName: null, DateOfBirth: null,
                 Street: null, City: null, PostalCode: null, Country: null,
-                PhoneNumbers: [], Emails: []),
+                PhoneNumbers: [], Emails: [],
+                Servings: null, Ingredients: [], Steps: [], PhotoId: null, SourceUrl: null,
+                RecipeId: null, RecipeTitle: null, PlannedServings: null),
+            Recipe recipe => new NodeResponse(
+                recipe.Id, ContractNodeType.Recipe, recipe.Title, recipe.Description, recipe.From, recipe.Until,
+                recipe.CreatedAt, recipe.UpdatedAt, recipe.CreatedByUserId, assignedIds, recipe.CollectionId,
+                IsImportant: null,
+                IsCompleted: null, CompletedAt: null, Priority: null, SectionId: null,
+                Quantity: null, Unit: null,
+                Location: null, AllDay: null, RecurrenceRule: null,
+                FirstName: null, LastName: null, DateOfBirth: null,
+                Street: null, City: null, PostalCode: null, Country: null,
+                PhoneNumbers: [], Emails: [],
+                recipe.Servings,
+                recipe.Ingredients.OrderBy(i => i.SortOrder).Select(i => new RecipeIngredientDto(i.Name, i.Quantity, (ContractIngredientUnit?)i.Unit)).ToList(),
+                recipe.Steps.OrderBy(s => s.SortOrder).Select(s => new RecipeStepDto(s.Instruction)).ToList(),
+                recipe.Photo?.Id,
+                recipe.SourceUrl,
+                RecipeId: null, RecipeTitle: null, PlannedServings: null),
+            Meal meal => new NodeResponse(
+                meal.Id, ContractNodeType.Meal, meal.Title, meal.Description, meal.From, meal.Until,
+                meal.CreatedAt, meal.UpdatedAt, meal.CreatedByUserId, assignedIds, meal.CollectionId,
+                IsImportant: null,
+                IsCompleted: null, CompletedAt: null, Priority: null, SectionId: null,
+                Quantity: null, Unit: null,
+                Location: null, AllDay: null, RecurrenceRule: null,
+                FirstName: null, LastName: null, DateOfBirth: null,
+                Street: null, City: null, PostalCode: null, Country: null,
+                PhoneNumbers: [], Emails: [],
+                Servings: null, Ingredients: [], Steps: [], PhotoId: null, SourceUrl: null,
+                meal.RecipeId, meal.Recipe?.Title, meal.PlannedServings),
             _ => throw new ArgumentOutOfRangeException(nameof(node)),
         };
     }

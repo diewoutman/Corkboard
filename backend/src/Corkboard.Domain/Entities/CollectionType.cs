@@ -11,6 +11,10 @@ namespace Corkboard.Domain.Entities;
 /// Household is a Collection of Contact Nodes — groups related Contacts (e.g. a
 /// child and their parents) so they can share one address instead of each
 /// Contact repeating it; see Collection.Street/City/PostalCode/Country.
+/// RecipeBook is a Collection of Recipe Nodes — a folder of recipes, nestable
+/// under a parent RecipeBook via the existing ParentCollectionId tree (the first
+/// UI to actually expose that nesting). MealPlan is a Collection of Meal Nodes —
+/// exactly one per Family, auto-created like the Personal Inbox.
 /// </summary>
 public enum CollectionType
 {
@@ -18,4 +22,6 @@ public enum CollectionType
     Calendar,
     Schedule,
     Household,
+    RecipeBook,
+    MealPlan,
 }

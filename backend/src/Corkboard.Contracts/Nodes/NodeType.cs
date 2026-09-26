@@ -6,4 +6,6 @@ public enum NodeType
     Task,
     Appointment,
     Contact,
+    Recipe,
+    Meal,
 }

@@ -10,7 +10,7 @@ namespace Corkboard.Application.Collections;
 
 public class CollectionService(CorkboardDbContext db) : ICollectionService
 {
-    public async Task<PagedResult<CollectionProjection>> ListAsync(Guid familyId, Guid userId, CollectionType? type, Guid? parentCollectionId, PageRequest page, CancellationToken cancellationToken)
+    public async Task<PagedResult<CollectionProjection>> ListAsync(Guid familyId, Guid userId, CollectionType? type, Guid? parentCollectionId, bool allLevels, PageRequest page, CancellationToken cancellationToken)
     {
         if (type is null or CollectionType.TaskList) await EnsureInboxesAsync(familyId, userId, cancellationToken);
 
@@ -22,9 +22,12 @@ public class CollectionService(CorkboardDbContext db) : ICollectionService
             query = query.Where(c => c.Type == domainType);
         }
 
-        query = parentCollectionId is { } parentId
-            ? query.Where(c => c.ParentCollectionId == parentId)
-            : query.Where(c => c.ParentCollectionId == null);
+        if (!allLevels)
+        {
+            query = parentCollectionId is { } parentId
+                ? query.Where(c => c.ParentCollectionId == parentId)
+                : query.Where(c => c.ParentCollectionId == null);
+        }
 
         return await query.OrderByDescending(c => c.IsInbox).ThenBy(c => c.Name).ThenBy(c => c.Id).Select(ToProjectionExpression).ToPagedAsync(page, cancellationToken);
     }
@@ -52,6 +55,12 @@ public class CollectionService(CorkboardDbContext db) : ICollectionService
         {
             return Result<CollectionProjection>.Failure(Error.BadRequest(
                 "Invalid scope", "Only Task lists can be Personal."));
+        }
+
+        if (request.Type == CollectionType.MealPlan)
+        {
+            return Result<CollectionProjection>.Failure(Error.BadRequest(
+                "Invalid type", "The MealPlan collection is managed automatically — there's exactly one per Family."));
         }
 
         var now = DateTimeOffset.UtcNow;
@@ -212,6 +221,91 @@ public class CollectionService(CorkboardDbContext db) : ICollectionService
             // Lost a race against another request creating the same Inbox — it exists now.
             db.ChangeTracker.Clear();
         }
+    }
+
+    /// <summary>
+    /// The Family's one system-managed shopping list — same lazy create-on-first-use,
+    /// lose-the-race-and-that's-fine pattern as EnsureInboxesAsync, just family-wide
+    /// (Scope Family, no OwnerUserId) and IsSystemManaged rather than IsInbox.
+    /// </summary>
+    public async Task<CollectionProjection> EnsureShoppingListAsync(Guid familyId, Guid userId, CancellationToken cancellationToken)
+    {
+        var existing = await db.Collections
+            .Where(c => c.FamilyId == familyId && c.IsSystemManaged && c.Type == DomainCollectionType.TaskList)
+            .Select(ToProjectionExpression)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (existing is not null) return existing;
+
+        var now = DateTimeOffset.UtcNow;
+        var collection = new Domain.Entities.Collection
+        {
+            Id = Guid.NewGuid(),
+            FamilyId = familyId,
+            Name = "Boodschappenlijst",
+            Type = DomainCollectionType.TaskList,
+            Color = "#22C55E",
+            Scope = DomainScope.Family,
+            IsSystemManaged = true,
+            CreatedAt = now,
+            UpdatedAt = now,
+            CreatedByUserId = userId,
+        };
+        db.Collections.Add(collection);
+
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException)
+        {
+            // Lost a race against another request creating the same list — it exists now.
+            db.ChangeTracker.Clear();
+        }
+
+        return await db.Collections
+            .Where(c => c.FamilyId == familyId && c.IsSystemManaged && c.Type == DomainCollectionType.TaskList)
+            .Select(ToProjectionExpression)
+            .FirstAsync(cancellationToken);
+    }
+
+    /// <summary>Same lazy create-on-first-use story as EnsureShoppingListAsync, keyed on Type == MealPlan instead.</summary>
+    public async Task<CollectionProjection> EnsureMealPlanCollectionAsync(Guid familyId, Guid userId, CancellationToken cancellationToken)
+    {
+        var existing = await db.Collections
+            .Where(c => c.FamilyId == familyId && c.Type == DomainCollectionType.MealPlan)
+            .Select(ToProjectionExpression)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (existing is not null) return existing;
+
+        var now = DateTimeOffset.UtcNow;
+        var collection = new Domain.Entities.Collection
+        {
+            Id = Guid.NewGuid(),
+            FamilyId = familyId,
+            Name = "Maaltijdplanner",
+            Type = DomainCollectionType.MealPlan,
+            Color = "#F97316",
+            Scope = DomainScope.Family,
+            CreatedAt = now,
+            UpdatedAt = now,
+            CreatedByUserId = userId,
+        };
+        db.Collections.Add(collection);
+
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException)
+        {
+            // Lost a race against another request creating the same collection — it exists now.
+            db.ChangeTracker.Clear();
+        }
+
+        return await db.Collections
+            .Where(c => c.FamilyId == familyId && c.Type == DomainCollectionType.MealPlan)
+            .Select(ToProjectionExpression)
+            .FirstAsync(cancellationToken);
     }
 
     public async Task<PagedResult<SectionResponse>> ListSectionsAsync(Guid familyId, Guid userId, Guid collectionId, PageRequest page, CancellationToken cancellationToken) =>

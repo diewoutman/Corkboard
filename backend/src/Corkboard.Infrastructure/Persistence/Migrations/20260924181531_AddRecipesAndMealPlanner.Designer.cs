@@ -3,6 +3,7 @@ using System;
 using Corkboard.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Corkboard.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(CorkboardDbContext))]
-    partial class CorkboardDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260924181531_AddRecipesAndMealPlanner")]
+    partial class AddRecipesAndMealPlanner
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -533,44 +536,6 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                     b.HasIndex("RecipeId");
 
                     b.ToTable("RecipeIngredients");
-                });
-
-            modelBuilder.Entity("Corkboard.Domain.Entities.RecipePhoto", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("RecipeId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RecipeId")
-                        .IsUnique();
-
-                    b.ToTable("RecipePhotos");
-                });
-
-            modelBuilder.Entity("Corkboard.Domain.Entities.RecipePhotoBlob", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<byte[]>("Data")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("RecipePhotoBlobs");
                 });
 
             modelBuilder.Entity("Corkboard.Domain.Entities.RecipeStep", b =>
@@ -1125,9 +1090,6 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                     b.Property<int>("Servings")
                         .HasColumnType("integer");
 
-                    b.Property<string>("SourceUrl")
-                        .HasColumnType("text");
-
                     b.HasDiscriminator().HasValue("Recipe");
                 });
 
@@ -1312,26 +1274,6 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Recipe");
-                });
-
-            modelBuilder.Entity("Corkboard.Domain.Entities.RecipePhoto", b =>
-                {
-                    b.HasOne("Corkboard.Domain.Entities.Recipe", "Recipe")
-                        .WithOne("Photo")
-                        .HasForeignKey("Corkboard.Domain.Entities.RecipePhoto", "RecipeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Recipe");
-                });
-
-            modelBuilder.Entity("Corkboard.Domain.Entities.RecipePhotoBlob", b =>
-                {
-                    b.HasOne("Corkboard.Domain.Entities.RecipePhoto", null)
-                        .WithOne()
-                        .HasForeignKey("Corkboard.Domain.Entities.RecipePhotoBlob", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Corkboard.Domain.Entities.RecipeStep", b =>
@@ -1527,8 +1469,6 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Corkboard.Domain.Entities.Recipe", b =>
                 {
                     b.Navigation("Ingredients");
-
-                    b.Navigation("Photo");
 
                     b.Navigation("Steps");
                 });
