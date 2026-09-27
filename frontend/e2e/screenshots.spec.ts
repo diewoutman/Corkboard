@@ -1,6 +1,6 @@
 import path from 'node:path';
 import type { Page } from '@playwright/test';
-import { test, expect } from './fixtures';
+import { test, expect, clickCreate } from './fixtures';
 
 /**
  * Captures the screenshots embedded in the repo's README. Not a correctness test — it drives the
@@ -131,7 +131,7 @@ test('app screenshots', async ({ authedPage: page }) => {
   ];
   for (const event of events) {
     if ((await page.getByText(event.title, { exact: true }).count()) > 0) continue;
-    await page.getByRole('button', { name: 'Create', exact: true }).click();
+    await clickCreate(page);
     await page.getByLabel('Calendar', { exact: true }).selectOption({ label: 'Family Calendar' });
     await page.getByLabel('Event', { exact: true }).fill(event.title);
     await page.getByLabel('Start').fill(dateAt(event.day, event.hour));
@@ -153,7 +153,7 @@ test('app screenshots', async ({ authedPage: page }) => {
   }
 
   if ((await page.getByRole('button', { name: /Emma Jansen/ }).count()) === 0) {
-    await page.getByRole('button', { name: 'Create', exact: true }).click();
+    await clickCreate(page);
     await page.getByLabel('First name').fill('Emma');
     await page.getByLabel('Last name').fill('Jansen');
     await page.getByLabel('Household').selectOption({ label: 'Jansen Household' });

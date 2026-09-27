@@ -1,4 +1,4 @@
-import { test, expect, unique } from './fixtures';
+import { test, expect, clickCreate, unique } from './fixtures';
 
 test('a list can be renamed via its edit button', async ({ authedPage: page }) => {
   const originalName = unique('List');
@@ -7,7 +7,7 @@ test('a list can be renamed via its edit button', async ({ authedPage: page }) =
   await page.goto('/tasks');
   await page.getByRole('button', { name: '+ New list' }).click();
   await page.getByLabel('List name').fill(originalName);
-  await page.getByRole('button', { name: 'Create' }).click();
+  await clickCreate(page);
 
   const item = page.locator('li').filter({ hasText: originalName });
   await expect(item).toBeVisible();

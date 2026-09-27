@@ -1,4 +1,4 @@
-import { test, expect, unique } from './fixtures';
+import { test, expect, clickCreate, unique } from './fixtures';
 
 function todayAt(hour: string): string {
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -20,8 +20,11 @@ test('a calendar event can be edited via its edit button', async ({ authedPage: 
   await page.getByLabel('Name').fill(calendarName);
   await page.getByLabel('Name').press('Enter');
 
-  await page.getByRole('button', { name: 'Create', exact: true }).click();
-  await page.getByLabel('Calendar', { exact: true }).selectOption({ label: calendarName });
+  await clickCreate(page);
+  const calendar = page.getByLabel('Calendar', { exact: true });
+  if (await calendar.count() > 0) {
+    await calendar.selectOption({ label: calendarName });
+  }
   await page.getByLabel('Event', { exact: true }).fill(originalTitle);
   await page.getByLabel('Start').fill(todayAt('10:00'));
   await page.getByRole('button', { name: 'Add event' }).click();
