@@ -1,9 +1,9 @@
-import { test, expect, dialogButton, unique } from './fixtures';
+import { test, expect, clickCreate, unique } from './fixtures';
 
 async function createList(page: import('@playwright/test').Page, name: string) {
   await page.getByRole('button', { name: '+ New list' }).click();
   await page.getByLabel('List name').fill(name);
-  await dialogButton(page, 'Create').click();
+  await clickCreate(page);
   await expect(page.locator('li').filter({ hasText: name })).toBeVisible();
 }
 
@@ -38,7 +38,7 @@ test('a task can be dragged onto another list in the sidebar', async ({ authedPa
   await createList(page, to);
 
   await page.locator('a').filter({ hasText: from }).click();
-  await dialogButton(page, 'Create').click();
+  await clickCreate(page);
   await page.getByLabel('Task', { exact: true }).fill(title);
   await page.getByRole('button', { name: 'Add task' }).click();
   const row = page.locator('li[draggable="true"]').filter({ hasText: title });

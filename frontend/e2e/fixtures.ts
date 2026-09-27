@@ -22,11 +22,17 @@ export const test = base.extend<{ authedPage: Page }>({
 export { expect };
 
 /**
- * Finds a submit button inside the open dialog form. The page also has a floating
- * action button with aria-label="Create", so a page-wide role locator is ambiguous.
+ * Opens the create FAB or submits the currently open create form. Both controls
+ * are named "Create", so a page-wide role locator is ambiguous once the form opens.
  */
-export function dialogButton(page: Page, name: string) {
-  return page.locator('form').getByRole('button', { name, exact: true });
+export async function clickCreate(page: Page): Promise<void> {
+  const submit = page.locator('form').getByRole('button', { name: 'Create', exact: true });
+  if (await submit.count() > 0) {
+    await submit.click();
+    return;
+  }
+
+  await page.getByRole('button', { name: 'Create', exact: true }).click();
 }
 
 /** A short random suffix so parallel/repeat test runs never collide on fixture names. */
