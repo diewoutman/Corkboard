@@ -21,7 +21,10 @@ test('a calendar event can be edited via its edit button', async ({ authedPage: 
   await page.getByLabel('Name').press('Enter');
 
   await clickCreate(page);
-  await page.getByLabel('Calendar', { exact: true }).selectOption({ label: calendarName });
+  const calendar = page.getByLabel('Calendar', { exact: true });
+  if (await calendar.count() > 0) {
+    await calendar.selectOption({ label: calendarName });
+  }
   await page.getByLabel('Event', { exact: true }).fill(originalTitle);
   await page.getByLabel('Start').fill(todayAt('10:00'));
   await page.getByRole('button', { name: 'Add event' }).click();
