@@ -92,6 +92,9 @@ jobs:
       # comfortably inside the webServer timeout.
       - name: Run Playwright e2e tests
         working-directory: frontend
+        env:
+          # Local appsettings.Development.json is gitignored; allow the test client explicitly.
+          Cors__AllowedOrigins__0: http://localhost:4200
         run: npx playwright test
 
       - name: Upload Playwright traces on failure
