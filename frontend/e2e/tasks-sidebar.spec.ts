@@ -3,7 +3,7 @@ import { test, expect, unique } from './fixtures';
 async function createList(page: import('@playwright/test').Page, name: string) {
   await page.getByRole('button', { name: '+ New list' }).click();
   await page.getByLabel('List name').fill(name);
-  await page.getByRole('button', { name: 'Create' }).click();
+  await page.getByRole('button', { name: 'Create', exact: true }).click();
   await expect(page.locator('li').filter({ hasText: name })).toBeVisible();
 }
 
