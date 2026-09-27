@@ -21,6 +21,14 @@ export const test = base.extend<{ authedPage: Page }>({
 
 export { expect };
 
+/**
+ * Finds a submit button inside the open dialog form. The page also has a floating
+ * action button with aria-label="Create", so a page-wide role locator is ambiguous.
+ */
+export function dialogButton(page: Page, name: string) {
+  return page.locator('form').getByRole('button', { name, exact: true });
+}
+
 /** A short random suffix so parallel/repeat test runs never collide on fixture names. */
 export function unique(label: string): string {
   return `${label} ${Math.random().toString(36).slice(2, 8)}`;

@@ -1,11 +1,11 @@
-import { test, expect, unique } from './fixtures';
+import { test, expect, dialogButton, unique } from './fixtures';
 
 test('a note can be edited via its edit button', async ({ authedPage: page }) => {
   const originalTitle = unique('Note');
   const editedTitle = `${originalTitle} (edited)`;
 
   await page.goto('/notes');
-  await page.getByRole('button', { name: 'Create', exact: true }).click();
+  await dialogButton(page, 'Create').click();
   await page.getByLabel('Title').fill(originalTitle);
   await page.getByRole('button', { name: 'Add note' }).click();
 

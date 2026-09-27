@@ -1,4 +1,4 @@
-import { test, expect, unique } from './fixtures';
+import { test, expect, dialogButton, unique } from './fixtures';
 
 test('a schedule entry can be edited via its edit button', async ({ authedPage: page }) => {
   const scheduleName = unique('Schedule');
@@ -17,7 +17,7 @@ test('a schedule entry can be edited via its edit button', async ({ authedPage: 
   await page.locator('li').filter({ hasText: scheduleName }).getByRole('link', { name: 'Edit schedule' }).click();
   await page.waitForURL('**/calendar/schedules/**');
 
-  await page.getByRole('button', { name: 'Create', exact: true }).click();
+  await dialogButton(page, 'Create').click();
   await page.getByLabel('Title', { exact: true }).fill(originalTitle);
   await page.getByLabel('Start time').fill('09:00');
   await page.getByRole('button', { name: 'Add entry' }).click();
