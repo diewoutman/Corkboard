@@ -2,9 +2,18 @@ import { test as base, expect, type Page } from '@playwright/test';
 
 const email = process.env.E2E_EMAIL ?? 'playwright@corkboard.test';
 const password = process.env.E2E_PASSWORD ?? 'playwright-password';
+let cachedAuth: string | null = null;
 
 /** Bootstrap a clean instance through the same first-run UI real users use. */
 export async function ensureTestAccount(page: Page): Promise<void> {
+  if (cachedAuth) {
+    await page.goto('/login');
+    await page.evaluate((auth) => localStorage.setItem('corkboard.auth', auth), cachedAuth);
+    await page.goto('/home');
+    await page.waitForURL('**/home');
+    return;
+  }
+
   const setupStatus = await page.request.get('/api/setup/status');
   const { isConfigured } = await setupStatus.json() as { isConfigured: boolean };
   await page.goto('/login');
@@ -29,6 +38,7 @@ export async function ensureTestAccount(page: Page): Promise<void> {
     await page.locator('form button[type="submit"]').click();
   }
   await page.waitForURL('**/home');
+  cachedAuth = await page.evaluate(() => localStorage.getItem('corkboard.auth'));
 }
 
 export const test = base.extend<{ authedPage: Page }>({
