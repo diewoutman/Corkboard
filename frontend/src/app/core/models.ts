@@ -72,7 +72,7 @@ export interface FamilyMemberResponse {
   linkedUserRole: FamilyRole | null;
 }
 
-export type NodeType = 'Note' | 'Task' | 'Appointment' | 'Contact';
+export type NodeType = 'Note' | 'Task' | 'Appointment' | 'Contact' | 'Recipe' | 'Meal';
 
 export interface ContactPhoneNumber {
   number: string;
@@ -82,6 +82,51 @@ export interface ContactPhoneNumber {
 export interface ContactEmail {
   email: string;
   label: string | null;
+}
+
+/** A fixed set so two ingredients can be recognized as "the same thing" and merged on the shopping list. */
+export type IngredientUnit =
+  | 'Gram'
+  | 'Kilogram'
+  | 'Milliliter'
+  | 'Liter'
+  | 'Piece'
+  | 'Teaspoon'
+  | 'Tablespoon'
+  | 'Pinch'
+  | 'Clove'
+  | 'Slice'
+  | 'Can'
+  | 'Package'
+  | 'Bunch'
+  | 'ToTaste';
+
+export const INGREDIENT_UNITS: IngredientUnit[] = [
+  'Gram',
+  'Kilogram',
+  'Milliliter',
+  'Liter',
+  'Piece',
+  'Teaspoon',
+  'Tablespoon',
+  'Pinch',
+  'Clove',
+  'Slice',
+  'Can',
+  'Package',
+  'Bunch',
+  'ToTaste',
+];
+
+/** name is as typed; the server computes its own normalized match key. */
+export interface RecipeIngredient {
+  name: string;
+  quantity: number | null;
+  unit: IngredientUnit | null;
+}
+
+export interface RecipeStep {
+  instruction: string;
 }
 
 export interface CreateNodeRequest {
@@ -96,6 +141,9 @@ export interface CreateNodeRequest {
   isImportant: boolean | null;
   priority: number | null;
   sectionId: string | null;
+  /** Shopping-list items only. */
+  quantity: number | null;
+  unit: IngredientUnit | null;
   location: string | null;
   allDay: boolean | null;
   recurrenceRule: string | null;
@@ -109,6 +157,14 @@ export interface CreateNodeRequest {
   country: string | null;
   phoneNumbers: ContactPhoneNumber[] | null;
   emails: ContactEmail[] | null;
+  // Recipe-only
+  servings: number | null;
+  ingredients: RecipeIngredient[] | null;
+  steps: RecipeStep[] | null;
+  sourceUrl: string | null;
+  // Meal-only
+  recipeId: string | null;
+  plannedServings: number | null;
 }
 
 export interface UpdateNodeRequest {
@@ -123,6 +179,8 @@ export interface UpdateNodeRequest {
   isCompleted: boolean | null;
   priority: number | null;
   sectionId: string | null;
+  quantity: number | null;
+  unit: IngredientUnit | null;
   location: string | null;
   allDay: boolean | null;
   recurrenceRule: string | null;
@@ -136,6 +194,14 @@ export interface UpdateNodeRequest {
   country: string | null;
   phoneNumbers: ContactPhoneNumber[] | null;
   emails: ContactEmail[] | null;
+  // Recipe-only
+  servings: number | null;
+  ingredients: RecipeIngredient[] | null;
+  steps: RecipeStep[] | null;
+  sourceUrl: string | null;
+  // Meal-only
+  recipeId: string | null;
+  plannedServings: number | null;
 }
 
 export interface NodeResponse {
@@ -156,6 +222,9 @@ export interface NodeResponse {
   completedAt: string | null;
   priority: number | null;
   sectionId: string | null;
+  /** Shopping-list items only (a Task in the system-managed shopping list). */
+  quantity: number | null;
+  unit: IngredientUnit | null;
   location: string | null;
   allDay: boolean | null;
   recurrenceRule: string | null;
@@ -169,6 +238,18 @@ export interface NodeResponse {
   country: string | null;
   phoneNumbers: ContactPhoneNumber[];
   emails: ContactEmail[];
+  // Recipe-only
+  servings: number | null;
+  ingredients: RecipeIngredient[];
+  steps: RecipeStep[];
+  /** The header photo, if one was uploaded (edit mode only). Fetch its bytes via RecipePhotos.url(). */
+  photoId: string | null;
+  /** Where the recipe came from, if anywhere — shown as a badge on the header. */
+  sourceUrl: string | null;
+  // Meal-only — recipeTitle lets the week view render without a second lookup
+  recipeId: string | null;
+  recipeTitle: string | null;
+  plannedServings: number | null;
 }
 
 // "Collection" is a backend-only concept — the client only ever talks about its
@@ -176,7 +257,12 @@ export interface NodeResponse {
 // are the same shape, a Schedule is just filled in via the weekly editor instead
 // of one-off dated events — or a "Household", which groups Contacts so they can
 // share one address). See CONCEPT.md on Collection/CollectionType.
-export type CollectionType = 'TaskList' | 'Calendar' | 'Schedule' | 'Household';
+export type CollectionType = 'TaskList' | 'Calendar' | 'Schedule' | 'Household' | 'RecipeBook' | 'MealPlan';
+
+export interface AddToShoppingListResponse {
+  itemsAdded: number;
+  itemsMerged: number;
+}
 
 export interface CreateCollectionRequest {
   name: string;

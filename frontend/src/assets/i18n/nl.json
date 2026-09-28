@@ -19,7 +19,10 @@
     "color": "Kleur",
     "title": "Titel",
     "generic_error": "Er ging iets mis. Probeer het opnieuw.",
-    "optional": "(optioneel)"
+    "optional": "(optioneel)",
+    "remove": "Verwijderen",
+    "expand": "Uitklappen",
+    "collapse": "Inklappen"
   },
   "tasks": {
     "title": "Lijsten",
@@ -52,7 +55,8 @@
     "delete_list": "Lijst verwijderen",
     "delete_list_confirm": "Deze lijst en de {{count}} taken erin verwijderen? Dit kan niet ongedaan worden gemaakt.",
     "delete_list_yes": "Ja, verwijderen",
-    "moved_error": "De taak kon niet worden verplaatst."
+    "moved_error": "De taak kon niet worden verplaatst.",
+    "system_managed": "Systeembeheerd"
   },
   "nav": {
     "powered_by": "Aangedreven door Qorkboard",
@@ -65,7 +69,11 @@
     "calendar": "Agenda",
     "role_hint_owner": "Eigenaar: kan gezinsleden beheren en inlogaccounts voor hen aanmaken",
     "role_hint_member": "Iedereen met een login ziet alle taken, notities en de agenda van dit gezin — er is geen beperking per lijst",
-    "family": "Gezin"
+    "family": "Gezin",
+    "kitchen": "Keuken",
+    "recipes": "Recepten",
+    "mealPlan": "Maaltijdplanner",
+    "shoppingList": "Boodschappenlijst"
   },
   "tiles": {
     "tasks": {
@@ -476,6 +484,87 @@
       "task": "Taak",
       "note": "Notitie",
       "event": "Afspraak"
+    }
+  },
+  "units": {
+    "Gram": "g",
+    "Kilogram": "kg",
+    "Milliliter": "ml",
+    "Liter": "l",
+    "Piece": "stuk",
+    "Teaspoon": "tl",
+    "Tablespoon": "el",
+    "Pinch": "snufje",
+    "Clove": "teentje",
+    "Slice": "plak",
+    "Can": "blik",
+    "Package": "pak",
+    "Bunch": "bosje",
+    "ToTaste": "naar smaak"
+  },
+  "recipes": {
+    "title": "Recepten",
+    "root": "Recepten",
+    "newFolder": "Map",
+    "editFolder": "Map bewerken",
+    "noFolders": "Nog geen mappen.",
+    "newRecipe": "Recept",
+    "editRecipe": "Recept bewerken",
+    "noRecipes": "Nog geen recepten in deze map.",
+    "servingsCount": "{{count}} personen",
+    "folderName": "Mapnaam",
+    "folderColor": "Kleur",
+    "confirmDeleteFolder": "Deze map en alles erin verwijderen?",
+    "recipeTitle": "Titel",
+    "recipeDescription": "Beschrijving",
+    "baseServings": "Aantal personen",
+    "ingredients": "Ingrediënten",
+    "addIngredient": "Ingrediënt",
+    "ingredientName": "Ingrediënt",
+    "quantity": "Hoeveelheid",
+    "steps": "Stappen",
+    "addStep": "Stap",
+    "confirmDeleteRecipe": "Dit recept verwijderen?",
+    "servingsFor": "Aantal personen",
+    "errors": {
+      "load": "Kon recepten niet laden. Trek om te vernieuwen.",
+      "loadRecipe": "Kon dit recept niet laden.",
+      "saveFolder": "Kon de map niet opslaan.",
+      "createFolder": "Kon de map niet aanmaken.",
+      "deleteFolder": "Kon de map niet verwijderen.",
+      "saveRecipe": "Kon het recept niet opslaan.",
+      "createRecipe": "Kon het recept niet aanmaken.",
+      "deleteRecipe": "Kon het recept niet verwijderen.",
+      "uploadPhoto": "Kon deze foto niet uploaden.",
+      "deletePhoto": "Kon deze foto niet verwijderen."
+    },
+    "selectRecipe": "Selecteer een recept, of maak een nieuwe aan.",
+    "addPhoto": "Foto toevoegen",
+    "changePhoto": "Foto wijzigen",
+    "source": "Bron",
+    "sourcePlaceholder": "https://…"
+  },
+  "meal_plan": {
+    "title": "Maaltijdplanner",
+    "servingsCount": "{{count}} personen",
+    "addToShoppingList": "Aan boodschappenlijst toevoegen",
+    "addMeal": "Maaltijd toevoegen",
+    "searchRecipes": "Zoek recepten…",
+    "noRecipes": "Nog geen recepten — voeg er eerst een toe bij Recepten.",
+    "plannedServings": "Aantal personen",
+    "confirmDeleteMeal": "Deze maaltijd verwijderen?",
+    "addedToShoppingList": "{{added}} toegevoegd, {{merged}} samengevoegd",
+    "errors": {
+      "load": "Kon de maaltijdplanner niet laden. Trek om te vernieuwen.",
+      "save": "Kon de maaltijd niet opslaan.",
+      "create": "Kon de maaltijd niet toevoegen.",
+      "delete": "Kon de maaltijd niet verwijderen.",
+      "addToShoppingList": "Kon deze ingrediënten niet aan de boodschappenlijst toevoegen."
+    }
+  },
+  "shopping_list": {
+    "errors": {
+      "load": "Kon de boodschappenlijst niet openen."
     }
   }
 }

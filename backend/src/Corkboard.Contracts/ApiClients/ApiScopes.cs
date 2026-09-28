@@ -14,8 +14,10 @@ public static class ApiScopes
     public const string Collections = "collections";
     public const string Dashboard = "dashboard";
     public const string Family = "family";
+    /// <summary>MealPlanController's week query and "add to shopping list" action — Recipe/Meal Nodes themselves are served by NodesController under Nodes, same as Contacts.</summary>
+    public const string MealPlan = "mealplan";
 
-    public static readonly string[] Areas = [Nodes, Calendar, Collections, Dashboard, Family];
+    public static readonly string[] Areas = [Nodes, Calendar, Collections, Dashboard, Family, MealPlan];
 
     public static readonly string[] All = Areas.SelectMany(area => new[] { Read(area), Write(area) }).ToArray();
 

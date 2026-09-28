@@ -9,7 +9,7 @@ import { Collections } from '../../core/collections';
 import { FamilyMembers } from '../../core/family-members';
 import { extractErrorMessage } from '../../core/http-error';
 import { CollectionResponse, FamilyMemberResponse, NodeResponse } from '../../core/models';
-import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
+import { NULL_CONTACT_FIELDS, NULL_MEAL_FIELDS, NULL_NOTE_FIELDS, NULL_RECIPE_FIELDS, NULL_SHOPPING_FIELDS, Nodes } from '../../core/nodes';
 import { endsOn, isBiweekly } from '../../core/recurrence';
 
 /** `labelKey` is a translation key. */
@@ -186,6 +186,9 @@ export class ScheduleEditorPage implements OnInit, OnDestroy {
           sectionId: null,
           allDay: false,
           ...NULL_CONTACT_FIELDS,
+          ...NULL_RECIPE_FIELDS,
+          ...NULL_MEAL_FIELDS,
+          ...NULL_SHOPPING_FIELDS,
         })
       : this.nodesApi.create({
           type: 'Appointment',
@@ -195,6 +198,9 @@ export class ScheduleEditorPage implements OnInit, OnDestroy {
           sectionId: null,
           allDay: false,
           ...NULL_CONTACT_FIELDS,
+          ...NULL_RECIPE_FIELDS,
+          ...NULL_MEAL_FIELDS,
+          ...NULL_SHOPPING_FIELDS,
           ...NULL_NOTE_FIELDS,
         });
 

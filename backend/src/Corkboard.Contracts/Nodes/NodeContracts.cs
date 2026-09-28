@@ -6,6 +6,14 @@ public record ContactPhoneNumberDto([Required, StringLength(50, MinimumLength = 
 
 public record ContactEmailDto([Required, EmailAddress, StringLength(256)] string Email, [StringLength(50)] string? Label);
 
+/// <summary>NormalizedName is never sent by the client — it's computed server-side from Name.</summary>
+public record RecipeIngredientDto(
+    [Required, StringLength(200, MinimumLength = 1)] string Name,
+    decimal? Quantity,
+    IngredientUnit? Unit);
+
+public record RecipeStepDto([Required, StringLength(2000, MinimumLength = 1)] string Instruction);
+
 /// <summary>
 /// One shape for all four node types — fields that don't apply to the given
 /// Type (e.g. Location on a Note) are ignored server-side rather than rejected,
@@ -28,6 +36,9 @@ public record CreateNodeRequest(
     int? Priority,
     /// <summary>The Section (Todoist-style category) within the Task's Collection, if any.</summary>
     Guid? SectionId,
+    /// <summary>Shopping-list items only — set when this Task carries over a Recipe ingredient's amount.</summary>
+    decimal? Quantity,
+    IngredientUnit? Unit,
     // Appointment-only
     [StringLength(500)] string? Location,
     bool? AllDay,
@@ -41,7 +52,15 @@ public record CreateNodeRequest(
     [StringLength(20)] string? PostalCode,
     [StringLength(100)] string? Country,
     IReadOnlyList<ContactPhoneNumberDto>? PhoneNumbers,
-    IReadOnlyList<ContactEmailDto>? Emails);
+    IReadOnlyList<ContactEmailDto>? Emails,
+    // Recipe-only
+    int? Servings,
+    IReadOnlyList<RecipeIngredientDto>? Ingredients,
+    IReadOnlyList<RecipeStepDto>? Steps,
+    [Url, StringLength(2000)] string? SourceUrl,
+    // Meal-only
+    Guid? RecipeId,
+    int? PlannedServings);
 
 /// <summary>Type is immutable after creation — not included here.</summary>
 public record UpdateNodeRequest(
@@ -57,6 +76,8 @@ public record UpdateNodeRequest(
     bool? IsCompleted,
     int? Priority,
     Guid? SectionId,
+    decimal? Quantity,
+    IngredientUnit? Unit,
     // Appointment-only
     [StringLength(500)] string? Location,
     bool? AllDay,
@@ -70,7 +91,15 @@ public record UpdateNodeRequest(
     [StringLength(20)] string? PostalCode,
     [StringLength(100)] string? Country,
     IReadOnlyList<ContactPhoneNumberDto>? PhoneNumbers,
-    IReadOnlyList<ContactEmailDto>? Emails);
+    IReadOnlyList<ContactEmailDto>? Emails,
+    // Recipe-only
+    int? Servings,
+    IReadOnlyList<RecipeIngredientDto>? Ingredients,
+    IReadOnlyList<RecipeStepDto>? Steps,
+    [Url, StringLength(2000)] string? SourceUrl,
+    // Meal-only
+    Guid? RecipeId,
+    int? PlannedServings);
 
 public record NodeResponse(
     Guid Id,
@@ -91,6 +120,9 @@ public record NodeResponse(
     DateTimeOffset? CompletedAt,
     int? Priority,
     Guid? SectionId,
+    /// <summary>Shopping-list items only (a Task in the system-managed shopping list).</summary>
+    decimal? Quantity,
+    IngredientUnit? Unit,
     // Appointment-only
     string? Location,
     bool? AllDay,
@@ -104,4 +136,16 @@ public record NodeResponse(
     string? PostalCode,
     string? Country,
     IReadOnlyList<ContactPhoneNumberDto> PhoneNumbers,
-    IReadOnlyList<ContactEmailDto> Emails);
+    IReadOnlyList<ContactEmailDto> Emails,
+    // Recipe-only
+    int? Servings,
+    IReadOnlyList<RecipeIngredientDto> Ingredients,
+    IReadOnlyList<RecipeStepDto> Steps,
+    /// <summary>The header photo, if one was uploaded (edit mode only). Fetch its bytes via GET /api/recipes/{recipeId}/photos/{photoId}.</summary>
+    Guid? PhotoId,
+    /// <summary>Where the recipe came from, if anywhere — shown as a badge on the header.</summary>
+    string? SourceUrl,
+    // Meal-only — RecipeTitle lets the week view render without a second lookup
+    Guid? RecipeId,
+    string? RecipeTitle,
+    int? PlannedServings);

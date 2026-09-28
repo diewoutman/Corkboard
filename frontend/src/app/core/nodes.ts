@@ -15,6 +15,8 @@ export interface NodeListFilter {
   isCompleted?: boolean;
   /** Notes only. */
   isImportant?: boolean;
+  /** Only Nodes with no Collection at all — a tree's root level (e.g. Recipes). Distinct from omitting `collectionId`, which leaves every Collection unfiltered. */
+  unfiled?: boolean;
   /** Due window on `until`: on/after dueFrom, strictly before dueUntil. Nodes without a due date never match; overdue ones do. */
   dueFrom?: string;
   dueUntil?: string;
@@ -45,6 +47,8 @@ export function toUpdateRequest(task: NodeResponse, overrides: Partial<UpdateNod
     isCompleted: task.isCompleted,
     priority: task.priority,
     sectionId: task.sectionId,
+    quantity: task.quantity,
+    unit: task.unit,
     location: task.location,
     allDay: task.allDay,
     recurrenceRule: task.recurrenceRule,
@@ -57,6 +61,12 @@ export function toUpdateRequest(task: NodeResponse, overrides: Partial<UpdateNod
     country: task.country,
     phoneNumbers: task.phoneNumbers,
     emails: task.emails,
+    servings: task.servings,
+    ingredients: task.ingredients,
+    steps: task.steps,
+    sourceUrl: task.sourceUrl,
+    recipeId: task.recipeId,
+    plannedServings: task.plannedServings,
     ...overrides,
   };
 }
@@ -79,6 +89,26 @@ export const NULL_NOTE_FIELDS = {
   isImportant: null,
 } as const;
 
+/** Spread into a Create/UpdateNodeRequest for any non-Recipe node type. */
+export const NULL_RECIPE_FIELDS = {
+  servings: null,
+  ingredients: null,
+  steps: null,
+  sourceUrl: null,
+} as const;
+
+/** Spread into a Create/UpdateNodeRequest for any non-Meal node type. */
+export const NULL_MEAL_FIELDS = {
+  recipeId: null,
+  plannedServings: null,
+} as const;
+
+/** Spread into a Create/UpdateNodeRequest for a Task that isn't a shopping-list item. */
+export const NULL_SHOPPING_FIELDS = {
+  quantity: null,
+  unit: null,
+} as const;
+
 /** Builds the UpdateNodeRequest to toggle a Task's done state, preserving its other fields — used by every compact task checkbox (Today/Upcoming/Tasks widget). */
 export function toggleTaskCompletionRequest(task: NodeResponse, isCompleted: boolean): UpdateNodeRequest {
   return {
@@ -92,10 +122,14 @@ export function toggleTaskCompletionRequest(task: NodeResponse, isCompleted: boo
     isCompleted,
     priority: task.priority,
     sectionId: task.sectionId,
+    quantity: task.quantity,
+    unit: task.unit,
     location: null,
     allDay: null,
     recurrenceRule: task.recurrenceRule,
     ...NULL_CONTACT_FIELDS,
+    ...NULL_RECIPE_FIELDS,
+    ...NULL_MEAL_FIELDS,
   };
 }
 

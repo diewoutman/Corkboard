@@ -7,7 +7,7 @@ import { Collections } from '../../../core/collections';
 import { FamilyMembers } from '../../../core/family-members';
 import { extractErrorMessage } from '../../../core/http-error';
 import { CollectionResponse, CollectionScope, FamilyMemberResponse, NodeResponse, SectionResponse } from '../../../core/models';
-import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes, toUpdateRequest } from '../../../core/nodes';
+import { NULL_CONTACT_FIELDS, NULL_MEAL_FIELDS, NULL_NOTE_FIELDS, NULL_RECIPE_FIELDS, NULL_SHOPPING_FIELDS, Nodes, toUpdateRequest } from '../../../core/nodes';
 import { RepeatSpec, WEEKDAY_CODES, WeekdayCode, buildRule, emptyRepeat, joinDue, parseRule, splitDue } from '../../../core/recurrence';
 import { SubmitGuard } from '../../../core/submit-guard';
 import { AssigneeChipGroupComponent } from '../assignee-chip-group/assignee-chip-group.component';
@@ -306,6 +306,9 @@ export class TaskEditorComponent implements OnInit {
               allDay: null,
               recurrenceRule,
               ...NULL_CONTACT_FIELDS,
+              ...NULL_RECIPE_FIELDS,
+              ...NULL_MEAL_FIELDS,
+              ...NULL_SHOPPING_FIELDS,
               ...NULL_NOTE_FIELDS,
             }),
       ),

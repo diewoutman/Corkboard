@@ -18,6 +18,7 @@ public class NodesController(INodeService nodeService) : FamilyScopedControllerB
     /// null From/Until on a Node as open-ended (a plain Note has neither) rather
     /// than excluding it. Further filters: isCompleted/sectionId/priority (Tasks only),
     /// dueFrom/dueUntil (Until set and ≥ / <; a null Until never matches), isImportant (Notes only),
+    /// unfiled (only Nodes with no Collection at all — distinct from omitting collectionId, which leaves every Collection unfiltered),
     /// scope (Family/Personal) and a case-insensitive search over title and description.
     /// sort is createdAt (default), updatedAt, title, due, until, priority, important (Notes) or name (Contacts), "-" prefix for
     /// descending. Like every list endpoint it is paged (page, pageSize ≤ 50, default 50);
@@ -40,6 +41,7 @@ public class NodesController(INodeService nodeService) : FamilyScopedControllerB
         [FromQuery] DateTimeOffset? dueFrom,
         [FromQuery] DateTimeOffset? dueUntil,
         [FromQuery] bool? isImportant,
+        [FromQuery] bool? unfiled,
         CancellationToken cancellationToken)
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
@@ -50,7 +52,7 @@ public class NodesController(INodeService nodeService) : FamilyScopedControllerB
             return ValidationProblem(ModelState);
         }
 
-        var filter = new NodeListFilter(type, assignedTo, collectionId, from, until, isCompleted, scope, sectionId, priority, search, sort, paging.ToRequest(), dueFrom, dueUntil, isImportant);
+        var filter = new NodeListFilter(type, assignedTo, collectionId, from, until, isCompleted, scope, sectionId, priority, search, sort, paging.ToRequest(), dueFrom, dueUntil, isImportant, unfiled);
         return this.PagedOk(await nodeService.ListAsync(familyId, CurrentUserId, filter, cancellationToken));
     }
 

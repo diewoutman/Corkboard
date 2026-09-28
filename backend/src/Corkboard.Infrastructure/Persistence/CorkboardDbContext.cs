@@ -27,6 +27,12 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
     public DbSet<Contact> Contacts => Set<Contact>();
     public DbSet<ContactPhoneNumber> ContactPhoneNumbers => Set<ContactPhoneNumber>();
     public DbSet<ContactEmail> ContactEmails => Set<ContactEmail>();
+    public DbSet<Recipe> Recipes => Set<Recipe>();
+    public DbSet<RecipeIngredient> RecipeIngredients => Set<RecipeIngredient>();
+    public DbSet<RecipeStep> RecipeSteps => Set<RecipeStep>();
+    public DbSet<RecipePhoto> RecipePhotos => Set<RecipePhoto>();
+    public DbSet<RecipePhotoBlob> RecipePhotoBlobs => Set<RecipePhotoBlob>();
+    public DbSet<Meal> Meals => Set<Meal>();
 
     public DbSet<NodeAssignment> NodeAssignments => Set<NodeAssignment>();
 
@@ -91,7 +97,9 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
                 .HasValue<Note>("Note")
                 .HasValue<TaskNode>("Task")
                 .HasValue<Appointment>("Appointment")
-                .HasValue<Contact>("Contact");
+                .HasValue<Contact>("Contact")
+                .HasValue<Recipe>("Recipe")
+                .HasValue<Meal>("Meal");
         });
 
         builder.Entity<Collection>(entity =>
@@ -115,6 +123,17 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
             // One Personal Inbox per user — enforced in the database because Inboxes are created lazily.
             entity.HasIndex(c => new { c.FamilyId, c.OwnerUserId }).IsUnique().HasDatabaseName("IX_Collections_PersonalInbox")
                 .HasFilter("\"IsInbox\" AND \"Scope\" = 1");
+
+            // One system-managed shopping list per Family — same lazy-creation story as the Inbox above.
+            // Named explicitly at HasIndex(...) — EF matches an unnamed index by its property
+            // list, so a second HasIndex(c => c.FamilyId) below would otherwise just reconfigure
+            // this same one instead of adding a distinct index.
+            entity.HasIndex(c => c.FamilyId, "IX_Collections_SystemShoppingList").IsUnique()
+                .HasFilter("\"IsSystemManaged\" AND \"Type\" = 0");
+
+            // One MealPlan collection per Family — same lazy-creation story.
+            entity.HasIndex(c => c.FamilyId, "IX_Collections_MealPlan").IsUnique()
+                .HasFilter("\"Type\" = 5");
         });
 
         builder.Entity<PushSubscription>(entity =>
@@ -143,12 +162,15 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
             entity.Property(s => s.Name).HasMaxLength(200);
         });
 
-        // Deleting a Section keeps its Tasks — they just fall back to "no section".
-        builder.Entity<TaskNode>()
-            .HasOne(t => t.Section)
-            .WithMany()
-            .HasForeignKey(t => t.SectionId)
-            .OnDelete(DeleteBehavior.SetNull);
+        builder.Entity<TaskNode>(entity =>
+        {
+            // Deleting a Section keeps its Tasks — they just fall back to "no section".
+            entity.HasOne(t => t.Section)
+                .WithMany()
+                .HasForeignKey(t => t.SectionId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.Property(t => t.NormalizedName).HasMaxLength(200);
+        });
 
         builder.Entity<CollectionAddress>(entity =>
         {
@@ -183,6 +205,51 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
                 .HasForeignKey(e => e.ContactId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
+        builder.Entity<RecipeIngredient>(entity =>
+        {
+            entity.HasOne(i => i.Recipe)
+                .WithMany(r => r.Ingredients)
+                .HasForeignKey(i => i.RecipeId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.Property(i => i.Name).HasMaxLength(200);
+            entity.Property(i => i.NormalizedName).HasMaxLength(200);
+        });
+
+        builder.Entity<RecipeStep>(entity =>
+        {
+            entity.HasOne(s => s.Recipe)
+                .WithMany(r => r.Steps)
+                .HasForeignKey(s => s.RecipeId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<RecipePhoto>(entity =>
+        {
+            entity.HasOne(p => p.Recipe)
+                .WithOne(r => r.Photo)
+                .HasForeignKey<RecipePhoto>(p => p.RecipeId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(p => p.RecipeId).IsUnique();
+        });
+
+        // Shared-primary-key 1:1 split from RecipePhoto — see RecipePhotoBlob's own doc comment.
+        builder.Entity<RecipePhotoBlob>(entity =>
+        {
+            entity.HasOne<RecipePhoto>()
+                .WithOne()
+                .HasForeignKey<RecipePhotoBlob>(b => b.Id)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Deleting a Recipe removes it from wherever it's been planned — matches
+        // "delete this recipe" expectations the same way deleting a Collection
+        // cascades to the Nodes inside it.
+        builder.Entity<Meal>()
+            .HasOne(m => m.Recipe)
+            .WithMany()
+            .HasForeignKey(m => m.RecipeId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<DashboardWidget>(entity =>
         {

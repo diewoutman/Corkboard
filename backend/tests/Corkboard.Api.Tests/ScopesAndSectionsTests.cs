@@ -33,8 +33,12 @@ public class ScopesAndSectionsTests
         new(name, CollectionType.TaskList, "#123456", null, null, null, null, null, scope);
 
     private static CreateNodeRequest NewTask(string title, Guid? collectionId, Guid? sectionId = null) =>
-        new(NodeType.Task, title, null, null, null, [], collectionId, null, null, sectionId, null, null, null,
-            null, null, null, null, null, null, null, null, null);
+        new(NodeType.Task, title, Description: null, From: null, Until: null, AssignedFamilyMemberIds: [], CollectionId: collectionId,
+            IsImportant: null, Priority: null, SectionId: sectionId, Quantity: null, Unit: null,
+            Location: null, AllDay: null, RecurrenceRule: null,
+            FirstName: null, LastName: null, DateOfBirth: null, Street: null, City: null, PostalCode: null, Country: null,
+            PhoneNumbers: null, Emails: null,
+            Servings: null, Ingredients: null, Steps: null, SourceUrl: null, RecipeId: null, PlannedServings: null);
 
     [Fact]
     public async Task Listing_task_lists_creates_a_personal_inbox_per_member_once()
@@ -42,9 +46,9 @@ public class ScopesAndSectionsTests
         await using var db = CreateDb();
         var service = new CollectionService(db);
 
-        await service.ListAsync(_familyId, _anna, CollectionType.TaskList, null, PageRequest.Default, CancellationToken.None);
-        var again = (await service.ListAsync(_familyId, _anna, CollectionType.TaskList, null, PageRequest.Default, CancellationToken.None)).Items;
-        var forBen = (await service.ListAsync(_familyId, _ben, CollectionType.TaskList, null, PageRequest.Default, CancellationToken.None)).Items;
+        await service.ListAsync(_familyId, _anna, CollectionType.TaskList, null, false, PageRequest.Default, CancellationToken.None);
+        var again = (await service.ListAsync(_familyId, _anna, CollectionType.TaskList, null, false, PageRequest.Default, CancellationToken.None)).Items;
+        var forBen = (await service.ListAsync(_familyId, _ben, CollectionType.TaskList, null, false, PageRequest.Default, CancellationToken.None)).Items;
 
         Assert.Single(again, c => c.IsInbox);
         Assert.Single(forBen, c => c.IsInbox);
@@ -58,7 +62,7 @@ public class ScopesAndSectionsTests
         await using var db = CreateDb();
         var service = new CollectionService(db);
 
-        var lists = (await service.ListAsync(_familyId, Guid.NewGuid(), CollectionType.TaskList, null, PageRequest.Default, CancellationToken.None)).Items;
+        var lists = (await service.ListAsync(_familyId, Guid.NewGuid(), CollectionType.TaskList, null, false, PageRequest.Default, CancellationToken.None)).Items;
 
         Assert.Empty(lists);
     }
@@ -73,7 +77,7 @@ public class ScopesAndSectionsTests
         var personal = (await collections.CreateAsync(_familyId, _anna, NewList("Mine", CollectionScope.Personal), CancellationToken.None)).Value;
         var created = await nodes.CreateAsync(_familyId, _anna, NewTask("Secret", personal.Id), CancellationToken.None);
 
-        var seenByBen = (await collections.ListAsync(_familyId, _ben, CollectionType.TaskList, null, PageRequest.Default, CancellationToken.None)).Items;
+        var seenByBen = (await collections.ListAsync(_familyId, _ben, CollectionType.TaskList, null, false, PageRequest.Default, CancellationToken.None)).Items;
         Assert.DoesNotContain(seenByBen, c => c.Id == personal.Id);
         Assert.Equal(404, (await collections.GetAsync(_familyId, _ben, personal.Id, CancellationToken.None)).Error!.StatusCode);
         Assert.Empty((await nodes.ListAsync(_familyId, _ben, new NodeListFilter(NodeType.Task, null, null, null, null), CancellationToken.None)).Items);
@@ -112,7 +116,7 @@ public class ScopesAndSectionsTests
     {
         await using var db = CreateDb();
         var collections = new CollectionService(db);
-        var inbox = (await collections.ListAsync(_familyId, _anna, CollectionType.TaskList, null, PageRequest.Default, CancellationToken.None)).Items.First(c => c.IsInbox);
+        var inbox = (await collections.ListAsync(_familyId, _anna, CollectionType.TaskList, null, false, PageRequest.Default, CancellationToken.None)).Items.First(c => c.IsInbox);
 
         Assert.Equal(409, (await collections.DeleteAsync(_familyId, _anna, inbox.Id, CancellationToken.None)).Error!.StatusCode);
         var renamed = await collections.UpdateAsync(_familyId, _anna, inbox.Id, new UpdateCollectionRequest("Other", "#000", null, null, null, null), CancellationToken.None);

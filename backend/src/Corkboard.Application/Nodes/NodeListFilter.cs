@@ -16,6 +16,7 @@ namespace Corkboard.Application.Nodes;
 /// <param name="DueUntil">Only nodes whose <c>Until</c> is set and strictly before this — overdue ones included.</param>
 /// <param name="IsImportant">Notes only.</param>
 /// <param name="Sort">One of <see cref="NodeSortKeys.All"/>, prefixed with "-" for descending.</param>
+/// <param name="Unfiled">Only nodes with no CollectionId at all — the root level of a browsable tree (e.g. Recipes' root). Distinct from omitting <paramref name="CollectionId"/>, which leaves every Collection unfiltered.</param>
 public sealed record NodeListFilter(
     NodeType? Type,
     Guid? AssignedTo,
@@ -31,7 +32,8 @@ public sealed record NodeListFilter(
     PageRequest? Paging = null,
     DateTimeOffset? DueFrom = null,
     DateTimeOffset? DueUntil = null,
-    bool? IsImportant = null);
+    bool? IsImportant = null,
+    bool? Unfiled = null);
 
 public static class NodeSortKeys
 {

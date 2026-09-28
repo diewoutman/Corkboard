@@ -1,0 +1,197 @@
+<a [routerLink]="['/recipes', folderId]" class="text-sm md:hidden font-extrabold text-coral hover:text-coral-strong">← {{ 'recipes.title' | transloco }}</a>
+
+<app-error-banner [message]="errorMessage" class="mt-2 block" />
+
+<app-loading-indicator *ngIf="loading" class="mt-8" />
+
+<!-- Read-only view -->
+<div *ngIf="recipe && !editing" class="mt-2 overflow-hidden rounded-3xl bg-white shadow-sticker">
+  <div class="relative h-48 bg-gradient-to-br from-ink to-ink-muted sm:h-56">
+    <app-auth-image *ngIf="headerPhotoUrl() as photoUrl" [src]="photoUrl" imgClass="absolute inset-0 h-full w-full object-cover" [alt]="recipe.title" />
+    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
+    <a
+      *ngIf="recipe.sourceUrl"
+      [href]="recipe.sourceUrl"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-extrabold text-ink shadow hover:bg-white"
+    >
+      🔗 {{ sourceHost(recipe.sourceUrl) }}
+    </a>
+    <h2 class="absolute inset-x-0 bottom-0 p-4 text-2xl font-extrabold text-white drop-shadow">{{ recipe.title }}</h2>
+  </div>
+
+  <div class="p-6">
+    <div class="flex justify-end">
+      <button type="button" (click)="startEditRecipe()" class="shrink-0 rounded-xl bg-cork px-3 py-1.5 text-xs font-extrabold text-ink hover:bg-coral/20">
+        {{ 'common.edit' | transloco }}
+      </button>
+    </div>
+    <p *ngIf="recipe.description" class="mt-2 text-sm text-ink-muted">{{ recipe.description }}</p>
+
+    <div *ngIf="recipe.servings" class="mt-4 flex items-center gap-2">
+      <label class="text-sm font-bold text-ink" for="view-servings">{{ 'recipes.servingsFor' | transloco }}</label>
+      <button type="button" (click)="viewServings = viewServings > 1 ? viewServings - 1 : 1" class="h-8 w-8 rounded-full bg-cork font-extrabold text-ink">−</button>
+      <input id="view-servings" type="number" min="1" readonly [(ngModel)]="viewServings" class="w-14 rounded-xl border-2 border-border-soft px-2 py-1 text-center" />
+      <button type="button" (click)="viewServings = viewServings + 1" class="h-8 w-8 rounded-full bg-cork font-extrabold text-ink">+</button>
+    </div>
+
+    <div *ngIf="recipe.ingredients.length > 0" class="mt-4">
+      <h3 class="text-sm font-extrabold uppercase tracking-wide text-ink-muted">{{ 'recipes.ingredients' | transloco }}</h3>
+      <ul class="mt-1 space-y-1 text-sm text-ink">
+        <li *ngFor="let ingredient of recipe.ingredients">
+          <span *ngIf="scaledQuantity(ingredient) != null" class="font-bold">{{ scaledQuantity(ingredient) }}<span *ngIf="ingredient.unit"> {{ 'units.' + ingredient.unit | transloco }}</span> </span>
+          {{ ingredient.name }}
+        </li>
+      </ul>
+    </div>
+
+    <div *ngIf="recipe.steps.length > 0" class="mt-4">
+      <h3 class="text-sm font-extrabold uppercase tracking-wide text-ink-muted">{{ 'recipes.steps' | transloco }}</h3>
+      <ol class="mt-1 list-decimal space-y-2 pl-5 text-sm text-ink">
+        <li *ngFor="let step of recipe.steps">{{ step.instruction }}</li>
+      </ol>
+    </div>
+
+    <div class="mt-6 border-t border-border-soft pt-4">
+      <button *ngIf="!confirmingDeleteRecipe" type="button" (click)="confirmingDeleteRecipe = true" class="text-sm font-bold text-coral hover:underline">
+        {{ 'common.delete' | transloco }}
+      </button>
+      <button
+        *ngIf="confirmingDeleteRecipe"
+        type="button"
+        (click)="deleteRecipe()"
+        [disabled]="removing.isBusy(recipe.id)"
+        class="text-sm font-extrabold text-coral hover:underline"
+      >
+        {{ 'recipes.confirmDeleteRecipe' | transloco }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Editable form, in place -->
+<form *ngIf="editing" (ngSubmit)="saveRecipe()" class="mt-2 overflow-hidden rounded-3xl bg-white shadow-sticker">
+  <!-- The header photo is its own immediate action (upload/remove happen right away), not part of this form's submit — only reachable here, in edit mode. -->
+  <div class="relative h-48 bg-gradient-to-br from-ink to-ink-muted sm:h-56">
+    <app-auth-image *ngIf="!pendingPhotoPreviewUrl && headerPhotoUrl() as photoUrl" [src]="photoUrl" imgClass="absolute inset-0 h-full w-full object-cover" [alt]="recipeTitle" />
+    <img *ngIf="pendingPhotoPreviewUrl" [src]="pendingPhotoPreviewUrl" class="absolute inset-0 h-full w-full object-cover" [alt]="recipeTitle" />
+    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
+    <span *ngIf="recipeSourceUrl.trim()" class="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-extrabold text-ink shadow">
+      🔗 {{ sourceHost(recipeSourceUrl.trim()) }}
+    </span>
+    <h2 class="absolute inset-x-0 bottom-0 p-4 text-2xl font-extrabold text-white drop-shadow">{{ recipeTitle || ('recipes.recipeTitle' | transloco) }}</h2>
+    <div class="absolute bottom-3 right-3 flex gap-2">
+      <button
+        *ngIf="recipe?.photoId || pendingPhotoFile"
+        type="button"
+        (click)="deletePhoto()"
+        [disabled]="recipe ? removing.isBusy(recipe.id) : false"
+        class="rounded-full bg-white/90 px-3 py-1.5 text-xs font-extrabold text-coral shadow hover:bg-white"
+      >
+        {{ 'common.remove' | transloco }}
+      </button>
+      <label class="cursor-pointer rounded-full bg-white/90 px-3 py-1.5 text-xs font-extrabold text-ink shadow hover:bg-white">
+        <span *ngIf="!uploadingPhoto">{{ (recipe?.photoId || pendingPhotoFile ? 'recipes.changePhoto' : 'recipes.addPhoto') | transloco }}</span>
+        <span *ngIf="uploadingPhoto">…</span>
+        <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" [disabled]="uploadingPhoto" (change)="onPhotoFileSelected($event)" />
+      </label>
+    </div>
+  </div>
+
+  <div class="space-y-4 p-6">
+    <h2 class="text-lg font-extrabold text-ink">{{ isNewRecipe ? ('recipes.newRecipe' | transloco) : ('recipes.editRecipe' | transloco) }}</h2>
+
+    <div>
+      <label class="block text-sm font-bold text-ink" for="recipe-title">{{ 'recipes.recipeTitle' | transloco }}</label>
+      <input id="recipe-title" type="text" [(ngModel)]="recipeTitle" name="recipeTitle" required class="mt-1 w-full rounded-xl border-2 border-border-soft px-3 py-2" />
+    </div>
+    <div>
+      <label class="block text-sm font-bold text-ink" for="recipe-description">{{ 'recipes.recipeDescription' | transloco }}</label>
+      <textarea id="recipe-description" [(ngModel)]="recipeDescription" name="recipeDescription" rows="2" class="mt-1 w-full rounded-xl border-2 border-border-soft px-3 py-2"></textarea>
+    </div>
+    <div>
+      <label class="block text-sm font-bold text-ink" for="recipe-servings">{{ 'recipes.baseServings' | transloco }}</label>
+      <input id="recipe-servings" type="number" min="1" [(ngModel)]="recipeServings" name="recipeServings" required class="mt-1 w-24 rounded-xl border-2 border-border-soft px-3 py-2" />
+    </div>
+    <div>
+      <label class="block text-sm font-bold text-ink" for="recipe-source">{{ 'recipes.source' | transloco }}</label>
+      <input
+        id="recipe-source"
+        type="url"
+        [(ngModel)]="recipeSourceUrl"
+        name="recipeSourceUrl"
+        [placeholder]="'recipes.sourcePlaceholder' | transloco"
+        class="mt-1 w-full rounded-xl border-2 border-border-soft px-3 py-2"
+      />
+    </div>
+
+    <div>
+      <div class="mb-1 flex items-center justify-between">
+        <span class="block text-sm font-bold text-ink">{{ 'recipes.ingredients' | transloco }}</span>
+        <button type="button" (click)="addIngredientRow()" class="text-xs font-extrabold text-coral hover:underline">+ {{ 'recipes.addIngredient' | transloco }}</button>
+      </div>
+      <div *ngFor="let ingredient of ingredients; let i = index; trackBy: trackByIndex" class="mb-2 flex items-center gap-2">
+        <input
+          type="text"
+          [(ngModel)]="ingredient.name"
+          [name]="'ingredientName' + i"
+          [placeholder]="'recipes.ingredientName' | transloco"
+          class="min-w-0 flex-1 rounded-xl border-2 border-border-soft px-3 py-1.5 text-sm"
+        />
+        <input
+          type="number"
+          [(ngModel)]="ingredient.quantity"
+          [name]="'ingredientQuantity' + i"
+          [placeholder]="'recipes.quantity' | transloco"
+          class="w-20 rounded-xl border-2 border-border-soft px-2 py-1.5 text-sm"
+        />
+        <select [(ngModel)]="ingredient.unit" [name]="'ingredientUnit' + i" class="rounded-xl border-2 border-border-soft px-2 py-1.5 text-sm">
+          <option [ngValue]="null">—</option>
+          <option *ngFor="let unit of units" [ngValue]="unit">{{ 'units.' + unit | transloco }}</option>
+        </select>
+        <button type="button" (click)="removeIngredientRow(i)" class="shrink-0 text-ink-muted hover:text-coral" [attr.aria-label]="'common.remove' | transloco">✕</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="mb-1 flex items-center justify-between">
+        <span class="block text-sm font-bold text-ink">{{ 'recipes.steps' | transloco }}</span>
+        <button type="button" (click)="addStepRow()" class="text-xs font-extrabold text-coral hover:underline">+ {{ 'recipes.addStep' | transloco }}</button>
+      </div>
+      <div *ngFor="let step of steps; let i = index; trackBy: trackByIndex" class="mb-2 flex items-start gap-2">
+        <span class="mt-2 w-5 shrink-0 text-sm font-extrabold text-ink-muted">{{ i + 1 }}.</span>
+        <textarea [(ngModel)]="steps[i]" [name]="'step' + i" rows="2" class="min-w-0 flex-1 rounded-xl border-2 border-border-soft px-3 py-1.5 text-sm"></textarea>
+        <button type="button" (click)="removeStepRow(i)" class="mt-2 shrink-0 text-ink-muted hover:text-coral" [attr.aria-label]="'common.remove' | transloco">✕</button>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between gap-3 border-t border-border-soft pt-4">
+      <button
+        *ngIf="!isNewRecipe && recipe && !confirmingDeleteRecipe"
+        type="button"
+        (click)="confirmingDeleteRecipe = true"
+        class="text-sm font-bold text-coral hover:underline"
+      >
+        {{ 'common.delete' | transloco }}
+      </button>
+      <button
+        *ngIf="!isNewRecipe && recipe && confirmingDeleteRecipe"
+        type="button"
+        (click)="deleteRecipe()"
+        [disabled]="removing.isBusy(recipe.id)"
+        class="text-sm font-extrabold text-coral hover:underline"
+      >
+        {{ 'recipes.confirmDeleteRecipe' | transloco }}
+      </button>
+      <div class="ml-auto flex gap-2">
+        <button type="button" (click)="cancelEdit()" class="rounded-xl px-4 py-2 text-sm font-bold text-ink-muted hover:bg-cork">
+          {{ 'common.cancel' | transloco }}
+        </button>
+        <button type="submit" [disabled]="!recipeTitle || submit.busy" class="rounded-xl bg-ink px-4 py-2 text-sm font-extrabold text-white disabled:opacity-50">
+          {{ (isNewRecipe ? 'common.create' : 'common.save_changes') | transloco }}
+        </button>
+      </div>
+    </div>
+  </div>
+</form>

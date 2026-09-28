@@ -6,6 +6,8 @@ public enum CollectionType
     Calendar,
     Schedule,
     Household,
+    RecipeBook,
+    MealPlan,
 }
 
 /// <summary>Family lists are shared with the whole family; Personal lists are visible to their owner only.</summary>

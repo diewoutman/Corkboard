@@ -13,6 +13,8 @@ import {
 export interface CollectionListFilter {
   type?: CollectionType;
   parentCollectionId?: string;
+  /** Ignores parentCollectionId and returns every matching Collection regardless of nesting — for rendering a whole tree at once. */
+  allLevels?: boolean;
 }
 
 /** Spread into a Create/UpdateCollectionRequest for any non-Household collection. */
@@ -33,6 +35,16 @@ export class Collections {
 
   get(id: string) {
     return this.http.get<CollectionResponse>(`${environment.apiUrl}/collections/${id}`);
+  }
+
+  /** The Family's one system-managed shopping list — created on first request. */
+  shoppingList() {
+    return this.http.get<CollectionResponse>(`${environment.apiUrl}/collections/system/shopping-list`);
+  }
+
+  /** The Family's one MealPlan collection — created on first request. */
+  mealPlanCollection() {
+    return this.http.get<CollectionResponse>(`${environment.apiUrl}/collections/system/meal-plan`);
   }
 
   create(request: CreateCollectionRequest) {

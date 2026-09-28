@@ -6,7 +6,7 @@ import { forkJoin } from 'rxjs';
 import { Collections } from '../../core/collections';
 import { extractErrorMessage } from '../../core/http-error';
 import { CollectionResponse, NodeResponse } from '../../core/models';
-import { NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
+import { NULL_MEAL_FIELDS, NULL_NOTE_FIELDS, NULL_RECIPE_FIELDS, NULL_SHOPPING_FIELDS, Nodes } from '../../core/nodes';
 import { PALETTE } from '../../core/colors';
 import { PagedList } from '../../core/paging';
 
@@ -279,6 +279,9 @@ export class ContactsPage implements OnInit, OnDestroy {
       phoneNumbers,
       emails,
       ...NULL_NOTE_FIELDS,
+      ...NULL_RECIPE_FIELDS,
+      ...NULL_MEAL_FIELDS,
+      ...NULL_SHOPPING_FIELDS,
     };
 
     const title = this.contactForm.lastName ? `${this.contactForm.firstName} ${this.contactForm.lastName}` : this.contactForm.firstName;

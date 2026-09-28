@@ -47,6 +47,13 @@ export const NAV_GROUPS: NavGroup[] = [
     matches: ['/family'],
     icon: 'M6 12h.01M12 12h.01M18 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zM13 12a1 1 0 11-2 0 1 1 0 012 0zM19 12a1 1 0 11-2 0 1 1 0 012 0z',
   },
+  {
+    key: 'kitchen',
+    labelKey: 'nav.kitchen',
+    route: '/recipes',
+    matches: ['/recipes', '/meal-plan', '/shopping-list'],
+    icon: 'M4 10h16l-1.3 8.8A2 2 0 0116.7 20H7.3a2 2 0 01-2-1.2L4 10zM5 10a3 3 0 013-3M19 10a3 3 0 00-3-3M9 7V6a3 3 0 016 0v1',
+  },
 ];
 
 /** The Daily group's own children, shown as a sub-nav strip while inside it. */
@@ -54,6 +61,13 @@ const DAILY_CHILDREN = [
   { labelKey: 'nav.tasks', route: '/tasks' },
   { labelKey: 'nav.notes', route: '/notes' },
   { labelKey: 'nav.calendar', route: '/calendar' },
+];
+
+/** The Kitchen group's own children, shown as a sub-nav strip while inside it. */
+const KITCHEN_CHILDREN = [
+  { labelKey: 'nav.recipes', route: '/recipes' },
+  { labelKey: 'nav.mealPlan', route: '/meal-plan' },
+  { labelKey: 'nav.shoppingList', route: '/shopping-list' },
 ];
 
 const ACCOUNT_ICON = 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z';
@@ -73,6 +87,7 @@ export class AppComponent implements OnInit {
 
   readonly navGroups = NAV_GROUPS;
   readonly dailyChildren = DAILY_CHILDREN;
+  readonly kitchenChildren = KITCHEN_CHILDREN;
   readonly accountIcon = ACCOUNT_ICON;
   readonly languages = SUPPORTED_LANGUAGES;
 
@@ -126,6 +141,10 @@ export class AppComponent implements OnInit {
 
   get inDailyGroup(): boolean {
     return this.isGroupActive(this.navGroups.find((g) => g.key === 'daily')!);
+  }
+
+  get inKitchenGroup(): boolean {
+    return this.isGroupActive(this.navGroups.find((g) => g.key === 'kitchen')!);
   }
 
   /** True on /admin/**, where AdminShellComponent owns the screen — hides this component's own header/bottom-nav. */

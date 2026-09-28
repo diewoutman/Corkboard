@@ -5,11 +5,18 @@ namespace Corkboard.Application.Collections;
 
 public interface ICollectionService
 {
-    Task<PagedResult<CollectionProjection>> ListAsync(Guid familyId, Guid userId, CollectionType? type, Guid? parentCollectionId, PageRequest page, CancellationToken cancellationToken);
+    /// <param name="allLevels">Ignores <paramref name="parentCollectionId"/> and returns every matching Collection regardless of nesting — for rendering a whole tree at once (e.g. Recipes' folder sidebar).</param>
+    Task<PagedResult<CollectionProjection>> ListAsync(Guid familyId, Guid userId, CollectionType? type, Guid? parentCollectionId, bool allLevels, PageRequest page, CancellationToken cancellationToken);
 
     Task<Result<CollectionProjection>> GetAsync(Guid familyId, Guid userId, Guid id, CancellationToken cancellationToken);
 
     Task<Result<CollectionProjection>> CreateAsync(Guid familyId, Guid userId, CreateCollectionRequest request, CancellationToken cancellationToken);
+
+    /// <summary>The Family's one system-managed shopping-list TaskList — created on first request.</summary>
+    Task<CollectionProjection> EnsureShoppingListAsync(Guid familyId, Guid userId, CancellationToken cancellationToken);
+
+    /// <summary>The Family's one MealPlan collection — created on first request.</summary>
+    Task<CollectionProjection> EnsureMealPlanCollectionAsync(Guid familyId, Guid userId, CancellationToken cancellationToken);
 
     Task<Result<CollectionProjection>> UpdateAsync(Guid familyId, Guid userId, Guid id, UpdateCollectionRequest request, CancellationToken cancellationToken);
 

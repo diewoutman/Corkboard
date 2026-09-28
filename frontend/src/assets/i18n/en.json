@@ -19,7 +19,10 @@
     "color": "Color",
     "title": "Title",
     "generic_error": "Something went wrong. Please try again.",
-    "optional": "(optional)"
+    "optional": "(optional)",
+    "remove": "Remove",
+    "expand": "Expand",
+    "collapse": "Collapse"
   },
   "tasks": {
     "title": "Lists",
@@ -52,7 +55,8 @@
     "delete_list": "Delete list",
     "delete_list_confirm": "Delete this list and the {{count}} tasks in it? This can’t be undone.",
     "delete_list_yes": "Yes, delete",
-    "moved_error": "The task could not be moved."
+    "moved_error": "The task could not be moved.",
+    "system_managed": "System-managed"
   },
   "nav": {
     "powered_by": "Powered by Qorkboard",
@@ -65,7 +69,11 @@
     "calendar": "Calendar",
     "role_hint_owner": "Owner: can manage family members and create logins for them",
     "role_hint_member": "Everyone with a login sees this family's full Tasks, Notes and Calendar — there is no per-list restriction",
-    "family": "Family"
+    "family": "Family",
+    "kitchen": "Kitchen",
+    "recipes": "Recipes",
+    "mealPlan": "Meal planner",
+    "shoppingList": "Shopping list"
   },
   "tiles": {
     "tasks": {
@@ -476,6 +484,87 @@
       "task": "Task",
       "note": "Note",
       "event": "Event"
+    }
+  },
+  "units": {
+    "Gram": "g",
+    "Kilogram": "kg",
+    "Milliliter": "ml",
+    "Liter": "l",
+    "Piece": "piece",
+    "Teaspoon": "tsp",
+    "Tablespoon": "tbsp",
+    "Pinch": "pinch",
+    "Clove": "clove",
+    "Slice": "slice",
+    "Can": "can",
+    "Package": "package",
+    "Bunch": "bunch",
+    "ToTaste": "to taste"
+  },
+  "recipes": {
+    "title": "Recipes",
+    "root": "Recipes",
+    "newFolder": "Folder",
+    "editFolder": "Edit folder",
+    "noFolders": "No folders yet.",
+    "newRecipe": "Recipe",
+    "editRecipe": "Edit recipe",
+    "noRecipes": "No recipes in this folder yet.",
+    "servingsCount": "{{count}} servings",
+    "folderName": "Folder name",
+    "folderColor": "Color",
+    "confirmDeleteFolder": "Delete this folder and everything in it?",
+    "recipeTitle": "Title",
+    "recipeDescription": "Description",
+    "baseServings": "Servings",
+    "ingredients": "Ingredients",
+    "addIngredient": "Ingredient",
+    "ingredientName": "Ingredient",
+    "quantity": "Amount",
+    "steps": "Steps",
+    "addStep": "Step",
+    "confirmDeleteRecipe": "Delete this recipe?",
+    "servingsFor": "Servings",
+    "errors": {
+      "load": "Could not load recipes. Pull to refresh to try again.",
+      "loadRecipe": "Could not load that recipe.",
+      "saveFolder": "Could not save that folder.",
+      "createFolder": "Could not create that folder.",
+      "deleteFolder": "Could not delete that folder.",
+      "saveRecipe": "Could not save that recipe.",
+      "createRecipe": "Could not create that recipe.",
+      "deleteRecipe": "Could not delete that recipe.",
+      "uploadPhoto": "Could not upload that photo.",
+      "deletePhoto": "Could not delete that photo."
+    },
+    "selectRecipe": "Select a recipe, or create a new one.",
+    "addPhoto": "Add photo",
+    "changePhoto": "Change photo",
+    "source": "Source",
+    "sourcePlaceholder": "https://…"
+  },
+  "meal_plan": {
+    "title": "Meal planner",
+    "servingsCount": "{{count}} servings",
+    "addToShoppingList": "Add to shopping list",
+    "addMeal": "Add a meal",
+    "searchRecipes": "Search recipes…",
+    "noRecipes": "No recipes yet — add one on the Recipes tab first.",
+    "plannedServings": "Servings",
+    "confirmDeleteMeal": "Remove this meal?",
+    "addedToShoppingList": "{{added}} added, {{merged}} merged",
+    "errors": {
+      "load": "Could not load the meal plan. Pull to refresh to try again.",
+      "save": "Could not save that meal.",
+      "create": "Could not add that meal.",
+      "delete": "Could not remove that meal.",
+      "addToShoppingList": "Could not add these ingredients to the shopping list."
+    }
+  },
+  "shopping_list": {
+    "errors": {
+      "load": "Could not open the shopping list."
     }
   }
 }

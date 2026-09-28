@@ -77,6 +77,17 @@
         >{{ child.labelKey | transloco }}</a>
       </div>
     </div>
+
+    <div *ngIf="auth.hasFamily() && inKitchenGroup" class="border-t border-border-soft">
+      <div class="mx-auto flex max-w-screen-2xl gap-2 px-4 py-2 sm:px-6 lg:px-8">
+        <a
+          *ngFor="let child of kitchenChildren"
+          [routerLink]="child.route"
+          routerLinkActive="bg-coral text-white"
+          class="rounded-full px-3 py-1 text-xs font-extrabold text-ink-muted"
+        >{{ child.labelKey | transloco }}</a>
+      </div>
+    </div>
   </header>
 
   <main [class]="isAdminRoute ? 'flex-1' : 'mx-auto w-full max-w-screen-2xl flex-1 px-4 py-6 sm:px-6 lg:px-8'" [class.pb-20]="!isAdminRoute && auth.hasFamily()">

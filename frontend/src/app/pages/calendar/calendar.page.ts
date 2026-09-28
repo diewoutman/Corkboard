@@ -24,7 +24,7 @@ import { Collections, NULL_HOUSEHOLD_FIELDS } from '../../core/collections';
 import { extractErrorMessage } from '../../core/http-error';
 import { FamilyMembers } from '../../core/family-members';
 import { CollectionResponse, FamilyMemberResponse, NodeResponse, OccurrenceResponse } from '../../core/models';
-import { NULL_CONTACT_FIELDS, NULL_NOTE_FIELDS, Nodes } from '../../core/nodes';
+import { NULL_CONTACT_FIELDS, NULL_MEAL_FIELDS, NULL_NOTE_FIELDS, NULL_RECIPE_FIELDS, NULL_SHOPPING_FIELDS, Nodes } from '../../core/nodes';
 import { periodLabel } from '../../core/period-label';
 import { parseQuickAdd } from '../../core/quick-add';
 import { SegmentedControlOption } from '../../shared/components/segmented-control/segmented-control.component';
@@ -452,6 +452,9 @@ export class CalendarPage implements OnInit, OnDestroy {
               allDay: node.allDay,
               recurrenceRule: node.recurrenceRule,
               ...NULL_CONTACT_FIELDS,
+              ...NULL_RECIPE_FIELDS,
+              ...NULL_MEAL_FIELDS,
+              ...NULL_SHOPPING_FIELDS,
             }),
           ),
         );
@@ -492,6 +495,9 @@ export class CalendarPage implements OnInit, OnDestroy {
         allDay: !parsed.hasTime,
         recurrenceRule: null,
         ...NULL_CONTACT_FIELDS,
+        ...NULL_RECIPE_FIELDS,
+        ...NULL_MEAL_FIELDS,
+        ...NULL_SHOPPING_FIELDS,
         ...NULL_NOTE_FIELDS,
       }))
       .subscribe({

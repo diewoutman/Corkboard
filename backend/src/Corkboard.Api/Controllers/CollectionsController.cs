@@ -12,17 +12,44 @@ namespace Corkboard.Api.Controllers;
 [RequireScope(ApiScopes.Collections)]
 public class CollectionsController(ICollectionService collectionService) : FamilyScopedControllerBase
 {
-    /// <summary>Lists Collections in the caller's Family, optionally filtered by type or parent.</summary>
+    /// <summary>
+    /// The Family's one system-managed shopping list, creating it on first request —
+    /// lets the frontend route straight into it (e.g. from the Keuken tab) without
+    /// first having to look its id up via the generic list endpoint.
+    /// </summary>
+    [HttpGet("system/shopping-list")]
+    public async Task<ActionResult<CollectionResponse>> ShoppingList(CancellationToken cancellationToken)
+    {
+        if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
+
+        return ToResponse(await collectionService.EnsureShoppingListAsync(familyId, CurrentUserId, cancellationToken));
+    }
+
+    /// <summary>The Family's one MealPlan collection, creating it on first request.</summary>
+    [HttpGet("system/meal-plan")]
+    public async Task<ActionResult<CollectionResponse>> MealPlanCollection(CancellationToken cancellationToken)
+    {
+        if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
+
+        return ToResponse(await collectionService.EnsureMealPlanCollectionAsync(familyId, CurrentUserId, cancellationToken));
+    }
+
+    /// <summary>
+    /// Lists Collections in the caller's Family, optionally filtered by type or parent. allLevels=true
+    /// ignores parentCollectionId and returns every matching Collection regardless of nesting, for
+    /// rendering a whole tree at once (e.g. Recipes' folder sidebar).
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<CollectionResponse>>> List(
         [FromQuery] CollectionType? type,
         [FromQuery] Guid? parentCollectionId,
+        [FromQuery] bool allLevels,
         [FromQuery] PageQuery paging,
         CancellationToken cancellationToken)
     {
         if (CurrentFamilyId is not { } familyId) return NoFamilyProblem();
 
-        var page = await collectionService.ListAsync(familyId, CurrentUserId, type, parentCollectionId, paging.ToRequest(), cancellationToken);
+        var page = await collectionService.ListAsync(familyId, CurrentUserId, type, parentCollectionId, allLevels, paging.ToRequest(), cancellationToken);
         return this.PagedOk(new PagedResult<CollectionResponse>(page.Items.Select(ToResponse).ToList(), page.TotalCount));
     }
 

@@ -5,7 +5,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { FamilyMembers } from '../../../core/family-members';
 import { extractErrorMessage } from '../../../core/http-error';
 import { FamilyMemberResponse, NodeResponse } from '../../../core/models';
-import { NULL_CONTACT_FIELDS, Nodes, toUpdateRequest } from '../../../core/nodes';
+import { NULL_CONTACT_FIELDS, NULL_MEAL_FIELDS, NULL_RECIPE_FIELDS, NULL_SHOPPING_FIELDS, Nodes, toUpdateRequest } from '../../../core/nodes';
 import { SubmitGuard } from '../../../core/submit-guard';
 import { AssigneeChipGroupComponent } from '../assignee-chip-group/assignee-chip-group.component';
 import { ErrorBannerComponent } from '../error-banner/error-banner.component';
@@ -124,6 +124,9 @@ export class NoteEditorComponent implements OnInit {
           allDay: null,
           recurrenceRule: null,
           ...NULL_CONTACT_FIELDS,
+          ...NULL_RECIPE_FIELDS,
+          ...NULL_MEAL_FIELDS,
+          ...NULL_SHOPPING_FIELDS,
         });
 
     this.submit.run(request$).subscribe({

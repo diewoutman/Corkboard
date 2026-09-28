@@ -58,6 +58,21 @@ const routes: Routes = [
     loadChildren: () => import('./pages/family/family.module').then((m) => m.FamilyPageModule),
   },
   {
+    path: 'recipes',
+    canActivate: [familyGuard],
+    loadChildren: () => import('./pages/recipes/recipes.module').then((m) => m.RecipesPageModule),
+  },
+  {
+    path: 'meal-plan',
+    canActivate: [familyGuard],
+    loadChildren: () => import('./pages/meal-plan/meal-plan.module').then((m) => m.MealPlanPageModule),
+  },
+  {
+    path: 'shopping-list',
+    canActivate: [familyGuard],
+    loadChildren: () => import('./pages/shopping-list/shopping-list.module').then((m) => m.ShoppingListPageModule),
+  },
+  {
     path: 'notifications',
     canActivate: [familyGuard],
     loadComponent: () => import('./pages/notifications/notifications.page').then((m) => m.NotificationsPage),
