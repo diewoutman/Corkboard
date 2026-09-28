@@ -137,7 +137,8 @@
       "my_tasks": "My tasks",
       "today": "Today",
       "upcoming": "Upcoming",
-      "timeline": "Timeline"
+      "timeline": "Timeline",
+      "activity": "Recent activity"
     },
     "widget_types": {
       "navigation": "Navigation",
@@ -146,7 +147,16 @@
       "today": "Today",
       "timeline": "Timeline",
       "upcoming": "Upcoming",
-      "shortcut": "Shortcut"
+      "shortcut": "Shortcut",
+      "activity": "Activity"
+    },
+    "activity": {
+      "none": "Nothing has happened yet.",
+      "actions": {
+        "created_note": "added",
+        "created_event": "created",
+        "completed_task": "completed"
+      }
     },
     "form": {
       "configure": "Configure widget",
