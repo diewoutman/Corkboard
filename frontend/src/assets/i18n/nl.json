@@ -137,7 +137,8 @@
       "my_tasks": "Mijn taken",
       "today": "Vandaag",
       "upcoming": "Binnenkort",
-      "timeline": "Tijdlijn"
+      "timeline": "Tijdlijn",
+      "activity": "Recente activiteit"
     },
     "widget_types": {
       "navigation": "Navigatie",
@@ -146,7 +147,16 @@
       "today": "Vandaag",
       "timeline": "Tijdlijn",
       "upcoming": "Binnenkort",
-      "shortcut": "Snelkoppeling"
+      "shortcut": "Snelkoppeling",
+      "activity": "Activiteit"
+    },
+    "activity": {
+      "none": "Er is nog niets gebeurd.",
+      "actions": {
+        "created_note": "voegde toe",
+        "created_event": "maakte",
+        "completed_task": "voltooide"
+      }
     },
     "form": {
       "configure": "Widget instellen",

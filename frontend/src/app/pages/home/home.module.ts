@@ -25,6 +25,7 @@ import { TasksWidgetComponent } from './widgets/tasks-widget.component';
 import { TimelineWidgetComponent } from './widgets/timeline-widget.component';
 import { TodayWidgetComponent } from './widgets/today-widget.component';
 import { UpcomingWidgetComponent } from './widgets/upcoming-widget.component';
+import { ActivityWidgetComponent } from './widgets/activity-widget.component';
 
 @NgModule({
   imports: [
@@ -54,6 +55,7 @@ import { UpcomingWidgetComponent } from './widgets/upcoming-widget.component';
     TimelineWidgetComponent,
     TodayWidgetComponent,
     UpcomingWidgetComponent,
+    ActivityWidgetComponent,
   ],
 })
 export class HomePageModule {}

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ContractNodeType = Corkboard.Contracts.Nodes.NodeType;
 using DomainIngredientUnit = Corkboard.Domain.Entities.IngredientUnit;
 using ContractIngredientUnit = Corkboard.Contracts.Nodes.IngredientUnit;
+using DomainActivity = Corkboard.Domain.Entities.Activity;
 
 namespace Corkboard.Application.Nodes;
 
@@ -245,6 +246,24 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
         node.Assignments = assignedIds.Select(memberId => new NodeAssignment { FamilyMemberId = memberId }).ToList();
 
         db.Nodes.Add(node);
+        if (node is Note)
+        {
+            db.Activities.Add(new DomainActivity
+            {
+                Id = Guid.NewGuid(), FamilyId = familyId, ActorUserId = userId,
+                Action = "created_note", SubjectType = "Note", SubjectId = node.Id,
+                SubjectTitle = node.Title, CreatedAt = now,
+            });
+        }
+        else if (node is Appointment)
+        {
+            db.Activities.Add(new DomainActivity
+            {
+                Id = Guid.NewGuid(), FamilyId = familyId, ActorUserId = userId,
+                Action = "created_event", SubjectType = "Appointment", SubjectId = node.Id,
+                SubjectTitle = node.Title, CreatedAt = now,
+            });
+        }
         await db.SaveChangesAsync(cancellationToken);
 
         return Result<NodeResponse>.Success(ToResponse(node));
@@ -263,6 +282,7 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
             .Where(VisibleTo(userId))
             .FirstOrDefaultAsync(n => n.FamilyId == familyId && n.Id == id, cancellationToken);
         if (node is null) return Result<NodeResponse>.Failure(Error.NotFound());
+        var wasCompleted = node is TaskNode oldTask && oldTask.IsCompleted;
 
         var assignedIds = await ValidateFamilyMemberIds(familyId, request.AssignedFamilyMemberIds, cancellationToken);
         if (assignedIds is null) return Result<NodeResponse>.Failure(InvalidAssigneesError);
@@ -385,6 +405,16 @@ public class NodeService(CorkboardDbContext db, RecurrenceExpansionService recur
         foreach (var memberId in assignedIds)
         {
             node.Assignments.Add(new NodeAssignment { NodeId = node.Id, FamilyMemberId = memberId });
+        }
+
+        if (node is TaskNode completedTask && !wasCompleted && completedTask.IsCompleted)
+        {
+            db.Activities.Add(new DomainActivity
+            {
+                Id = Guid.NewGuid(), FamilyId = familyId, ActorUserId = userId,
+                Action = "completed_task", SubjectType = "Task", SubjectId = node.Id,
+                SubjectTitle = node.Title, CreatedAt = DateTimeOffset.UtcNow,
+            });
         }
 
         await db.SaveChangesAsync(cancellationToken);
