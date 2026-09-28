@@ -3,7 +3,7 @@ import { test, expect, unique } from './fixtures';
 async function createList(page: import('@playwright/test').Page, name: string) {
   await page.getByRole('button', { name: '+ New list' }).click();
   await page.getByLabel('List name').fill(name);
-  await page.getByRole('button', { name: 'Create' }).click();
+  await page.getByRole('button', { name: 'Create', exact: true }).click();
   await expect(page.locator('li').filter({ hasText: name })).toBeVisible();
 }
 
@@ -38,7 +38,7 @@ test('a task can be dragged onto another list in the sidebar', async ({ authedPa
   await createList(page, to);
 
   await page.locator('a').filter({ hasText: from }).click();
-  await page.getByRole('button', { name: 'Create', exact: true }).click();
+  await page.getByRole('button', { name: 'Quick add', exact: true }).click();
   await page.getByLabel('Task', { exact: true }).fill(title);
   await page.getByRole('button', { name: 'Add task' }).click();
   const row = page.locator('li[draggable="true"]').filter({ hasText: title });

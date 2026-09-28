@@ -18,7 +18,7 @@ import { TaskEditorComponent } from '../task-editor/task-editor.component';
   imports: [FabButtonComponent, ModalSheetComponent, SegmentedControlComponent, TaskEditorComponent, NoteEditorComponent, EventEditorComponent, TranslocoPipe],
   template: `
     @if (!fab.hidden()) {
-      <app-fab-button [label]="'create.title' | transloco" (clicked)="fab.press()" />
+      <app-fab-button [label]="'create.quick_add' | transloco" (clicked)="fab.press()" />
     }
     @if (fab.sheetOpen()) {
       <app-modal-sheet (dismissed)="fab.close()">

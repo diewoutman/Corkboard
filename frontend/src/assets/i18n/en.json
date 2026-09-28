@@ -480,6 +480,7 @@
   },
   "create": {
     "title": "Create",
+    "quick_add": "Quick add",
     "kinds": {
       "task": "Task",
       "note": "Note",

@@ -480,6 +480,7 @@
   },
   "create": {
     "title": "Aanmaken",
+    "quick_add": "Snel toevoegen",
     "kinds": {
       "task": "Taak",
       "note": "Notitie",

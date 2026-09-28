@@ -7,7 +7,7 @@ test('a list can be renamed via its edit button', async ({ authedPage: page }) =
   await page.goto('/tasks');
   await page.getByRole('button', { name: '+ New list' }).click();
   await page.getByLabel('List name').fill(originalName);
-  await page.getByRole('button', { name: 'Create' }).click();
+  await page.getByRole('button', { name: 'Create', exact: true }).click();
 
   const item = page.locator('li').filter({ hasText: originalName });
   await expect(item).toBeVisible();
