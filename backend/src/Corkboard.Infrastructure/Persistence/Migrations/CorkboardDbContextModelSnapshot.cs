@@ -22,6 +22,46 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Corkboard.Domain.Entities.Activity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SubjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SubjectTitle")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("SubjectType")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FamilyId", "CreatedAt");
+
+                    b.ToTable("Activities");
+                });
+
             modelBuilder.Entity("Corkboard.Domain.Entities.ApiCallLog", b =>
                 {
                     b.Property<long>("Id")
@@ -349,6 +389,50 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                     b.HasIndex("Name");
 
                     b.ToTable("Families");
+                });
+
+            modelBuilder.Entity("Corkboard.Domain.Entities.FamilyGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Color")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FamilyId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("FamilyGroups");
+                });
+
+            modelBuilder.Entity("Corkboard.Domain.Entities.FamilyGroupMembership", b =>
+                {
+                    b.Property<Guid>("FamilyGroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("FamilyMemberId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("FamilyGroupId", "FamilyMemberId");
+
+                    b.HasIndex("FamilyMemberId");
+
+                    b.ToTable("FamilyGroupMemberships");
                 });
 
             modelBuilder.Entity("Corkboard.Domain.Entities.FamilyMember", b =>
@@ -1171,6 +1255,17 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                     b.HasDiscriminator().HasValue("Task");
                 });
 
+            modelBuilder.Entity("Corkboard.Domain.Entities.Activity", b =>
+                {
+                    b.HasOne("Corkboard.Domain.Entities.Family", "Family")
+                        .WithMany()
+                        .HasForeignKey("FamilyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Family");
+                });
+
             modelBuilder.Entity("Corkboard.Domain.Entities.ApiCallLog", b =>
                 {
                     b.HasOne("Corkboard.Domain.Entities.ApiClient", "ApiClient")
@@ -1253,6 +1348,36 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Family");
+                });
+
+            modelBuilder.Entity("Corkboard.Domain.Entities.FamilyGroup", b =>
+                {
+                    b.HasOne("Corkboard.Domain.Entities.Family", "Family")
+                        .WithMany("Groups")
+                        .HasForeignKey("FamilyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Family");
+                });
+
+            modelBuilder.Entity("Corkboard.Domain.Entities.FamilyGroupMembership", b =>
+                {
+                    b.HasOne("Corkboard.Domain.Entities.FamilyGroup", "FamilyGroup")
+                        .WithMany("Memberships")
+                        .HasForeignKey("FamilyGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Corkboard.Domain.Entities.FamilyMember", "FamilyMember")
+                        .WithMany("GroupMemberships")
+                        .HasForeignKey("FamilyMemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FamilyGroup");
+
+                    b.Navigation("FamilyMember");
                 });
 
             modelBuilder.Entity("Corkboard.Domain.Entities.FamilyMember", b =>
@@ -1492,13 +1617,22 @@ namespace Corkboard.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Corkboard.Domain.Entities.Family", b =>
                 {
+                    b.Navigation("Groups");
+
                     b.Navigation("Members");
 
                     b.Navigation("UserFamilies");
                 });
 
+            modelBuilder.Entity("Corkboard.Domain.Entities.FamilyGroup", b =>
+                {
+                    b.Navigation("Memberships");
+                });
+
             modelBuilder.Entity("Corkboard.Domain.Entities.FamilyMember", b =>
                 {
+                    b.Navigation("GroupMemberships");
+
                     b.Navigation("NodeAssignments");
                 });
 
