@@ -5,9 +5,12 @@ const password = process.env.E2E_PASSWORD ?? 'playwright-password';
 
 /** Bootstrap a clean instance through the same first-run UI real users use. */
 export async function ensureTestAccount(page: Page): Promise<void> {
+  const setupStatus = await page.request.get('/api/setup/status');
+  const { isConfigured } = await setupStatus.json() as { isConfigured: boolean };
   await page.goto('/login');
-  const firstRun = await page.getByRole('button', { name: 'Create account and continue' }).isVisible();
-  if (firstRun) {
+  const submit = page.locator('form button[type="submit"]');
+  if (!isConfigured) {
+    await expect(submit).toHaveText('Create account and continue');
     await page.getByLabel('Email').fill(email);
     await page.getByLabel('Password').fill(password);
     await page.getByRole('button', { name: 'Create account and continue' }).click();
@@ -20,6 +23,7 @@ export async function ensureTestAccount(page: Page): Promise<void> {
     await page.waitForURL('**/add-members');
     await page.getByRole('button', { name: 'Finish setup' }).click();
   } else {
+    await expect(submit).toHaveText('Log in');
     await page.getByLabel('Email').fill(email);
     await page.getByLabel('Password').fill(password);
     await page.locator('form button[type="submit"]').click();
