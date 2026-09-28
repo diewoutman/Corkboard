@@ -302,3 +302,4 @@ app.UseTickerQ();
 app.MapFallbackToFile("index.html", staticFileOptions);
 
 app.Run();
+builder.Services.AddScoped<IFamilyGroupService, FamilyGroupService>();

@@ -18,6 +18,8 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
     public DbSet<Family> Families => Set<Family>();
     public DbSet<UserFamily> UserFamilies => Set<UserFamily>();
     public DbSet<FamilyMember> FamilyMembers => Set<FamilyMember>();
+    public DbSet<FamilyGroup> FamilyGroups => Set<FamilyGroup>();
+    public DbSet<FamilyGroupMembership> FamilyGroupMemberships => Set<FamilyGroupMembership>();
 
     public DbSet<Node> Nodes => Set<Node>();
     public DbSet<Note> Notes => Set<Note>();
@@ -47,6 +49,7 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
 
     public DbSet<ApiClient> ApiClients => Set<ApiClient>();
     public DbSet<ApiCallLog> ApiCallLogs => Set<ApiCallLog>();
+    public DbSet<Activity> Activities => Set<Activity>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -73,6 +76,21 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
                 .HasForeignKey(m => m.FamilyId)
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(m => m.FamilyId);
+        });
+
+        builder.Entity<FamilyGroup>(entity =>
+        {
+            entity.HasOne(g => g.Family).WithMany(f => f.Groups).HasForeignKey(g => g.FamilyId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(g => new { g.FamilyId, g.Name }).IsUnique();
+            entity.Property(g => g.Name).HasMaxLength(100);
+            entity.Property(g => g.Color).HasMaxLength(20);
+        });
+
+        builder.Entity<FamilyGroupMembership>(entity =>
+        {
+            entity.HasKey(m => new { m.FamilyGroupId, m.FamilyMemberId });
+            entity.HasOne(m => m.FamilyGroup).WithMany(g => g.Memberships).HasForeignKey(m => m.FamilyGroupId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(m => m.FamilyMember).WithMany(m => m.GroupMemberships).HasForeignKey(m => m.FamilyMemberId).OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<Node>(entity =>
@@ -289,6 +307,15 @@ public class CorkboardDbContext(DbContextOptions<CorkboardDbContext> options)
             // Cleanup job scans/deletes by Timestamp; the per-client log view filters by ApiClientId+Timestamp.
             entity.HasIndex(l => l.Timestamp);
             entity.HasIndex(l => new { l.ApiClientId, l.Timestamp });
+        });
+
+        builder.Entity<Activity>(entity =>
+        {
+            entity.HasOne(a => a.Family).WithMany().HasForeignKey(a => a.FamilyId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(a => new { a.FamilyId, a.CreatedAt });
+            entity.Property(a => a.Action).HasMaxLength(80);
+            entity.Property(a => a.SubjectType).HasMaxLength(40);
+            entity.Property(a => a.SubjectTitle).HasMaxLength(300);
         });
     }
 }

@@ -4,8 +4,9 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angula
 import { TranslocoService } from '@jsverse/transloco';
 import { Auth } from '../../core/auth';
 import { FamilyMembers } from '../../core/family-members';
+import { FamilyGroups } from '../../core/family-groups';
 import { extractErrorMessage } from '../../core/http-error';
-import { FamilyMemberResponse, FamilyRole } from '../../core/models';
+import { FamilyGroupResponse, FamilyMemberResponse, FamilyRole } from '../../core/models';
 
 @Component({
   selector: 'app-family',
@@ -23,6 +24,10 @@ export class FamilyPage implements OnInit, OnDestroy {
   readonly isOwner = this.auth.isOwner;
 
   members: FamilyMemberResponse[] = [];
+  groups: FamilyGroupResponse[] = [];
+  showGroupForm = false;
+  groupForm = { name: '', color: '#ff8a65' };
+  editingGroupId: string | null = null;
   loading = true;
   errorMessage: string | null = null;
 
@@ -36,6 +41,7 @@ export class FamilyPage implements OnInit, OnDestroy {
   constructor(
     private readonly auth: Auth,
     private readonly familyMembersApi: FamilyMembers,
+    private readonly familyGroupsApi: FamilyGroups,
     private readonly cdr: ChangeDetectorRef,
     private readonly transloco: TranslocoService,
   ) {}
@@ -76,7 +82,18 @@ export class FamilyPage implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
     });
+    this.familyGroupsApi.list().subscribe({ next: (groups) => { this.groups = groups; this.cdr.markForCheck(); } });
   }
+
+  openNewGroupForm() { this.editingGroupId = null; this.groupForm = { name: '', color: '#ff8a65' }; this.showGroupForm = true; }
+  saveGroup() {
+    if (!this.groupForm.name.trim()) return;
+    const request$ = this.editingGroupId ? this.familyGroupsApi.update(this.editingGroupId, this.groupForm) : this.familyGroupsApi.create(this.groupForm);
+    request$.subscribe({ next: group => { this.groups = this.editingGroupId ? this.groups.map(g => g.id === group.id ? group : g) : [...this.groups, group]; this.showGroupForm = false; this.cdr.markForCheck(); }, error: err => { this.errorMessage = extractErrorMessage(err, 'Unable to save group'); this.cdr.markForCheck(); } });
+  }
+  deleteGroup(group: FamilyGroupResponse) { this.familyGroupsApi.delete(group.id).subscribe({ next: () => { this.groups = this.groups.filter(g => g.id !== group.id); this.reload(); }, error: () => this.errorMessage = 'Unable to delete group' }); }
+  toggleMember(group: FamilyGroupResponse, memberId: string) { const ids = group.memberIds.includes(memberId) ? group.memberIds.filter(id => id !== memberId) : [...group.memberIds, memberId]; this.familyGroupsApi.assignMembers(group.id, ids).subscribe({ next: saved => { this.groups = this.groups.map(g => g.id === saved.id ? saved : g); this.reload(); }, error: () => this.errorMessage = 'Unable to assign member' }); }
+  groupNames(member: FamilyMemberResponse) { return this.groups.filter(g => member.groupIds.includes(g.id)); }
 
   openNewMemberForm() {
     this.editingMemberId = null;

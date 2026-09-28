@@ -45,4 +45,5 @@ public record FamilyMemberResponse(
     /// <summary>Null unless LinkedUserId is set.</summary>
     string? LinkedUserEmail,
     /// <summary>Null unless LinkedUserId is set.</summary>
-    FamilyRole? LinkedUserRole);
+    FamilyRole? LinkedUserRole,
+    IReadOnlyList<Guid> GroupIds);
