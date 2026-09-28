@@ -2,6 +2,7 @@ import { test as base, expect, type Page } from '@playwright/test';
 
 const email = process.env.E2E_EMAIL ?? 'playwright@corkboard.test';
 const password = process.env.E2E_PASSWORD ?? 'playwright-password';
+const baseUrl = process.env.BASE_URL ?? 'http://localhost:4200';
 let cachedAuth: string | null = null;
 
 /** Bootstrap a clean instance through the same first-run UI real users use. */
@@ -14,7 +15,9 @@ export async function ensureTestAccount(page: Page): Promise<void> {
     return;
   }
 
-  const setupStatus = await page.request.get('/api/setup/status');
+  // `page.request` is a standalone APIRequestContext and does not inherit
+  // Playwright's project `baseURL`, so use an absolute URL here.
+  const setupStatus = await page.request.get(`${baseUrl}/api/setup/status`);
   const { isConfigured } = await setupStatus.json() as { isConfigured: boolean };
   await page.goto('/login');
   const submit = page.locator('form button[type="submit"]');
