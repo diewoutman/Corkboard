@@ -7,6 +7,10 @@ test('family groups can be created, assigned, edited, and deleted', async ({ aut
   await page.goto('/family');
   await expect(page.getByRole('heading', { name: 'Groups' })).toBeVisible();
 
+  await page.getByRole('button', { name: 'Quick add' }).click();
+  await page.getByLabel('Name').fill(unique('Group member'));
+  await page.getByRole('button', { name: 'Add family member' }).click();
+
   await page.getByRole('button', { name: '+ Add group' }).click();
   await page.getByPlaceholder('Group name').fill(name);
   await page.getByLabel('Group color').fill('#336699');
@@ -16,7 +20,7 @@ test('family groups can be created, assigned, edited, and deleted', async ({ aut
   await expect(group).toBeVisible();
   await expect(group.locator('span.h-3.w-3')).toHaveCSS('background-color', 'rgb(51, 102, 153)');
 
-  const memberButton = group.getByRole('button').first();
+  const memberButton = group.locator('div.mt-2 > button').filter({ hasText: 'Group member' }).first();
   await expect(memberButton).toBeVisible();
   const memberName = await memberButton.textContent();
   await memberButton.click();
