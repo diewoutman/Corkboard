@@ -2,7 +2,8 @@ import path from 'node:path';
 import type { Page } from '@playwright/test';
 import { test, expect, unique } from './fixtures';
 
-const recipePhoto = path.join(process.cwd(), 'public/icons/icon-96x96.png');
+const frontendRoot = process.cwd().endsWith(`${path.sep}frontend`) ? process.cwd() : path.join(process.cwd(), 'frontend');
+const recipePhoto = path.join(frontendRoot, 'public/icons/icon-96x96.png');
 
 async function createRecipe(page: Page, title = unique('Recipe')) {
   await page.goto('/recipes/root');
