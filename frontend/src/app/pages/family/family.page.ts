@@ -86,6 +86,7 @@ export class FamilyPage implements OnInit, OnDestroy {
   }
 
   openNewGroupForm() { this.editingGroupId = null; this.groupForm = { name: '', color: '#ff8a65' }; this.showGroupForm = true; }
+  openEditGroupForm(group: FamilyGroupResponse) { this.editingGroupId = group.id; this.groupForm = { name: group.name, color: group.color ?? '#ff8a65' }; this.showGroupForm = true; }
   saveGroup() {
     if (!this.groupForm.name.trim()) return;
     const request$ = this.editingGroupId ? this.familyGroupsApi.update(this.editingGroupId, this.groupForm) : this.familyGroupsApi.create(this.groupForm);
