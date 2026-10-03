@@ -2,17 +2,20 @@ import { test as base, expect, type Page } from '@playwright/test';
 
 const email = process.env.E2E_EMAIL ?? 'playwright@corkboard.test';
 const password = process.env.E2E_PASSWORD ?? 'playwright-password';
+const devSeedEmail = 'dev@corkboard.test';
+const devSeedPassword = 'devpassword';
 const apiUrl = process.env.E2E_API_URL ?? 'http://localhost:5147/api';
 let cachedAuth: string | null = null;
+let cachedCredentials: { email: string; password: string } | null = null;
 
 /** Bootstrap a clean instance through the same first-run UI real users use. */
-export async function ensureTestAccount(page: Page): Promise<void> {
+export async function ensureTestAccount(page: Page): Promise<{ email: string; password: string }> {
   if (cachedAuth) {
     await page.goto('/login');
     await page.evaluate((auth) => localStorage.setItem('corkboard.auth', auth), cachedAuth);
     await page.goto('/home');
     await page.waitForURL('**/home');
-    return;
+    return cachedCredentials!;
   }
 
   // `page.request` is a standalone APIRequestContext and does not inherit
@@ -32,7 +35,8 @@ export async function ensureTestAccount(page: Page): Promise<void> {
       await page.goto('/home');
       await page.waitForURL('**/home');
       cachedAuth = JSON.stringify(auth);
-      return;
+      cachedCredentials = { email: devSeedEmail, password: devSeedPassword };
+      return cachedCredentials;
     }
   }
 
@@ -59,6 +63,8 @@ export async function ensureTestAccount(page: Page): Promise<void> {
   }
   await page.waitForURL('**/home');
   cachedAuth = await page.evaluate(() => localStorage.getItem('corkboard.auth'));
+  cachedCredentials = { email, password };
+  return cachedCredentials;
 }
 
 export const test = base.extend<{ authedPage: Page }>({

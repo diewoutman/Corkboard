@@ -14,13 +14,13 @@ import { test, expect, ensureTestAccount } from './fixtures';
 test('login rejects a wrong password, then succeeds with the correct one', async ({ page }) => {
   // Ensures the account and family exist through the supported first-run flow,
   // then logs back out so the password check is exercised below.
-  await ensureTestAccount(page);
+  const credentials = await ensureTestAccount(page);
   await page.evaluate(() => localStorage.clear());
 
   await page.goto('/login');
   await expect(page.getByRole('heading', { name: 'Log in' })).toBeVisible();
 
-  const email = process.env.E2E_EMAIL ?? 'dev@corkboard.test';
+  const email = process.env.E2E_EMAIL ?? credentials.email;
 
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password').fill('wrong-password');
@@ -29,7 +29,7 @@ test('login rejects a wrong password, then succeeds with the correct one', async
   await expect((await failedLogin).status()).toBe(401);
 
   await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Password').fill(process.env.E2E_PASSWORD ?? 'devpassword');
+  await page.getByLabel('Password').fill(process.env.E2E_PASSWORD ?? credentials.password);
   await page.getByRole('button', { name: 'Log in', exact: true }).click();
   await page.waitForURL('**/home');
 });

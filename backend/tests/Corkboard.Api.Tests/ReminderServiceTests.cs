@@ -1,8 +1,10 @@
 using Corkboard.Application.Notifications;
+using Corkboard.Contracts.Notifications;
 using Corkboard.Domain.Entities;
 using Corkboard.Infrastructure.Persistence;
 using Corkboard.Infrastructure.Recurrence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Corkboard.Api.Tests;
 
@@ -63,6 +65,28 @@ public class ReminderServiceTests
     }
 
     private ReminderService Service(CorkboardDbContext db) => new(db, new RecurrenceExpansionService(), _sender);
+
+    [Fact]
+    public async Task A_vapid_enabled_subscription_receives_a_due_reminder()
+    {
+        await using var db = CreateDb();
+        var options = Options.Create(new PushOptions
+        {
+            PublicKey = "test-public-key",
+            PrivateKey = "test-private-key",
+        });
+        var notifications = new NotificationService(db, options);
+
+        var subscription = await notifications.SubscribeAsync(_anna, new SubscribePushRequest(
+            "https://push.example.com/test-device", "p256dh", "auth", 0, "Playwright"), CancellationToken.None);
+
+        Assert.True(subscription.IsSuccess);
+        Assert.True(notifications.GetConfig().Enabled);
+        AddTask(db, Now);
+
+        Assert.Equal(1, await Service(db).SendDueRemindersAsync(Now, CancellationToken.None));
+        Assert.Contains("Take out trash", Assert.Single(_sender.Sent).Payload);
+    }
 
     [Fact]
     public async Task Sends_once_when_the_lead_time_is_reached_and_never_again()

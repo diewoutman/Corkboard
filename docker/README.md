@@ -43,6 +43,13 @@ See `docker-compose.example.yml` for the same thing as a compose file
 (includes a Postgres service you can drop if you already have one running
 elsewhere).
 
+The Compose example publishes the app on host port `8080` by default. If that
+port is already in use, choose another host port without editing the file:
+
+```bash
+CORKBOARD_PORT=18080 docker compose -f docker/docker-compose.example.yml up -d
+```
+
 ## Required environment variables
 
 | Variable | Purpose |
@@ -56,6 +63,26 @@ elsewhere).
 |---|---|
 | `ApplyMigrationsOnStartup` | Set to `true` to have the container apply pending EF Core migrations itself on boot (`Database.MigrateAsync()`), instead of running `dotnet ef database update` separately. Off by default — safe for a single instance, but don't set it on more than one replica pointed at the same database at once. |
 | `Cors__AllowedOrigins__0`, `__1`, ... | Only needed if you'll call the API from a different origin than the one serving the frontend. Same-origin (the normal case — one container, one port) doesn't need this. |
+
+### Optional Web Push reminders
+
+The example starts with push reminders disabled unless both VAPID keys are
+provided. Generate a key pair once, keep the private key out of source
+control, and pass both values to Compose:
+
+```bash
+npx web-push generate-vapid-keys
+PUSH_SUBJECT=mailto:you@example.com \
+PUSH_PUBLIC_KEY='generated-public-key' \
+PUSH_PRIVATE_KEY='generated-private-key' \
+docker compose -f docker/docker-compose.example.yml up -d
+```
+
+After startup, sign in and open Notifications. The API endpoint
+`/api/notifications/config` should report `enabled: true`; enabling reminders
+registers the browser subscription, and the reminder worker sends due items to
+that subscription. Without either key, the endpoint deliberately reports
+`enabled: false` and subscription registration is rejected.
 
 `ASPNETCORE_ENVIRONMENT` defaults to `Production` when unset, which is what
 you want here.
