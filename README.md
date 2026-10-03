@@ -88,6 +88,10 @@ The README screenshots are regenerated with a script; see
 
 ## Self-hosting (Docker image)
 
+The v0.1.0 release is available as
+`ghcr.io/diewoutman/corkboard:0.1.0` (and `:latest`). For a quick first run
+with a fresh Postgres database, use the Compose example in `docker/`.
+
 For running Qorkboard somewhere other than a dev machine (a home
 server/NAS), `docker/` builds one image with the frontend and API combined —
 see [`docker/README.md`](docker/README.md). You host Postgres yourself; the
