@@ -86,14 +86,29 @@ export class FamilyPage implements OnInit, OnDestroy {
   }
 
   openNewGroupForm() { this.editingGroupId = null; this.groupForm = { name: '', color: '#ff8a65' }; this.showGroupForm = true; }
+  openEditGroupForm(group: FamilyGroupResponse) { this.editingGroupId = group.id; this.groupForm = { name: group.name, color: group.color ?? '#ff8a65' }; this.showGroupForm = true; }
   saveGroup() {
     if (!this.groupForm.name.trim()) return;
     const request$ = this.editingGroupId ? this.familyGroupsApi.update(this.editingGroupId, this.groupForm) : this.familyGroupsApi.create(this.groupForm);
     request$.subscribe({ next: group => { this.groups = this.editingGroupId ? this.groups.map(g => g.id === group.id ? group : g) : [...this.groups, group]; this.showGroupForm = false; this.cdr.markForCheck(); }, error: err => { this.errorMessage = extractErrorMessage(err, 'Unable to save group'); this.cdr.markForCheck(); } });
   }
   deleteGroup(group: FamilyGroupResponse) { this.familyGroupsApi.delete(group.id).subscribe({ next: () => { this.groups = this.groups.filter(g => g.id !== group.id); this.reload(); }, error: () => this.errorMessage = 'Unable to delete group' }); }
-  toggleMember(group: FamilyGroupResponse, memberId: string) { const ids = group.memberIds.includes(memberId) ? group.memberIds.filter(id => id !== memberId) : [...group.memberIds, memberId]; this.familyGroupsApi.assignMembers(group.id, ids).subscribe({ next: saved => { this.groups = this.groups.map(g => g.id === saved.id ? saved : g); this.reload(); }, error: () => this.errorMessage = 'Unable to assign member' }); }
-  groupNames(member: FamilyMemberResponse) { return this.groups.filter(g => member.groupIds.includes(g.id)); }
+  toggleMember(group: FamilyGroupResponse, memberId: string) {
+    const ids = group.memberIds.includes(memberId) ? group.memberIds.filter(id => id !== memberId) : [...group.memberIds, memberId];
+    this.familyGroupsApi.assignMembers(group.id, ids).subscribe({
+      next: saved => {
+        this.groups = this.groups.map(g => g.id === saved.id ? { ...saved, memberIds: ids } : g);
+        this.members = this.members.map(member => member.id === memberId
+          ? { ...member, groupIds: ids.includes(memberId)
+              ? [...new Set([...member.groupIds, saved.id])]
+              : member.groupIds.filter(id => id !== saved.id) }
+          : member);
+        this.cdr.markForCheck();
+      },
+      error: () => this.errorMessage = 'Unable to assign member',
+    });
+  }
+  groupNames(member: FamilyMemberResponse) { return this.groups.filter(g => g.memberIds.includes(member.id)); }
 
   openNewMemberForm() {
     this.editingMemberId = null;

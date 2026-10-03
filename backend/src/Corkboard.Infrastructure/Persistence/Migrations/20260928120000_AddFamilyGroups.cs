@@ -1,9 +1,14 @@
+using Corkboard.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Corkboard.Infrastructure.Persistence.Migrations;
 
+[DbContext(typeof(CorkboardDbContext))]
+[Migration("20260928120000_AddFamilyGroups")]
 public partial class AddFamilyGroups : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)

@@ -143,6 +143,8 @@ export class HomePage implements OnInit, OnDestroy {
         return this.transloco.translate('home.widget_titles.timeline');
       case 'Activity':
         return this.transloco.translate('home.widget_titles.activity');
+      default:
+        return widget.type;
     }
   }
 

@@ -18,25 +18,27 @@ From the repository root (the build needs both `backend/` and `frontend/` in
 its context):
 
 ```bash
-docker build -f docker/Dockerfile -t corkboard .
+docker build -f docker/Dockerfile -t qorkboard .
 ```
 
 ## Prebuilt image
 
 The `Docker image` GitHub Action publishes to GHCR only when a version tag
 (`v1.2.3`) is pushed, giving `ghcr.io/diewoutman/corkboard:1.2.3`, `:1.2` and
-`:latest`. Pull requests and pushes to `main` only build, without pushing.
+`:latest` (the image path tracks this repository's current name — it moves to
+`.../qorkboard` if the repo is ever renamed). Pull requests and pushes to
+`main` only build, without pushing.
 
 ## Run
 
 ```bash
 docker run -d \
-  --name corkboard \
+  --name qorkboard \
   -p 8080:8080 \
-  -e ConnectionStrings__Default="Host=<your-postgres-host>;Port=5432;Database=corkboard;Username=corkboard;Password=<password>" \
+  -e ConnectionStrings__Default="Host=<your-postgres-host>;Port=5432;Database=qorkboard;Username=qorkboard;Password=<password>" \
   -e Jwt__SigningKey="<32+ byte random secret>" \
   -e ApplyMigrationsOnStartup=true \
-  corkboard
+  qorkboard
 ```
 
 See `docker-compose.example.yml` for the same thing as a compose file

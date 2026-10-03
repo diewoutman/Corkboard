@@ -3,8 +3,8 @@
 # is only for local development). Copy/adjust and drop the postgres: block if
 # you're pointing at an existing external server instead.
 services:
-  corkboard:
-    image: corkboard:latest
+  qorkboard:
+    image: qorkboard:latest
     build:
       context: ..
       dockerfile: docker/Dockerfile
@@ -12,7 +12,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=corkboard;Username=corkboard;Password=CHANGE_ME"
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=qorkboard;Username=qorkboard;Password=CHANGE_ME"
       Jwt__SigningKey: "CHANGE_ME_32_BYTES_MINIMUM_RANDOM_SECRET"
       ApplyMigrationsOnStartup: "true"
     depends_on:
@@ -23,16 +23,16 @@ services:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: corkboard
-      POSTGRES_USER: corkboard
+      POSTGRES_DB: qorkboard
+      POSTGRES_USER: qorkboard
       POSTGRES_PASSWORD: CHANGE_ME
     volumes:
-      - corkboard-postgres-data:/var/lib/postgresql/data
+      - qorkboard-postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U corkboard -d corkboard"]
+      test: ["CMD-SHELL", "pg_isready -U qorkboard -d qorkboard"]
       interval: 2s
       timeout: 3s
       retries: 20
 
 volumes:
-  corkboard-postgres-data:
+  qorkboard-postgres-data:

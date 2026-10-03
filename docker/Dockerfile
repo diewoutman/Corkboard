@@ -4,7 +4,7 @@
 #
 # Build from the repository root so both backend/ and frontend/ are in the
 # build context:
-#   docker build -f docker/Dockerfile -t corkboard .
+#   docker build -f docker/Dockerfile -t qorkboard .
 
 # ---- frontend build -------------------------------------------------------
 FROM node:22-alpine AS frontend-build
