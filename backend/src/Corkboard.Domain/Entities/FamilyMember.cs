@@ -25,4 +25,5 @@ public class FamilyMember
     public DateOnly? DateOfBirth { get; set; }
 
     public List<NodeAssignment> NodeAssignments { get; set; } = [];
+    public List<FamilyGroupMembership> GroupMemberships { get; set; } = [];
 }

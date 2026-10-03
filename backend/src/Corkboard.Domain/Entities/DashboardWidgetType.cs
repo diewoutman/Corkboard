@@ -18,4 +18,5 @@ public enum DashboardWidgetType
 
     /// <summary>A single navigation tile (see Navigation), standalone instead of grouped in a tile grid.</summary>
     Shortcut,
+    Activity,
 }
