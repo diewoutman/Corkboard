@@ -4,7 +4,20 @@
     "admin_console": "Beheerconsole",
     "language": "Taal",
     "log_out": "Uitloggen",
-    "notifications": "Meldingen"
+    "notifications": "Meldingen",
+    "settings": "Instellingen"
+  },
+  "settings": {
+    "title": "Instellingen",
+    "intro": "Beheer je persoonlijke Qorkboard-voorkeuren.",
+    "language": {
+      "title": "Taal",
+      "description": "Kies de taal die Qorkboard gebruikt."
+    },
+    "notifications": {
+      "title": "Meldingen",
+      "description": "Kies wanneer Qorkboard je herinnert aan aankomende items."
+    }
   },
   "common": {
     "load_more": "Meer laden",
@@ -480,6 +493,7 @@
   },
   "create": {
     "title": "Aanmaken",
+    "quick_add": "Snel toevoegen",
     "kinds": {
       "task": "Taak",
       "note": "Notitie",

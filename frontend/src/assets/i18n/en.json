@@ -4,7 +4,20 @@
     "admin_console": "Admin console",
     "language": "Language",
     "log_out": "Log out",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "intro": "Manage your personal Qorkboard preferences.",
+    "language": {
+      "title": "Language",
+      "description": "Choose the language used across Qorkboard."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Choose when Qorkboard reminds you about upcoming items."
+    }
   },
   "common": {
     "load_more": "Load more",
@@ -480,6 +493,7 @@
   },
   "create": {
     "title": "Create",
+    "quick_add": "Quick add",
     "kinds": {
       "task": "Task",
       "note": "Note",
