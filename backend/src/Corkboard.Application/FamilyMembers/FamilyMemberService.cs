@@ -14,7 +14,7 @@ public class FamilyMemberService(CorkboardDbContext db, UserManager<ApplicationU
 {
     public async Task<PagedResult<FamilyMemberResponse>> ListAsync(Guid familyId, PageRequest page, CancellationToken cancellationToken)
     {
-        var members = await db.FamilyMembers.AsNoTracking().Where(m => m.FamilyId == familyId)
+        var members = await db.FamilyMembers.AsNoTracking().Include(m => m.GroupMemberships).Where(m => m.FamilyId == familyId)
             .OrderBy(m => m.DisplayName).ThenBy(m => m.Id)
             .ToPagedAsync(page, cancellationToken);
         var linkedAccounts = await GetLinkedAccountsAsync(familyId, members.Items, cancellationToken);
@@ -24,7 +24,7 @@ public class FamilyMemberService(CorkboardDbContext db, UserManager<ApplicationU
 
     public async Task<Result<FamilyMemberResponse>> GetAsync(Guid familyId, Guid id, CancellationToken cancellationToken)
     {
-        var member = await db.FamilyMembers.AsNoTracking().FirstOrDefaultAsync(m => m.FamilyId == familyId && m.Id == id, cancellationToken);
+        var member = await db.FamilyMembers.AsNoTracking().Include(m => m.GroupMemberships).FirstOrDefaultAsync(m => m.FamilyId == familyId && m.Id == id, cancellationToken);
         if (member is null) return Result<FamilyMemberResponse>.Failure(Error.NotFound());
 
         var linkedAccounts = await GetLinkedAccountsAsync(familyId, [member], cancellationToken);
@@ -53,7 +53,7 @@ public class FamilyMemberService(CorkboardDbContext db, UserManager<ApplicationU
 
     public async Task<Result<FamilyMemberResponse>> UpdateAsync(Guid familyId, Guid id, UpdateFamilyMemberRequest request, CancellationToken cancellationToken)
     {
-        var member = await db.FamilyMembers.FirstOrDefaultAsync(m => m.FamilyId == familyId && m.Id == id, cancellationToken);
+        var member = await db.FamilyMembers.Include(m => m.GroupMemberships).FirstOrDefaultAsync(m => m.FamilyId == familyId && m.Id == id, cancellationToken);
         if (member is null) return Result<FamilyMemberResponse>.Failure(Error.NotFound());
 
         member.DisplayName = request.DisplayName;
@@ -76,7 +76,7 @@ public class FamilyMemberService(CorkboardDbContext db, UserManager<ApplicationU
                 "Invalid role", "A family has exactly one Owner, set when it was created."));
         }
 
-        var member = await db.FamilyMembers.FirstOrDefaultAsync(m => m.FamilyId == familyId && m.Id == id, cancellationToken);
+        var member = await db.FamilyMembers.Include(m => m.GroupMemberships).FirstOrDefaultAsync(m => m.FamilyId == familyId && m.Id == id, cancellationToken);
         if (member is null) return Result<FamilyMemberResponse>.Failure(Error.NotFound());
 
         if (member.LinkedUserId is not null)
@@ -99,7 +99,7 @@ public class FamilyMemberService(CorkboardDbContext db, UserManager<ApplicationU
 
     public async Task<Result> DeleteAsync(Guid familyId, Guid id, CancellationToken cancellationToken)
     {
-        var member = await db.FamilyMembers.FirstOrDefaultAsync(m => m.FamilyId == familyId && m.Id == id, cancellationToken);
+        var member = await db.FamilyMembers.Include(m => m.GroupMemberships).FirstOrDefaultAsync(m => m.FamilyId == familyId && m.Id == id, cancellationToken);
         if (member is null) return Result.Failure(Error.NotFound());
 
         db.FamilyMembers.Remove(member);
@@ -136,6 +136,7 @@ public class FamilyMemberService(CorkboardDbContext db, UserManager<ApplicationU
         var linked = m.LinkedUserId is { } userId && linkedAccounts.TryGetValue(userId, out var account) ? account : null;
         return new FamilyMemberResponse(
             m.Id, m.DisplayName, m.Color, m.AvatarUrl, m.LinkedUserId, m.DateOfBirth,
-            linked?.Email, (ContractFamilyRole?)linked?.Role);
+            linked?.Email, (ContractFamilyRole?)linked?.Role,
+            m.GroupMemberships.Select(g => g.FamilyGroupId).ToList());
     }
 }

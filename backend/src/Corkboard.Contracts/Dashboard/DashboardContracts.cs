@@ -10,6 +10,7 @@ public enum DashboardWidgetType
     Upcoming,
     Shortcut,
     Timeline,
+    Activity,
 }
 
 /// <summary>Mirrors Corkboard.Domain.Entities.DashboardWidgetScope — kept in sync by hand.</summary>

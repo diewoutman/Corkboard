@@ -70,7 +70,11 @@ export interface FamilyMemberResponse {
   dateOfBirth: string | null;
   linkedUserEmail: string | null;
   linkedUserRole: FamilyRole | null;
+  groupIds: string[];
 }
+
+export interface FamilyGroupResponse { id: string; name: string; color: string | null; memberIds: string[]; }
+export interface CreateFamilyGroupRequest { name: string; color: string | null; }
 
 export type NodeType = 'Note' | 'Task' | 'Appointment' | 'Contact' | 'Recipe' | 'Meal';
 
@@ -350,7 +354,7 @@ export interface ImportIcsResult {
 // Personal (per-User) or Family (one shared layout, admin-managed). One flat
 // shape covering every widget type's settings, same convention as
 // CreateNodeRequest — see CONCEPT.md.
-export type DashboardWidgetType = 'Navigation' | 'Notes' | 'Tasks' | 'Today' | 'Upcoming' | 'Shortcut' | 'Timeline';
+export type DashboardWidgetType = 'Navigation' | 'Notes' | 'Tasks' | 'Today' | 'Upcoming' | 'Shortcut' | 'Timeline' | 'Activity';
 export type DashboardWidgetScope = 'Personal' | 'Family';
 
 export interface CreateDashboardWidgetRequest {
@@ -406,6 +410,16 @@ export interface DashboardWidgetResponse {
   collectionId: string | null;
   assignedToMeOnly: boolean | null;
   hourlyLayout: boolean | null;
+}
+
+export interface ActivityResponse {
+  id: string;
+  actorName: string;
+  action: string;
+  subjectType: 'Note' | 'Task' | 'Appointment';
+  subjectId: string;
+  subjectTitle: string;
+  createdAt: string;
 }
 
 /** Mirrors Corkboard.Contracts.ApiClients.ApiScopes.Areas on the backend. */

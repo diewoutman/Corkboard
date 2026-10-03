@@ -78,6 +78,11 @@ const routes: Routes = [
     loadComponent: () => import('./pages/notifications/notifications.page').then((m) => m.NotificationsPage),
   },
   {
+    path: 'settings',
+    canActivate: [familyGuard],
+    loadComponent: () => import('./pages/settings/settings.page').then((m) => m.SettingsPage),
+  },
+  {
     path: 'admin',
     canActivate: [systemOwnerGuard],
     loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule),

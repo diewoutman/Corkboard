@@ -5,6 +5,7 @@ using Corkboard.Infrastructure.Ics;
 using Corkboard.Infrastructure.Persistence;
 using Corkboard.Infrastructure.Recurrence;
 using Microsoft.EntityFrameworkCore;
+using DomainActivity = Corkboard.Domain.Entities.Activity;
 
 namespace Corkboard.Application.Calendar;
 
@@ -80,9 +81,10 @@ public class CalendarService(CorkboardDbContext db, RecurrenceExpansionService r
 
         foreach (var parsed in parsedEvents)
         {
+            var appointmentId = Guid.NewGuid();
             db.Appointments.Add(new Appointment
             {
-                Id = Guid.NewGuid(),
+                Id = appointmentId,
                 FamilyId = familyId,
                 CollectionId = collectionId,
                 Title = parsed.Title,
@@ -95,6 +97,12 @@ public class CalendarService(CorkboardDbContext db, RecurrenceExpansionService r
                 CreatedAt = now,
                 UpdatedAt = now,
                 CreatedByUserId = userId,
+            });
+            db.Activities.Add(new DomainActivity
+            {
+                Id = Guid.NewGuid(), FamilyId = familyId, ActorUserId = userId,
+                Action = "created_event", SubjectType = "Appointment", SubjectId = appointmentId,
+                SubjectTitle = parsed.Title, CreatedAt = now,
             });
         }
 

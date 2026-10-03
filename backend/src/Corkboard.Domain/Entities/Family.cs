@@ -11,5 +11,6 @@ public class Family
     public DateTimeOffset CreatedAt { get; set; }
 
     public List<FamilyMember> Members { get; set; } = [];
+    public List<FamilyGroup> Groups { get; set; } = [];
     public List<UserFamily> UserFamilies { get; set; } = [];
 }

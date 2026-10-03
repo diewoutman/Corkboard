@@ -78,6 +78,7 @@
       [hourlyLayout]="widget.hourlyLayout"
     ></app-timeline-widget>
     <app-upcoming-widget *ngIf="widget.type === 'Upcoming'"></app-upcoming-widget>
+    <app-activity-widget *ngIf="widget.type === 'Activity'"></app-activity-widget>
     <app-shortcut-widget
       *ngIf="widget.type === 'Shortcut'"
       cdkDragHandle
@@ -106,6 +107,7 @@
         <option value="Today">{{ 'home.widget_types.today' | transloco }}</option>
         <option value="Timeline">{{ 'home.widget_types.timeline' | transloco }}</option>
         <option value="Upcoming">{{ 'home.widget_types.upcoming' | transloco }}</option>
+        <option value="Activity">{{ 'home.widget_types.activity' | transloco }}</option>
         <option value="Shortcut">{{ 'home.widget_types.shortcut' | transloco }}</option>
       </select>
     </div>

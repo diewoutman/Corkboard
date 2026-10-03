@@ -1,0 +1,14 @@
+<div *ngIf="loading" class="text-sm font-semibold text-ink-muted">{{ 'common.loading' | transloco }}</div>
+
+<div *ngIf="!loading" class="space-y-3">
+  <p *ngIf="activities.length === 0" class="text-sm font-semibold text-ink-muted">{{ 'home.activity.none' | transloco }}</p>
+  <div *ngFor="let activity of activities" class="flex items-start gap-2 text-sm">
+    <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-coral"></span>
+    <div class="min-w-0 flex-1">
+      <p class="text-ink"><span class="font-bold">{{ activity.actorName }}</span> {{ ('home.activity.actions.' + activity.action) | transloco }}
+        <a [routerLink]="subjectRoute(activity)" class="font-bold text-coral hover:text-coral-strong">{{ activity.subjectTitle }}</a>
+      </p>
+      <time class="text-xs font-semibold text-ink-muted" [attr.datetime]="activity.createdAt">{{ activity.createdAt | date:'short' }}</time>
+    </div>
+  </div>
+</div>
